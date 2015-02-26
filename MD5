@@ -1,0 +1,16 @@
+70397b6dbd73e2bd5a6b5b381980a8ad *DESCRIPTION
+262a0c5dd7cfb5976f378fb6cb46ffb8 *NAMESPACE
+09d2a5dfc478d5acf09d068c2a5d918f *R/mma.r
+4c3e4821588dec2056d1d8b450f2ad9a *data/weight_behavior.rda
+8f1cdd316c8e35dbd4d58e59915f2fcb *man/boot.med.binx.Rd
+e7032eb8264d86706ae01cf271f88f72 *man/boot.med.contx.Rd
+33f31fbdbbc78945f799cdac56293105 *man/data.org.Rd
+eb81ece2b31e03c6641b39ef6af9bca7 *man/data.org2.Rd
+ee6666ead2028d0eac40d0dc59d934a6 *man/med.binx.Rd
+8cf9646d2e1ec77f51a847379b220720 *man/med.contx.Rd
+3cb2fff218dc065f94bbde860cd44237 *man/mma-package.Rd
+97bbd13152cbdfed97f6ef346bc913dd *man/mma.Rd
+1e0ba5881fdd0f731b20ce5facad9cfc *man/plot.mma.Rd
+b7ee15d9b94bedf8c0dca6c47246e567 *man/print.mma.Rd
+a518bac31ebf06bf3908dfa5dd6a80a9 *man/summary.mma.Rd
+5eb4f4ef1d88c379c25956f9895c0911 *man/weight_behavior.Rd

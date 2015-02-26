@@ -1,0 +1,5 @@
+exportPattern("^[^\\.]")
+import(gbm)
+S3method(summary,mma)
+S3method(print,mma)
+S3method(plot,mma)
