@@ -495,14 +495,22 @@ med.binx.jointm<-function(full.model,x,y,med,dirx,best.iter1=NULL)
 {x1<-x[x[,dirx]==1,]                               
  x0<-x[x[,dirx]==0,]
  n3<-dim(x)[1]
- marg.m<-rbind(x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),med],x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),med])
- marg.m<-marg.m[sample(2*floor(n3/2)),]
+ if (length(med)==1)                       #added for the new program, when there is only one mediator
+   {marg.m<-c(x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),med],x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),med])  #added for the new program
+    marg.m<-marg.m[sample(2*floor(n3/2))]}        #added for the new program
+ else                                         #added for the new program
+   {marg.m<-rbind(x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),med],x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),med])
+    marg.m<-marg.m[sample(2*floor(n3/2)),]  }     
  nom1<-x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),]
  nom0<-x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),]
  new1<-nom1
- new1[,med]<-marg.m[1:floor(n3/2),]
  new0<-nom0
- new0[,med]<-marg.m[(floor(n3/2)+1):(2*floor(n3/2)),]
+ if(length(med)==1)                                       #added for the new program, when there is only one mediator
+   {new1[,med]<-marg.m[1:floor(n3/2)]                     #added for the new program 
+    new0[,med]<-marg.m[(floor(n3/2)+1):(2*floor(n3/2))]}  #added for the new program
+ else                                                     #added for the new program
+   {new1[,med]<-marg.m[1:floor(n3/2),]
+    new0[,med]<-marg.m[(floor(n3/2)+1):(2*floor(n3/2)),]}
  dir.nom<-mean(predict(full.model,new1,best.iter1),na.rm=T)- mean(predict(full.model,new0,best.iter1),na.rm=T)
  dir.nom
 }
@@ -530,7 +538,7 @@ med.binx.catm<-function(full.model,x,y,med,dirx,best.iter1=NULL)
   #1.fit the model
   if (mart)
   {full.model<-gbm.fit(x,y, n.trees=200, interaction.depth=D, shrinkage=nu,
-                       distribution=distn,bag.fraction=0.5, verbose=FALSE)
+                       distribution=distn,train.fraction=1.0, bag.fraction=0.5, verbose=FALSE)
    best.iter1<-gbm.perf(full.model,plot.it=FALSE,method="OOB")
    while(full.model$n.trees-best.iter1<30){
      full.model<-gbm.more(full.model, 50)           # do another 50 iterations
@@ -688,12 +696,16 @@ if(!is.null(contm))
   for (i in (length(binm1)+1):length(c(binm1,contm)))
     means<-cbind(means,predict(distmgivenx$models[[i]],newdata=data.frame(z=z)))
 
+if(dim(means)[2]==1)                                                   #added in the new program, in case there is only one mediator
+  {sim.m<-rnorm(length(means),mean=means,sd=sqrt(distmgivenx$varmat))     #added in the new program
+   sim.m2<-match.margin(c(range(means),sim.m))}                          #added in the new program   
+else{
 sim.m<-t(apply(means,1,mult.norm,vari=distmgivenx$varmat,n=1))
 
 range.means<-apply(means,2,range)
 
 sim.m2<-apply(rbind(range.means,sim.m),2,match.margin)    #to make the simulate fit the means' ranges
-
+}
 n<-dim(sim.m2)[1]
 if(!is.null(binm))
   for (i in 1:length(binm))
@@ -731,7 +743,7 @@ x1
   #1.fit the model
   if(mart)
   {full.model<-gbm.fit(x,y, n.trees=200, interaction.depth=D, shrinkage=nu,
-                       distribution=distn,bag.fraction=0.5, verbose=FALSE)
+                       distribution=distn,train.fraction=1.0, bag.fraction=0.5, verbose=FALSE)
    best.iter1<-gbm.perf(full.model,plot.it=FALSE,method="OOB")         
    while(full.model$n.trees-best.iter1<30){
      full.model<-gbm.more(full.model, 50)           # do another 50 iterations
@@ -744,7 +756,8 @@ x1
   #2. prepare for the store of results
   set.seed(seed)
   te<-rep(0,n)
-  denm<-matrix(0,n,1+length(listm$single)+listm$multi[[1]])
+  mul<-ifelse(is.null(listm$multi),0,listm$multi[[1]])        #added in the new program, in case multi is null
+  denm<-matrix(0,n,1+length(listm$single)+mul)                #added in the new program, in case multi is null
   if(!is.null(listm$multi))
     dimnames(denm)[[2]]<-c("de",names(x)[listm$single],paste("j",1:listm$multi[[1]],sep=""))
   else 
@@ -793,9 +806,11 @@ x1
 
 
 boot.med.contx<-function(x,y,dirx,binm=NULL,contm=NULL,catm=NULL, jointm=NULL, margin=1, n=20,seed=sample(1:1000,1),
-                         mart=F,nu=0.001,D=3, distn="gaussian",family1=gaussian(link="identity"),n2=50)
+                         mart=F,nu=0.001,D=3,distn="gaussian",family1=gaussian(link="identity"),n2=50)
 {if(is.null(catm))
   {multi=jointm
+   name1<-NULL                       #added in the new program
+   if (!is.null(multi))              #added in the new program, in case that multi is NULL
    name1<-paste("j",1:multi[[1]],sep="")}
  else if(is.null(jointm))
   {multi=catm
@@ -815,7 +830,8 @@ boot.med.contx<-function(x,y,dirx,binm=NULL,contm=NULL,catm=NULL, jointm=NULL, m
  
  te<-rep(0,n2+1)
  de<-rep(0,n2+1)
- ie<-matrix(0,n2+1,1+length(listm$single)+listm$multi[[1]])
+ mul<-ifelse(is.null(multi),0,multi[[1]])        #added in the new program, in case multi is null
+ ie<-matrix(0,n2+1,1+length(listm$single)+mul)   #added in the new program
  if(!is.null(listm$multi))
    dimnames(ie)[[2]]<-c("all",names(x)[listm$single],name1)
  else 
@@ -831,7 +847,7 @@ boot.med.contx<-function(x,y,dirx,binm=NULL,contm=NULL,catm=NULL, jointm=NULL, m
  {boots<-sample(1:length(y),replace=T)
   x1<-x[boots,]
   y1<-y[boots]
-  temp<-med.contx(x1,y1,dirx,binm,contm,catm,jointm, margin,n,seed,mart,nu,D,distn,family1)
+  temp<-med.contx(x1,y1,dirx,binm,contm,catm,jointm, margin,n,seed+l,mart,nu,D,distn,family1) #added to the new codel, change the seed to make different results
   te[1+l]<-mean(temp$te)
   de[1+l]<-mean(temp$denm[,1])
   ie[1+l,]<-apply(temp$ie,2,mean)  #first row is the estimated value
