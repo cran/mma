@@ -126,14 +126,14 @@ colnum<-function(vec,cutx)
   if(length(binm1)>0) 
   {med.bin<-rep(F,length(binm1))
    for (i in 1:length(binm1))   
-     med.bin[i]<-ifelse(chisq.test(newx1[,pred1],newx1[,binm1[i]])$p.value<alpha2,T,F)
+     med.bin[i]<-ifelse(suppressWarnings(chisq.test(newx1[,pred1],newx1[,binm1[i]]))$p.value<alpha2,T,F)
    binm2<-binm1[med.bin]}
   
   catm2<-catm1
   if(length(catm1)>0) 
   {med.cat<-rep(F,length(catm1))
    for (i in 1:length(catm1))   
-     med.cat[i]<-ifelse(chisq.test(newx1[,pred1],newx1[,catm1[i]])$p.value<alpha2,T,F)
+     med.cat[i]<-ifelse(suppressWarnings(chisq.test(newx1[,pred1],newx1[,catm1[i]]))$p.value<alpha2,T,F)
    catm2<-catm1[med.cat]
    catref2<-catref1[med.cat]}
  }
@@ -368,7 +368,7 @@ if (binpred)             #for binary (x)
  if(length(binm1)>0) 
  {med.bin<-rep(F,length(binm1))
   for (i in 1:length(binm1))   
-    med.bin[i]<-ifelse(chisq.test(newx1[,pred1],newx1[,binm1[i]])$p.value<alpha2,T,F)
+    med.bin[i]<-ifelse(suppressWarnings(chisq.test(newx1[,pred1],newx1[,binm1[i]]))$p.value<alpha2,T,F)
   med.bin<-ifelse(med.bin+bin2>0,T,F)
   binm2<-binm1[med.bin]}
  
@@ -376,7 +376,7 @@ if (binpred)             #for binary (x)
  if(length(catm1)>0) 
  {med.cat<-rep(F,length(catm1))
   for (i in 1:length(catm1))   
-    med.cat[i]<-ifelse(chisq.test(newx1[,pred1],newx1[,catm1[i]])$p.value<alpha2,T,F)
+    med.cat[i]<-ifelse(suppressWarnings(chisq.test(newx1[,pred1],newx1[,catm1[i]]))$p.value<alpha2,T,F)
   med.cat<-ifelse(med.cat+cat2>0,T,F)
   catm2<-catm1[med.cat]
   catref2<-catref1[med.cat]}
@@ -537,12 +537,12 @@ med.binx.catm<-function(full.model,x,y,med,dirx,best.iter1=NULL)
 
   #1.fit the model
   if (mart)
-  {full.model<-gbm.fit(x,y, n.trees=200, interaction.depth=D, shrinkage=nu,
-                       distribution=distn,train.fraction=1.0, bag.fraction=0.5, verbose=FALSE)
-   best.iter1<-gbm.perf(full.model,plot.it=FALSE,method="OOB")
+  {full.model<-suppressWarnings(gbm.fit(x,y, n.trees=200, interaction.depth=D, shrinkage=nu,
+                       distribution=distn,train.fraction=1.0, bag.fraction=0.5, verbose=FALSE))
+   best.iter1<-suppressWarnings(gbm.perf(full.model,plot.it=FALSE,method="OOB"))
    while(full.model$n.trees-best.iter1<30){
      full.model<-gbm.more(full.model, 50)           # do another 50 iterations
-     best.iter1<-gbm.perf(full.model,plot.it=FALSE,method="OOB")}}
+     best.iter1<-suppressWarnings(gbm.perf(full.model,plot.it=FALSE,method="OOB"))}}
   else
   {full.model<-glm(y~., data=x, family=family1)
    best.iter1=NULL}
@@ -611,7 +611,8 @@ boot.med.binx<-function(x,y,dirx,contm=NULL,catm=NULL,jointm=NULL,n=20,seed=samp
   de[1+i]<-mean(temp$denm[,1])
   ie[1+i,]<-apply(temp$ie,2,mean)  #first row is the estimated value
  }
- a<-list(estimation=list(ie=ie[1,],te=te[1],de=de[1]),bootsresults=list(ie=ie[-1,],te=te[-1],de=de[-1]),model=list(MART=mart,model=model,best.iter=best.iter))
+ a<-list(estimation=list(ie=ie[1,],te=te[1],de=de[1]),bootsresults=list(ie=ie[-1,],te=te[-1],de=de[-1]),model=list(MART=mart,model=model,best.iter=best.iter), 
+         data=list(x=x,y=y,dirx=dirx,contm=contm,catm=catm,jointm=jointm,binpred=T))
  class(a)<-"mma"
  return(a)
 }
@@ -742,12 +743,12 @@ x1
  
   #1.fit the model
   if(mart)
-  {full.model<-gbm.fit(x,y, n.trees=200, interaction.depth=D, shrinkage=nu,
-                       distribution=distn,train.fraction=1.0, bag.fraction=0.5, verbose=FALSE)
-   best.iter1<-gbm.perf(full.model,plot.it=FALSE,method="OOB")         
+  {full.model<-suppressWarnings(gbm.fit(x,y, n.trees=200, interaction.depth=D, shrinkage=nu,
+                       distribution=distn,train.fraction=1.0, bag.fraction=0.5, verbose=FALSE))
+   best.iter1<-suppressWarnings(gbm.perf(full.model,plot.it=FALSE,method="OOB"))         
    while(full.model$n.trees-best.iter1<30){
      full.model<-gbm.more(full.model, 50)           # do another 50 iterations
-     best.iter1<-gbm.perf(full.model,plot.it=FALSE,method="OOB")}
+     best.iter1<-suppressWarnings(gbm.perf(full.model,plot.it=FALSE,method="OOB"))}
   }
   else
     {full.model<-glm(y~., data=x, family=family1)
@@ -800,7 +801,7 @@ x1
    #4.4 get the indirect effects
    ie[k,]<-te[k]-denm[k,]
   } 
-  a<-list(denm=denm,ie=ie,te=te,model=list(MART=mart,full.model=full.model,best.iter=best.iter1))
+  a<-list(denm=denm,ie=ie,te=te,model=list(MART=mart,model=full.model,best.iter=best.iter1))
   return(a)
 }
 
@@ -852,7 +853,8 @@ boot.med.contx<-function(x,y,dirx,binm=NULL,contm=NULL,catm=NULL, jointm=NULL, m
   de[1+l]<-mean(temp$denm[,1])
   ie[1+l,]<-apply(temp$ie,2,mean)  #first row is the estimated value
  }
- a<-list(estimation=list(ie=ie[1,],te=te[1],de=de[1]),bootsresults=list(ie=ie[-1,],te=te[-1],de=de[-1]),model=model)
+ a<-list(estimation=list(ie=ie[1,],te=te[1],de=de[1]),bootsresults=list(ie=ie[-1,],te=te[-1],de=de[-1]),model=model,
+         data=list(x=x,y=y,dirx=dirx,binm=binm,contm=contm,catm=catm, jointm=jointm, binpred=F))
  class(a)<-"mma"
  return(a)
 }
@@ -884,7 +886,7 @@ print.mma<-function(x,...)
 }
 
 
-summary.mma<-function(object,...,alpha=0.05)
+summary.mma<-function(object,...,alpha=0.05,plot=TRUE)
 {x<-object
  temp1<-x$boots
  temp2<-x$est
@@ -906,22 +908,101 @@ summary.mma<-function(object,...,alpha=0.05)
  if (x$model$MART)
    cat ("MART\n")
  else cat("GLM\n")
- temp1.result
-}
+ print(temp1.result)
 
-
-plot.mma<-function(x,...)
-{varimp1<-summary.mma(x)
- re<-c(varimp1$indirect.effec[1,],varimp1$dir[1])/varimp1$tot[1]
- d<-order(re)
- name1<-c(names(varimp1$indirect.effec[1,]),"de")[d]
+ if(plot)
+ {re<-c(temp1.result$indirect.effec[1,],temp1.result$dir[1])/temp1.result$tot[1]
+  d<-order(re)
+  name1<-c(names(temp1.result$indirect.effec[1,]),"de")[d]
   barplot(re[d],horiz=T,xlab="Relative Effects",names=name1[d],
          cex.names=0.9,beside=F,cex.axis=0.9,las=1,xlim=range(re),
-         col = rev(rainbow(length(varimp1), start = 3/6, end = 4/6)))
+         col = rainbow(length(d), start = 3/6, end = 4/6))}
+}
+
+
+plot.mma<-function(x,...,vari,xlim=range(data$x[,vari],na.rm=T))
+{marg.den<-function(x,y)
+{y<-y[!is.na(x)]
+ x<-x[!is.na(x)]
+ z1<-unique(x)
+ z2<-rep(0,length(z1))
+ for (i in 1:length(z1))
+   z2[i]<-mean(y[x==z1[i]],na.rm=T)
+ z3<-order(z1)
+ cbind(z1[z3],z2[z3])
+}
+ if (x$model[1]==T) 
+ {full.model=x$model$model
+  best.iter=x$model[3]
+  data=x$data
+  mname<-ifelse(is.character(vari),vari,names(data$x)[vari])
+  if(data$binpred)
+  {if(!is.factor(data$x[,vari]))
+   {par(mfrow=c(3,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
+    suppressWarnings(plot.gbm(full.model, i.var=vari,best.iter,xlim=xlim,type="response"))
+    for (j in unique(data$x[,data$dirx]))
+    hist(data$x[data$x[,data$dirx]==j,vari],xlab="",xlim=xlim, freq=F,main=paste(names(data$x)[data$dirx],j,sep="="))}
+   else{par(mfrow=c(2,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
+        suppressWarnings(plot.gbm(full.model, i.var=vari,best.iter,type="response"))
+        plot(data$x[,vari]~data$x[,data$dirx],ylab=mname,xlab=names(data$x)[data$dirx])}
+  }
+  else
+  {par(mfrow=c(2,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
+    if(!is.factor(data$x[,vari]))
+   {suppressWarnings(plot.gbm(full.model, i.var=vari,best.iter,xlim=xlim,type="response"))
+    axis(1,at=data$x[,vari],labels=F)
+    a<-marg.den(data$x[,data$dirx],data$x[,vari])
+    plot(a[,2:1],ylab=names(data$x)[data$dirx],xlim=xlim,xlab="")
+    lo <- loess(a[,2]~a[,1])
+    lines(lo$fitted[order(lo$x)], lo$x[order(lo$x)],lwd=1)
+    }
+    
+    #lo <- loess(data$x[,data$dirx]~data$x[,vari])
+    #plot(data$x[,vari],data$x[,data$dirx],xlim=xlim,ylab=names(data$x)[data$dirx],xlab="")
+    #lines(predict(lo), col='red', lwd=2)}
+   else
+   {suppressWarnings(plot.gbm(full.model, i.var=vari,best.iter,type="response"))
+    plot(data$x[,vari],data$x[,data$dirx],ylab=names(data$x)[data$dirx],xlab="")}
+  }
+}
+else
+{full.model=x$model$model
+ data=x$data
+ mname<-ifelse(is.character(vari),vari,names(data$x)[vari])
+ if(data$binpred)
+ {if(!is.factor(data$x[,vari]))
+ {par(mfrow=c(3,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
+  b<-marg.den(full.model$data[-full.model$na.action,vari],full.model$fitted)
+  plot(b,xlab=mname,ylab=paste("f(",mname,")",sep=""),xlim=xlim)
+  lo1 <- loess(b[,2]~b[,1])
+  lines(lo1$x[order(lo1$x)], lo1$fitted[order(lo1$x)], lwd=1)
+  axis(1,at=full.model$data[-full.model$na.action,vari],labels=F)
+  for (j in unique(data$x[,data$dirx]))
+    hist(data$x[data$x[,data$dirx]==j,vari],xlab="",xlim=xlim, freq=F,main=paste(names(data$x)[data$dirx],j,sep="="))}
+ else{par(mfrow=c(2,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
+      plot(full.model$y~full.model$data[-full.model$na.action,vari],ylab=paste("f(",mname,")",sep=""),xlab=mname)
+      plot(data$x[,vari]~data$x[,data$dirx],ylab=mname,xlab=names(data$x)[data$dirx])}
+ }
+ else
+ {par(mfrow=c(2,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
+  if(!is.factor(data$x[,vari]))
+  {b<-marg.den(full.model$data[-full.model$na.action,vari],full.model$fitted)
+   plot(b,xlab=mname,ylab=paste("f(",mname,")",sep=""),xlim=xlim)
+   lo1 <- loess(b[,2]~b[,1])
+   lines(lo1$x[order(lo1$x)], lo1$fitted[order(lo1$x)], lwd=1)
+  axis(1,at=full.model$data[-full.model$na.action,vari],labels=F)
+   a<-marg.den(data$x[,data$dirx],data$x[,vari])
+   plot(a[,2:1],ylab=names(data$x)[data$dirx],xlim=xlim,xlab="")
+   lo <- loess(a[,2]~a[,1])
+   lines(lo$fitted[order(lo$x)], lo$x[order(lo$x)],lwd=1)}
+  else
+  {plot(full.model$y~full.model$data[-full.model$na.action,vari],ylab=paste("f(",mname,")",sep=""),xlab=mname)
+   plot(data$x[,vari],data$x[,data$dirx],ylab=names(data$x)[data$dirx],xlab="")}
+ }
+}
 }
   
-  
-  
+
   
   
   
