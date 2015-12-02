@@ -52,9 +52,10 @@ data("weight_behavior")
  y=weight_behavior[,1]
  temp.b.c.glm<-mma(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
    binref=c(1,1),catmed=6,catref=1,jointm=list(n=1,j1=8:10),biny=FALSE, 
-   predref="M",alpha=0.4,alpha2=0.4,n=2,seed=1,mart=FALSE,nu=0.05,D=3,n2=2)
+   predref="M",alpha=0.4,alpha2=0.4,n=2,seed=1,mart=FALSE,nu=0.05,D=3,
+   distn="gaussian",family1=gaussian(link = "identity"),n2=2)
  temp.b.c.mart<-mma(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
-   binref=c(1,1),catmed=6,catref=1,jointm=list(n=1,j1=8:10),biny=FALSE, 
+   binref=c(1,1),catmed=6,catref=1,jointm=list(n=1,j1=8:10, j2=12:13),biny=FALSE, 
    predref="M",alpha=0.4,alpha2=0.4, margin=1, n=2,seed=1,mart=TRUE,
-   nu=0.05,n2=2)
+   nu=0.05,distn="gaussian",family1=gaussian(link = "identity"),n2=2)
 }

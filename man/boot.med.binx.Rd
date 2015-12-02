@@ -10,7 +10,8 @@ To make inferences on the mediation effects when the predictor is binary.
 \usage{
 boot.med.binx(x, y, dirx, contm = NULL, catm = NULL, jointm = NULL, 
  n = 20, seed = sample(1:1000, 1), n2 = 50, mart = F, nu = 0.001, 
- D = 3, distn = "bernoulli", family1 = binomial("logit"))
+ D = 3, distn = "bernoulli", family1 = binomial("logit"),
+ weight=rep(1,length(y)))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -48,6 +49,9 @@ the assumed distribution of the outcome if MART is used for final full model. Th
   \item{family1}{
 define the conditional distribution of y given x, and the linkage function that links the mean of y with the system component if generalized linear model is used as the final full model.  The default value of family1 is binomial(link = "logit"). If y is continuous, family1 can be defined as gaussian(link="identity").
 }
+  \item{weight}{
+the weight for observations.
+}
 }
 \details{
 The potential mediators are not tested in this function.  data.org or data.org2 should be used for the tests and the resulted list can be used directly to define the parameters in this function. boot.med.binx considers all variables in x as mediators or covariates in the final model and all variables identified by contm, catm, or jointm as mediators.
@@ -75,9 +79,9 @@ data("weight_behavior")
  data.bin<-data.org(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
    binref=c(1,1),catmed=6,catref=1,predref="M",alpha=0.4,alpha2=0.4)
  temp1<-boot.med.binx(x=data.bin$x,y,dirx=data.bin$dirx,
-   contm=data.bin$contm,catm=data.bin$catm,n=2,n2=5,seed=1)
+   contm=data.bin$contm,catm=data.bin$catm,n=2,n2=4,seed=1)
  temp2<-boot.med.binx(x=data.bin$x,y,dirx=data.bin$dirx,contm=data.bin$contm,
-   catm=data.bin$catm,n=2,n2=5,nu=0.05,seed=1,mart=TRUE)
+   catm=data.bin$catm,n=2,n2=4,nu=0.05,seed=1,mart=TRUE)
  
  #continuous y
  x=weight_behavior[,2:14]
@@ -86,10 +90,10 @@ data("weight_behavior")
   binref=c(1,1),catmed=6,catref=1,biny=FALSE, 
   family1=gaussian(link="identity"),predref="M",alpha=0.4,alpha2=0.4)
  temp3<-boot.med.binx(data.cont$x,y,dirx=data.cont$dirx,
-  contm=data.cont$contm,catm=data.cont$catm,n=2,n2=5,seed=1, 
+  contm=data.cont$contm,catm=data.cont$catm,n=2,n2=4,seed=1, 
   family1=gaussian(link="identity")) 
  temp4<-boot.med.binx(data.cont$x,y,dirx=data.cont$dirx,contm=data.cont$contm,
-  catm=data.cont$catm,n=2,n2=5,nu=0.05,seed=1, mart=TRUE,distn="gaussian") 
+  catm=data.cont$catm,n=2,n2=4,nu=0.05,seed=1, mart=TRUE,distn="gaussian") 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

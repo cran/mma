@@ -11,7 +11,7 @@ To make inferences on the mediation effects when the predictor is continuous.
 boot.med.contx(x, y, dirx, binm = NULL, contm = NULL, catm = NULL, 
  jointm = NULL, margin = 1, n = 20, seed = sample(1:1000, 1), 
  mart = F, nu = 0.001, D = 3, distn = "gaussian", 
- family1 = gaussian(link = "identity"), n2 = 50)
+ family1 = gaussian(link = "identity"), n2 = 50,weight=rep(1,length(y)))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -55,6 +55,9 @@ define the conditional distribution of y given x, and the linkage function that 
   \item{n2}{
 the number of times of bootstrap resampling.  The default value is n2=50.
 }
+  \item{weight}{
+the weight for observations.
+}
 }
 \details{
 The mediators are not tested in this function.  data.org or data.org2 should be used for the tests and the resulted list can be used directly to define the parameters in this function. boot.med.contx considers all variables in x as mediators or covariates in the final model and all variables identified by contm, binm, catm, or jointm as mediators.
@@ -83,7 +86,7 @@ data("weight_behavior")
    binref=c(1,1),catmed=6,catref=1,binpred=FALSE,alpha=0.4,alpha2=0.4)
  temp5<-boot.med.contx(x=data.contx$x,y,dirx=data.contx$dirx,
    binm=data.contx$binm, contm=data.contx$contm,catm=data.contx$catm,
-   seed=1,n=2,family1=binomial(link = "logit"),n2=2)
+   seed=1,n=1,family1=binomial(link = "logit"),n2=2)
  
  #continuous y
  x=weight_behavior[,2:14]
@@ -93,7 +96,7 @@ data("weight_behavior")
    family1=gaussian(link="identity"),alpha=0.4,alpha2=0.4)
  temp7<-boot.med.contx(x=data.contx$x,y,dirx=data.contx$dirx,
    binm=data.contx$binm, contm=data.contx$contm,catm=data.contx$catm,
-   seed=1,n=2,n2=2) 
+   seed=1,n=1,n2=2) 
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

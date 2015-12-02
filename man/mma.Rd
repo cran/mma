@@ -12,7 +12,8 @@ mma(x, y, pred, contmed = NULL, binmed = NULL, binref = NULL,
  catmed = NULL, catref = NULL, jointm = NULL, biny = T, binpred = T, 
  predref = 1, alpha = 0.1, alpha2 = 0.1, margin = 1, n = 20, 
  seed = sample(1:1000, 1), mart = F, nu = 0.001, D = 3,  
- distn = "gaussian", family1 = gaussian(link = "identity"), n2 = 50)
+ distn = "bernoulli", family1 = binomial(link = "logit"), n2 = 50,
+ weight=rep(1,length(y)))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -77,13 +78,16 @@ set the parameter "interaction.depth" in gbm function if MART is to be used, by 
 set the parameter "shrinkage" in gbm function if MART is to be used, by default, D=3. See also help(gbm.fit).
 }
   \item{distn}{
-the assumed distribution of the outcome if MART is used for final full model. The default value of distn is "gaussian". If y is binary, may use distn="bernoulli".
+the assumed distribution of the outcome if MART is used for final full model. The default value of distn is "bernoulli". If y is continuous, may use distn="gaussian".
 }
   \item{family1}{
-define the conditional distribution of y given x, and the linkage function that links the mean of y with the system component if generalized linear model is used as the final full model.  The default value of family1 is gaussian(link="identity"). If y is binary, family1 can be defined as binomial(link = "logit").
+define the conditional distribution of y given x, and the linkage function that links the mean of y with the system component if generalized linear model is used as the final full model.  The default value of family1 is binomial(link = "logit"). If y is binary, family1 can be defined as gaussian(link="identity").
 }
   \item{n2}{
 the number of times of bootstrap resampling.  The default value is n2=50.
+}
+  \item{weight}{
+the weight for each observation.
 }
 }
 \details{
@@ -119,22 +123,23 @@ data("weight_behavior")
  temp.b.b.glm<-mma(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
    binref=c(1,1),catmed=6,catref=1,predref="M",alpha=0.4,alpha2=0.4, 
    jointm=NULL,margin=1, n=2,seed=sample(1:1000,1),mart=FALSE,nu=0.001,
-   D=3,distn="bernoulli",family1=binomial(link = "logit"),n2=2)
+   D=3,n2=2)
  temp.b.b.mart<-mma(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
    binref=c(1,1),catmed=6,catref=1,predref="M",alpha=0.4,alpha2=0.4, 
    jointm=NULL,margin=1, n=2,seed=sample(1:1000,1),mart=TRUE,nu=0.05,
-   D=3,family1=binomial(link = "logit"),n2=5)
+   D=3,n2=5)
  
  #continuous y
  x=weight_behavior[,2:14]
  y=weight_behavior[,1]
  temp.b.c.glm<-mma(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
    binref=c(1,1),catmed=6,catref=1,jointm=list(n=1,j1=8:10),biny=FALSE, 
-   predref="M",alpha=0.4,alpha2=0.4,n=2,seed=1,mart=FALSE,nu=0.05,D=3,n2=2)
+   predref="M",alpha=0.4,alpha2=0.4,n=2,seed=1,mart=FALSE,nu=0.05,D=3,
+   distn="gaussian",family1=gaussian(link = "identity"),n2=2)
  temp.b.c.mart<-mma(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
    binref=c(1,1),catmed=6,catref=1,jointm=list(n=1,j1=8:10, j2=12:13),biny=FALSE, 
    predref="M",alpha=0.4,alpha2=0.4, margin=1, n=2,seed=1,mart=TRUE,
-   nu=0.05,n2=2)
+   nu=0.05,distn="gaussian",family1=gaussian(link = "identity"),n2=2)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

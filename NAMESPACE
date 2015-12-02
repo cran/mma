@@ -1,5 +1,11 @@
 exportPattern("^[^\\.]")
 import(gbm)
+importFrom("grDevices", "rainbow")
+importFrom("graphics", "axis", "barplot", "hist", "lines", "par",
+          "plot")
+importFrom("stats", "binomial", "chisq.test", "cor.test", "gaussian",
+           "glm", "loess", "predict", "qnorm", "quantile", "rbinom",
+           "rmultinom", "rnorm", "sd", "var")
 S3method(summary,mma)
 S3method(print,mma)
 S3method(plot,mma)

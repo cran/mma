@@ -1,3 +1,7 @@
+#1. changed dimnames(f)[[2]] to colnames(f)
+#2. when some case is very few, do glm.fit may cause warning: glm.fit: fitted probabilities numerically 0 or 1 occurred 
+#3. consider weight in bootstrap for model fitting
+
 #to organize data
 data.org<-function(x,y,pred,contmed=NULL,binmed=NULL,binref=NULL,catmed=NULL,catref=NULL,biny=T,
                    family1=binomial(link = "logit"),binpred=T,predref=1,alpha=0.1,alpha2=0.1)
@@ -23,7 +27,7 @@ data.org<-function(x,y,pred,contmed=NULL,binmed=NULL,binref=NULL,catmed=NULL,cat
    l<-l+1}
   d[a==cat2[j]]<-l
   f<-matrix(0,dim1[1],l-1) 
-  dimnames(f)[[2]]<-paste(ntemp[j],b,sep=".")
+  colnames(f)<-paste(ntemp[j],b,sep=".")  ##
   hi<-d[d!=l & !is.na(d)]
   f[d!=l & !is.na(d),]<-t(apply(cbind(hi,f[d!=l & !is.na(d),]),1,ad1))
   f[is.na(d),]<-NA
@@ -221,7 +225,7 @@ data.org2<-function(x,y,pred,contmed=NULL,binmed=NULL,binref=NULL,catmed=NULL,ca
    l<-l+1}
   d[a==cat2[j]]<-l
   f<-matrix(0,dim1[1],l-1) 
-  dimnames(f)[[2]]<-paste(ntemp[j],b,sep=".")
+  colnames(f)<-paste(ntemp[j],b,sep=".") #changed for error info
   hi<-d[d!=l & !is.na(d)]
   f[d!=l & !is.na(d),]<-t(apply(cbind(hi,f[d!=l & !is.na(d),]),1,ad1))
   f[is.na(d),]<-NA
@@ -464,7 +468,8 @@ else
 }
 
 #for binary predictor
-med.binx<-function(x,y,dirx,contm=NULL,catm=NULL,jointm=NULL,allm=c(contm,catm),n=20,seed=sample(1:1000,1),mart=F,nu=0.001,D=3,distn="bernoulli",family1=binomial("logit"))
+med.binx<-function(x,y,dirx,contm=NULL,catm=NULL,jointm=NULL,allm=c(contm,catm),
+                   n=20,seed=sample(1:1000,1),mart=F,nu=0.001,D=3,distn="bernoulli",family1=binomial("logit"))
 {te.binx<-function(full.model,x,y,dirx,best.iter1=NULL)       
 {x1<-x[x[,dirx]==1,]
  x0<-x[x[,dirx]==0,]
@@ -585,7 +590,10 @@ med.binx.catm<-function(full.model,x,y,med,dirx,best.iter1=NULL)
   return(a)
 }
 
-boot.med.binx<-function(x,y,dirx,contm=NULL,catm=NULL,jointm=NULL,n=20,seed=sample(1:1000,1),n2=50,mart=F,nu=0.001,D=3,distn="bernoulli",family1=binomial("logit"))
+boot.med.binx<-function(x,y,dirx,contm=NULL,catm=NULL,jointm=NULL,
+                        n=20,seed=sample(1:1000,1),n2=50,mart=F,nu=0.001,
+                        D=3,distn="bernoulli",family1=binomial("logit"),
+                        weight=rep(1,length(y)))
   #n2 is the time of bootstrap
 {allm=c(contm,catm)
  te<-rep(0,n2+1)
@@ -603,7 +611,7 @@ boot.med.binx<-function(x,y,dirx,contm=NULL,catm=NULL,jointm=NULL,n=20,seed=samp
  model<-temp$model
  best.iter<-temp$best.iter
  for (i in 1:n2)
- {boots<-sample(1:length(y),replace=T)
+ {boots<-sample(1:length(y),replace=T,prob=weight)
   x1<-x[boots,]
   y1<-y[boots]
   temp<-med.binx(x1,y1,dirx,contm,catm,jointm,allm,n,seed+i,mart,nu,D,distn,family1)
@@ -806,8 +814,11 @@ x1
 }
 
 
-boot.med.contx<-function(x,y,dirx,binm=NULL,contm=NULL,catm=NULL, jointm=NULL, margin=1, n=20,seed=sample(1:1000,1),
-                         mart=F,nu=0.001,D=3,distn="gaussian",family1=gaussian(link="identity"),n2=50)
+boot.med.contx<-function(x,y,dirx,binm=NULL,contm=NULL,catm=NULL, 
+                         jointm=NULL, margin=1, n=20,seed=sample(1:1000,1),
+                         mart=F,nu=0.001,D=3,distn="gaussian",
+                         family1=gaussian(link="identity"),n2=50,
+                         weight=rep(1,length(y)))
 {if(is.null(catm))
   {multi=jointm
    name1<-NULL                       #added in the new program
@@ -845,7 +856,7 @@ boot.med.contx<-function(x,y,dirx,binm=NULL,contm=NULL,catm=NULL, jointm=NULL, m
  ie[1,]<-apply(temp$ie,2,mean)  #first row is the estimated value
  model<-temp$model
  for (l in 1:n2)
- {boots<-sample(1:length(y),replace=T)
+ {boots<-sample(1:length(y),replace=T, prob=weight)
   x1<-x[boots,]
   y1<-y[boots]
   temp<-med.contx(x1,y1,dirx,binm,contm,catm,jointm, margin,n,seed+l,mart,nu,D,distn,family1) #added to the new codel, change the seed to make different results
@@ -862,15 +873,15 @@ boot.med.contx<-function(x,y,dirx,binm=NULL,contm=NULL,catm=NULL, jointm=NULL, m
 
 mma<-function(x,y,pred,contmed=NULL,binmed=NULL,binref=NULL,catmed=NULL,catref=NULL,jointm=NULL,biny=T,
               binpred=T,predref=1,alpha=0.1,alpha2=0.1, margin=1, n=20,seed=sample(1:1000,1),
-              mart=F,nu=0.001,D=3,distn="gaussian",family1=gaussian(link="identity"),n2=50)
+              mart=F,nu=0.001,D=3,distn="bernoulli",family1=binomial(link = "logit"),n2=50,weight=rep(1,length(y)))
 {if(binpred) 
   {data.bin<-data.org2(x,y,pred,contmed,binmed,binref,catmed,catref,jointm,biny,family1,binpred=T,predref,alpha,alpha2)
-   result<-boot.med.binx(x=data.bin$x,y,dirx=data.bin$dirx,contm=data.bin$contm,catm=data.bin$catm,jointm=data.bin$jointm,n,seed,n2,mart,nu,D,distn,family1)
+   result<-boot.med.binx(x=data.bin$x,y,dirx=data.bin$dirx,contm=data.bin$contm,catm=data.bin$catm,jointm=data.bin$jointm,n,seed,n2,mart,nu,D,distn,family1,weight)
   }
  else
   {data.cont<-data.org2(x,y,pred,contmed,binmed,binref,catmed,catref,jointm,biny,family1,binpred=F,predref=NULL,alpha,alpha2)
    result<-boot.med.contx(x=data.cont$x,y,dirx=data.cont$dirx,binm=data.cont$binm,contm=data.cont$contm,catm=data.cont$catm,jointm=data.cont$jointm,margin, n,seed,
-                        mart,nu,D,distn,family1,n2)
+                        mart,nu,D,distn,family1,n2,weight)
   }
  result
 }
@@ -914,7 +925,7 @@ summary.mma<-function(object,...,alpha=0.05,plot=TRUE)
  {re<-c(temp1.result$indirect.effec[1,],temp1.result$dir[1])/temp1.result$tot[1]
   d<-order(re)
   name1<-c(names(temp1.result$indirect.effec[1,]),"de")[d]
-  barplot(re[d],horiz=T,xlab="Relative Effects",names=name1[d],
+  barplot(re[d],horiz=T,xlab="Relative Effects",names=name1,
          cex.names=0.9,beside=F,cex.axis=0.9,las=1,xlim=range(re),
          col = rainbow(length(d), start = 3/6, end = 4/6))}
 }
@@ -931,6 +942,7 @@ plot.mma<-function(x,...,vari,xlim=range(data$x[,vari],na.rm=T))
  z3<-order(z1)
  cbind(z1[z3],z2[z3])
 }
+op <- par(no.readonly = TRUE) # the whole list of settable par's.
  if (x$model[1]==T) 
  {full.model=x$model$model
   best.iter=x$model[3]
@@ -1000,6 +1012,7 @@ else
    plot(data$x[,vari],data$x[,data$dirx],ylab=names(data$x)[data$dirx],xlab="")}
  }
 }
+par(op)
 }
   
 
