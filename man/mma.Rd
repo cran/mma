@@ -8,8 +8,9 @@ Multiple Mediation Analysis
 Test for mediators and do statistical inferences on the identified mediation effects.
 }
 \usage{
-mma(x, y, pred, contmed = NULL, binmed = NULL, binref = NULL, 
- catmed = NULL, catref = NULL, jointm = NULL, biny = T, binpred = T, 
+mma(x, y, pred, contmed = NULL, binmed = NULL, 
+ binref = rep(1,length(binmed)), catmed = NULL, 
+ catref = rep(1,length(catmed)), jointm = NULL, biny = T, binpred = T, 
  predref = 1, alpha = 0.1, alpha2 = 0.1, margin = 1, n = 20, 
  seed = sample(1:1000, 1), mart = F, nu = 0.001, D = 3,  
  distn = "bernoulli", family1 = binomial(link = "logit"), n2 = 50,
@@ -112,7 +113,7 @@ Yu, Q., Fan, Y., and Wu, X. (2014). "General Multiple Mediation Analysis With an
 Qingzhao Yu  \email{qyu@lsuhsc.edu}
 }
 \seealso{
-\code{"\link[=data.org]{data.org}"} and \code{"\link[=data.org2]{data.org2}"} for mediator tests, and \code{"\link[=med.binx]{med.binx}"} , \code{"\link[=boot.med.binx]{boot.med.binx}"}, \code{"\link[=med.contx]{med.contx}"}, and \code{"\link[=boot.med.contx]{boot.med.contx}"} for mediation analysis and inferences.
+\code{"\link[=data.org]{data.org}"} is for mediator tests, and \code{"\link[=med.binx]{med.binx}"} , \code{"\link[=boot.med.binx]{boot.med.binx}"}, \code{"\link[=med.contx]{med.contx}"}, and \code{"\link[=boot.med.contx]{boot.med.contx}"} for mediation analysis and inferences.
 }
 \examples{
 data("weight_behavior")

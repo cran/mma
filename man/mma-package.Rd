@@ -15,7 +15,7 @@ Version: \tab 1.0\cr
 Date: \tab 2015-02-18\cr
 License: \tab GPL (>= 2)\cr
 }
-\code{"\link[=data.org]{data.org}"} and \code{"\link[=data.org2]{data.org2}"} are used to identify potential mediators. \code{"\link[=med.binx]{med.binx}"} , \code{"\link[=boot.med.binx]{boot.med.binx}"}, \code{"\link[=med.contx]{med.contx}"}, and \code{"\link[=boot.med.contx]{boot.med.contx}"} are used for statistical inferences on the mediation effects when the predictor is binary or continuous according to the name of the function. \code{"\link[=mma]{mma}"} is a combined function that automatically identify potential mediators, based on which to make statistical inference on the mediation effects.
+\code{"\link[=data.org]{data.org}"} is used to identify potential mediators. \code{"\link[=med.binx]{med.binx}"} , \code{"\link[=boot.med.binx]{boot.med.binx}"}, \code{"\link[=med.contx]{med.contx}"}, and \code{"\link[=boot.med.contx]{boot.med.contx}"} are used for statistical inferences on the mediation effects when the predictor is binary or continuous according to the name of the function. \code{"\link[=mma]{mma}"} is a combined function that automatically identify potential mediators, based on which to make statistical inference on the mediation effects.
 }
 \author{
 Qingzhao Yu  \email{qyu@lsuhsc.edu}

@@ -3,207 +3,9 @@
 #3. consider weight in bootstrap for model fitting
 
 #to organize data
-data.org<-function(x,y,pred,contmed=NULL,binmed=NULL,binref=NULL,catmed=NULL,catref=NULL,biny=T,
-                   family1=binomial(link = "logit"),binpred=T,predref=1,alpha=0.1,alpha2=0.1)
-{cattobin<-function(x,cat1,cat2=rep(1,length(cat1)))
- { ad1<-function(vec)
- {vec1<-vec[-1]
-  vec1[vec[1]]<-1
-  vec1
- }
- 
- dim1<-dim(x)
- catm<-list(n=length(cat1))
- g<-dim1[2]-length(cat1)
- ntemp<-names(x)[cat1]
- j<-1
- for (i in cat1)
- {a<-x[,i]
-  d<-rep(0,dim1[1])
-  b<-sort(unique(a[a!=cat2[j]]))
-  l<-1
-  for (k in b)
-  {d[a==k]<-l
-   l<-l+1}
-  d[a==cat2[j]]<-l
-  f<-matrix(0,dim1[1],l-1) 
-  colnames(f)<-paste(ntemp[j],b,sep=".")  ##
-  hi<-d[d!=l & !is.na(d)]
-  f[d!=l & !is.na(d),]<-t(apply(cbind(hi,f[d!=l & !is.na(d),]),1,ad1))
-  f[is.na(d),]<-NA
-  x<-cbind(x,f)
-  catm<-append(catm,list((g+1):(g+l-1)))
-  g<-g+length(b)
-  j<-j+1
- }
- x<-x[,-cat1]
- list(x=x,catm=catm)
-}
-
-colnum<-function(vec,cutx) 
-{z<-vec
- for (i in 1:length(vec))
-   z[i]<-vec[i]-sum(vec[i]>cutx)
- z}
-
-  if(binpred)
-  x[,pred]<-ifelse(x[,pred]==predref,0,1)
- 
- if(!is.null(binmed))
- {j<-1
-  for (i in binmed)
-    x[,i]<-ifelse(x[,i]==binref[j],0,1)
-  j<-j+1}
- 
- if(!is.null(catmed))
- {tempx<-cattobin(x,catmed,catref)
-  newx<-tempx$x
-  catnewx<-tempx$catm}
- else newx<-x
- 
- #delete variables that are not significant
- fullmodel<-summary(glm(y~.,data=data.frame(newx),family=family1))
- xname<-names(x)
- 
- covr.cont<-rep(F,length(contmed))
- if(!is.null(contmed))
- {for (i in 1:length(contmed))
-   covr.cont[i]<-ifelse(fullmodel$coef[dimnames(fullmodel$coef)[[1]]==xname[contmed[i]],4]<alpha,T,F)
- }
- 
- covr.bin<-rep(F,length(binmed))
- if(!is.null(binmed))
- {for (i in 1:length(binmed))
-   covr.bin[i]<-ifelse(fullmodel$coef[dimnames(fullmodel$coef)[[1]]==xname[binmed[i]],4]<alpha,T,F)
-  binmed1<-binmed[covr.bin]}
- 
- covr.cat<-rep(F,length(catmed))
- if(!is.null(catmed))
- {for (i in 1:length(catmed))
-   covr.cat[i]<-ifelse(min(fullmodel$coef[catnewx[[i+1]],4])<alpha,T,F)
-  catmed1<-catmed[covr.cat]
-  catref1<-catref[covr.cat]}
- 
- a1<-c(contmed,binmed,catmed)
- a2<-c(covr.cont,covr.bin,covr.cat)
- 
- cutx<-a1[!a2]
- 
- if (sum(a2)==0)
-   return ("no mediators found")
- else if(length(cutx)==0)
- {newx1<-x
-  contm1<-contmed
-  binm1<-binmed
-  catm1<-catmed
-  catref1<-catref
-  pred1<-pred}
- else {newx1<-x[,-cutx]
-       if(sum(covr.cont)==0)
-       {contm1<-NULL}  
-       else 
-       {contm1<-colnum(contmed[covr.cont],cutx)}
-       if(sum(covr.bin)==0)
-         binm1<-NULL
-       else 
-         binm1<-colnum(binmed[covr.bin],cutx)
-       if(sum(covr.cat)==0)
-       {catm1<-NULL
-        catref1<-NULL}
-       else 
-       {catm1<-colnum(catmed[covr.cat],cutx)
-        catref1<-catref[covr.cat]}
-       pred1<-colnum(pred,cutx)}
- 
- #delete nonmediators
- if (binpred)             #for binary (x)
- {contm2<-contm1
-  if(length(contm1)>0)
-  {med.cont<-rep(F,length(contm1))
-   for (i in 1:length(contm1))
-   {tempmodel<-summary(glm(newx1[,contm1[i]]~newx1[,pred1]))
-    med.cont[i]<-ifelse(tempmodel$coef[2,4]<alpha2,T,F)
-   }
-   contm2<-contm1[med.cont]}
-  
-  binm2<-binm1
-  if(length(binm1)>0) 
-  {med.bin<-rep(F,length(binm1))
-   for (i in 1:length(binm1))   
-     med.bin[i]<-ifelse(suppressWarnings(chisq.test(newx1[,pred1],newx1[,binm1[i]]))$p.value<alpha2,T,F)
-   binm2<-binm1[med.bin]}
-  
-  catm2<-catm1
-  if(length(catm1)>0) 
-  {med.cat<-rep(F,length(catm1))
-   for (i in 1:length(catm1))   
-     med.cat[i]<-ifelse(suppressWarnings(chisq.test(newx1[,pred1],newx1[,catm1[i]]))$p.value<alpha2,T,F)
-   catm2<-catm1[med.cat]
-   catref2<-catref1[med.cat]}
- }
- else
- {contm2<-contm1
-  if(length(contm1)>0)
-  {med.cont<-rep(F,length(contm1))
-   for (i in 1:length(contm1))
-     med.cont[i]<-ifelse(cor.test(newx1[,contm1[i]],newx1[,pred1])$p.value<alpha2,T,F)
-   contm2<-contm1[med.cont]}
-  
-  binm2<-binm1
-  if(length(binm1)>0) 
-  {med.bin<-rep(F,length(binm1))
-   for (i in 1:length(binm1))   
-   {tempmodel<-summary(glm(newx1[,pred1]~newx1[,binm1[i]]))
-    med.bin[i]<-ifelse(tempmodel$coef[2,4]<alpha2,T,F)
-   }    
-   binm2<-binm1[med.bin]}
-  
-  catm2<-catm1
-  if(length(catm1)>0) 
-  {med.cat<-rep(F,length(catm1))
-   for (i in 1:length(catm1))   
-   {tempmodel<-summary(glm(newx1[,pred1]~newx1[,catm1[i]]))
-    med.cat[i]<-ifelse(tempmodel$coef[2,4]<alpha2,T,F)
-   }
-   catm2<-catm1[med.cat]
-   catref2<-catref1[med.cat]}
- }
- 
- if(length(catm2)==0)
-   catm2<-NULL
- if(length(binm2)==0)
-   binm2<-NULL
- if(length(contm2)==0)
-   contm2<-NULL
- 
- newx2<-newx1
- 
- if (binpred) 
- {if(!is.null(catm2))
-    for (i in 1:length(catm2))
-      newx2[,catm2[i]]<-as.factor(newx2[,catm2[i]])
-  if(!is.null(binm2))
-    for (i in 1:length(binm2))
-      newx2[,binm2[i]]<-as.factor(newx2[,binm2[i]])
-  return(list(x=newx2, dirx=pred1, contm=contm2, catm=c(binm2,catm2))) 
- }
- else
- {catm<-NULL
-  if(!is.null(catm2))
-  {tempx<-cattobin(newx1,catm2,catref2)
-   newx2<-tempx$x
-   catm<-tempx$catm
-   if(!is.null(binm2))
-     binm2<-colnum(binm2,catm2)
-   if(!is.null(contm2))
-     contm2<-colnum(contm2,catm2)
-   pred1<-colnum(pred1,catm2)}
-  return(list(x=newx2,dirx=pred1,contm=contm2,binm=binm2,catm=catm))
- }
-}
-
-data.org2<-function(x,y,pred,contmed=NULL,binmed=NULL,binref=NULL,catmed=NULL,catref=NULL,jointm=NULL,biny=T,
-                    family1=binomial(link = "logit"),binpred=T,predref=1,alpha=0.1,alpha2=0.1)
+data.org<-function(x,y,pred,contmed=NULL,binmed=NULL,binref=rep(1,length(binmed)),catmed=NULL,
+                   catref=rep(1,length(catmed)),jointm=NULL,biny=T, family1=binomial(link = "logit"),
+                   binpred=T,predref=1,alpha=0.1,alpha2=0.1)
 {cattobin<-function(x,cat1,cat2=rep(1,length(cat1)))
 { ad1<-function(vec)
 {vec1<-vec[-1]
@@ -243,7 +45,7 @@ colnum<-function(vec,cutx)
    z[i]<-vec[i]-sum(vec[i]>cutx)
  z}
 
-if(!is.null(jointm))
+if(!is.null(jointm))  #identify mediators that should be jointly considered
 {joint<-NULL 
  for (i in 2:(jointm[[1]]+1))
    joint=c(joint,jointm[[i]])
@@ -357,6 +159,9 @@ else {newx1<-x[,-cutx]
 }
 
 #delete nonmediators
+rela_var<-NULL               #to store the relationships between mediators and predictor   
+rela_p<-NULL
+name_newx<-names(newx1)
 if (binpred)             #for binary (x)
 {contm2<-contm1
  if(length(contm1)>0)
@@ -364,6 +169,8 @@ if (binpred)             #for binary (x)
   for (i in 1:length(contm1))
   {tempmodel<-summary(glm(newx1[,contm1[i]]~newx1[,pred1]))
    med.cont[i]<-ifelse(tempmodel$coef[2,4]<alpha2,T,F)
+   rela_var<-c(rela_var,name_newx[contm1[i]])
+   rela_p<-c(rela_p,tempmodel$coef[2,4])
   }
   med.cont<-ifelse(med.cont+cont2>0,T,F)
   contm2<-contm1[med.cont]}
@@ -372,15 +179,23 @@ if (binpred)             #for binary (x)
  if(length(binm1)>0) 
  {med.bin<-rep(F,length(binm1))
   for (i in 1:length(binm1))   
-    med.bin[i]<-ifelse(suppressWarnings(chisq.test(newx1[,pred1],newx1[,binm1[i]]))$p.value<alpha2,T,F)
+    {temp.p<-suppressWarnings(chisq.test(newx1[,pred1],newx1[,binm1[i]]))$p.value
+     med.bin[i]<-ifelse(temp.p<alpha2,T,F)
+     rela_var<-c(rela_var,name_newx[binm1[i]])
+     rela_p<-c(rela_p,temp.p)
+    }
   med.bin<-ifelse(med.bin+bin2>0,T,F)
   binm2<-binm1[med.bin]}
  
  catm2<-catm1
  if(length(catm1)>0) 
  {med.cat<-rep(F,length(catm1))
-  for (i in 1:length(catm1))   
-    med.cat[i]<-ifelse(suppressWarnings(chisq.test(newx1[,pred1],newx1[,catm1[i]]))$p.value<alpha2,T,F)
+  for (i in 1:length(catm1))  
+   {temp.p<-suppressWarnings(chisq.test(newx1[,pred1],newx1[,catm1[i]]))$p.value
+    med.cat[i]<-ifelse(temp.p<alpha2,T,F)
+    rela_var<-c(rela_var,name_newx[catm1[i]])
+    rela_p<-c(rela_p,temp.p)
+   }
   med.cat<-ifelse(med.cat+cat2>0,T,F)
   catm2<-catm1[med.cat]
   catref2<-catref1[med.cat]}
@@ -390,8 +205,12 @@ else
  if(length(contm1)>0)
  {med.cont<-rep(F,length(contm1))
   for (i in 1:length(contm1))
-    med.cont[i]<-ifelse(cor.test(newx1[,contm1[i]],newx1[,pred1])$p.value<alpha2,T,F)
-  med.cont<-ifelse(med.cont|cont2,T,F)
+  {temp.p<-cor.test(newx1[,contm1[i]],newx1[,pred1])$p.value
+   med.cont[i]<-ifelse(temp.p<alpha2,T,F)
+   rela_var<-c(rela_var,name_newx[contm1[i]])
+   rela_p<-c(rela_p,temp.p)
+  }
+ med.cont<-ifelse(med.cont|cont2,T,F)
   contm2<-contm1[med.cont]}
  
  binm2<-binm1
@@ -400,6 +219,8 @@ else
   for (i in 1:length(binm1))   
   {tempmodel<-summary(glm(newx1[,pred1]~newx1[,binm1[i]]))
    med.bin[i]<-ifelse(tempmodel$coef[2,4]<alpha2,T,F)
+   rela_var<-c(rela_var,name_newx[binm1[i]])
+   rela_p<-c(rela_p,tempmodel$coef[2,4])
   }    
   med.bin<-ifelse(med.bin|bin2,T,F)
   binm2<-binm1[med.bin]}
@@ -410,6 +231,8 @@ else
   for (i in 1:length(catm1))   
   {tempmodel<-summary(glm(newx1[,pred1]~newx1[,catm1[i]]))
    med.cat[i]<-ifelse(tempmodel$coef[2,4]<alpha2,T,F)
+   rela_var<-c(rela_var,name_newx[catm1[i]])
+   rela_p<-c(rela_p,tempmodel$coef[2,4])
   }
   med.cat<-ifelse(med.cat|cat2,T,F)
   cat3<-cat2[med.cat]
@@ -433,7 +256,10 @@ if (binpred)
  if(!is.null(binm2))
    for (i in 1:length(binm2))
      newx2[,binm2[i]]<-as.factor(newx2[,binm2[i]])
- return(list(x=newx2, dirx=pred1, contm=contm2, catm=c(binm2,catm2),jointm=jointm)) 
+ results<-list(x=newx2, dirx=pred1, contm=contm2, catm=c(binm2,catm2),
+              jointm=jointm,fullmodel=fullmodel,rela=data.frame(name=rela_var,p=rela_p))
+ class(results)<-"med_iden"
+ return(results)
 }
 else
 {catm<-NULL
@@ -463,10 +289,48 @@ else
       jointm[[i]]<-b}
   }
  }
- return(list(x=newx2,dirx=pred1,contm=contm2,binm=binm2,catm=catm, jointm=jointm))
+ results<-list(x=newx2,dirx=pred1,contm=contm2,binm=binm2,catm=catm, jointm=jointm, 
+               fullmodel=fullmodel,rela=data.frame(name=rela_var,p=rela_p))
+ class(results)<-"med_iden"
+ return(results)
 }
 }
 
+summary.med_iden<-function(object,...)
+{var.name<-names(object$x)
+ mediator<-var.name[c(object$contm,object$binm,object$catm)]
+ covariates<-var.name[-c(object$dirx,object$contm,object$binm,object$catm)]
+ tests<-object$fullmodel$coefficients
+ tests<-cbind(tests[,4],rep(NA,nrow(tests)))
+ temp<-dimnames(tests)[[1]]
+ for (i in 1:nrow(object$rela))
+   tests[grep(object$rela[i,"name"],temp)[1],2]<-object$rela[i,"p"]
+ dimnames(tests)[[2]]<-c("P-Value 1", "P-Value 2")
+ result<-list(mediator=mediator, covariates=covariates,tests=tests, results=object)
+ class(result)<-"summary.med_iden"
+ result
+}
+
+print.summary.med_iden<-function(x,...)
+{cat("Identified as mediators: \n")
+ print(x$mediator)
+ cat("Selected as covariates: \n")
+ print(x$covariates)
+ cat("Tests: \n")
+ temp<-dimnames(tests)[[1]]
+ for (z in x$mediator)
+   dimnames(x$tests)[[1]][grep(z,temp)]<-paste(z,"*")
+ if (!is.null(x$results$jointm))
+  {tt<-NULL
+   for (i in 1:(length(x$results$jointm)-1)) 
+     tt<-c(tt,x$results$jointm[[i+1]])
+   tt<-unique(tt)
+   for (z in names(x$results$x)[tt])
+     dimnames(x$tests)[[1]][grep(z,temp)]<-paste(z,"-")}
+ dimnames(tests)[[2]]<-c("P-Value in the Full Linear Model", "P-Value Relate to Predictor")
+ print(round(x$tests,3))
+ cat("----\n *:mediator,-:joint mediator")
+}
 #for binary predictor
 med.binx<-function(x,y,dirx,contm=NULL,catm=NULL,jointm=NULL,allm=c(contm,catm),
                    n=20,seed=sample(1:1000,1),mart=F,nu=0.001,D=3,distn="bernoulli",family1=binomial("logit"))
@@ -871,15 +735,15 @@ boot.med.contx<-function(x,y,dirx,binm=NULL,contm=NULL,catm=NULL,
 }
 
 
-mma<-function(x,y,pred,contmed=NULL,binmed=NULL,binref=NULL,catmed=NULL,catref=NULL,jointm=NULL,biny=T,
+mma<-function(x,y,pred,contmed=NULL,binmed=NULL,binref=rep(1,length(binmed)),catmed=NULL,catref=rep(1,length(catmed)),jointm=NULL,biny=T,
               binpred=T,predref=1,alpha=0.1,alpha2=0.1, margin=1, n=20,seed=sample(1:1000,1),
               mart=F,nu=0.001,D=3,distn="bernoulli",family1=binomial(link = "logit"),n2=50,weight=rep(1,length(y)))
 {if(binpred) 
-  {data.bin<-data.org2(x,y,pred,contmed,binmed,binref,catmed,catref,jointm,biny,family1,binpred=T,predref,alpha,alpha2)
+  {data.bin<-data.org(x,y,pred,contmed,binmed,binref,catmed,catref,jointm,biny,family1,binpred=T,predref,alpha,alpha2)
    result<-boot.med.binx(x=data.bin$x,y,dirx=data.bin$dirx,contm=data.bin$contm,catm=data.bin$catm,jointm=data.bin$jointm,n,seed,n2,mart,nu,D,distn,family1,weight)
   }
  else
-  {data.cont<-data.org2(x,y,pred,contmed,binmed,binref,catmed,catref,jointm,biny,family1,binpred=F,predref=NULL,alpha,alpha2)
+  {data.cont<-data.org(x,y,pred,contmed,binmed,binref,catmed,catref,jointm,biny,family1,binpred=F,predref=NULL,alpha,alpha2)
    result<-boot.med.contx(x=data.cont$x,y,dirx=data.cont$dirx,binm=data.cont$binm,contm=data.cont$contm,catm=data.cont$catm,jointm=data.cont$jointm,margin, n,seed,
                         mart,nu,D,distn,family1,n2,weight)
   }
@@ -915,19 +779,25 @@ summary.mma<-function(object,...,alpha=0.05,plot=TRUE)
                     direct.effect=c(est=temp2$de,mean=mean(temp1$de),sd=sd(temp1$de),
                                     upbd=mean(temp1$de)+b2*sd(temp1$de),lwbd=mean(temp1$de)+b1*sd(temp1$de),
                                     upbd=quantile(temp1$de,a2),lwbd=quantile(temp1$de,a1)))
- cat("MMA Analysis: Estimated Mediation Effects Using ")
- if (x$model$MART)
-   cat ("MART\n")
- else cat("GLM\n")
- print(temp1.result)
+ result<-list(results=temp1.result,alpha=alpha,plot=plot,obj=x)
+ class(result)<-"summary.mma"
+ result
+ }
 
- if(plot)
- {re<-c(temp1.result$indirect.effec[1,],temp1.result$dir[1])/temp1.result$tot[1]
-  d<-order(re)
-  name1<-c(names(temp1.result$indirect.effec[1,]),"de")[d]
-  barplot(re[d],horiz=T,xlab="Relative Effects",names=name1,
-         cex.names=0.9,beside=F,cex.axis=0.9,las=1,xlim=range(re),
-         col = rainbow(length(d), start = 3/6, end = 4/6))}
+print.summary.mma<-function(x,...)
+{cat("MMA Analysis: Estimated Mediation Effects Using ")
+ if (x$obj$model$MART)
+  cat ("MART\n")
+ else cat("GLM\n")
+print(lapply(x$results,round,3))
+
+if(x$plot)
+{re<-c(x$results$indirect.effec[1,],x$results$dir[1])/x$results$tot[1]
+ d<-order(re)
+ name1<-c(names(x$results$indirect.effec[1,]),"de")[d]
+ barplot(re[d],horiz=T,xlab="Relative Effects",names=name1,
+        cex.names=0.9,beside=F,cex.axis=0.9,las=1,xlim=range(re),
+        col = rainbow(length(d), start = 3/6, end = 4/6))}
 }
 
 

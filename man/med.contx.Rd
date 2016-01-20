@@ -25,7 +25,7 @@ the vector of outcome variable.
 the column number of x that locates the binary mediators.
 }
   \item{contm }{the column numbers of x that locate the potential continuous mediators.}
-  \item{catm }{categorical mediators should be binarized and be presented as a list, where the first item is the number of categorical variables and the following items are the column numbers of each binarized categorical variable in x. data.org and data.org2 organize the categorical mediators in this format after they pass the mediator tests.}
+  \item{catm }{categorical mediators should be binarized and be presented as a list, where the first item is the number of categorical variables and the following items are the column numbers of each binarized categorical variable in x. data.org organizes the categorical mediators in this format after they pass the mediator tests.}
   \item{jointm }{a list where the first item is the number of groups of joint mediators to be considered, and each of the following items identifies the column numbers of the mediators in x for each group of joint mediators.}
   \item{margin}{
 the change in predictor when calculating the mediation effects, see Yu et al. (2014).
@@ -53,7 +53,7 @@ define the conditional distribution of y given x, and the linkage function that 
 }
 }
 \details{
-The mediators are not tested in this function.  data.org or data.org2 should be used for the tests and the resulted list can be used directly to define the parameters in this function. med.contx considers all variables in x as mediators or covariates in the final model and all variables identified by contm, binm, catm, or jointm as mediators.
+The mediators are not tested in this function.  data.org should be used for the tests and the resulted list can be used directly to define the parameters in this function. med.contx considers all variables in x as mediators or covariates in the final model and all variables identified by contm, binm, catm, or jointm as mediators.
 }
 \value{
   \item{denm }{a matrix where each column gives the estimated direct effect not from the corresponding mediator (identified by the column name), see Yu et al. (2014) for the definition, and each row corresponding to the results from one resampling.}

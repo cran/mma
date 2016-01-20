@@ -1,5 +1,6 @@
 \name{summary.mma}
 \alias{summary.mma}
+\alias{print.summary.mma}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Summary of an mma project
@@ -9,11 +10,15 @@ Compute the estimations, standard deviations and confidence intervals of the med
 }
 \usage{
 \method{summary}{mma}(object,..., alpha=0.05, plot=TRUE) 
+\method{print}{summary.mma}(x,...) 
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
  \item{object}{
 a mma object created initially call to mma, boot.met.binx, or boot.met.contx.
+}
+ \item{x}{
+a summary.mma object created initially call to summary.mma.
 }
   \item{\dots}{
 other arguments passed to the print function.
@@ -27,7 +32,7 @@ default is TRUE, if ture, draw a barplot of the relative mediation effects.}
 summary.mma gives a list of the estimations and summary statistics based on the bootstrap results. If plot=T, draw a barplot of the relative effects of the direct effect of the predictor and indirect effects of the mediators. Relative effects is defined as the (in)direct effect divided by the total effect. The plot is arranged in order from the largest to the smallest relative effect.
 }
 \value{
-Return a list.  In each of the following item, est is the estimation of the corresponding mediation effects based on the whole data, mean is the average estimated effects from the bootstrap samples, sd is the standard deviation of the estimates from the bootstrap sample. upbd and lwbd are the upper and lower bound of the confidence interval of the estimation using parametric method from the bootstrap sample, upbd_q and lwbd_q are the corresponding quantiles of the estimation from the bootstrap sample.
+The function summary.mma return a list.  In each of the following item, est is the estimation of the corresponding mediation effects based on the whole data, mean is the average estimated effects from the bootstrap samples, sd is the standard deviation of the estimates from the bootstrap sample. upbd and lwbd are the upper and lower bound of the confidence interval of the estimation using parametric method from the bootstrap sample, upbd_q and lwbd_q are the corresponding quantiles of the estimation from the bootstrap sample.
   \item{ie }{a matrix of statistics inference on the indirect effects from the mma object.}
   \item{te }{statistics inference on the total effects from the mma object.}
   \item{de }{statistics inference on the direct effects from the mma object.}

@@ -54,7 +54,7 @@ the weight for observations.
 }
 }
 \details{
-The potential mediators are not tested in this function.  data.org or data.org2 should be used for the tests and the resulted list can be used directly to define the parameters in this function. boot.med.binx considers all variables in x as mediators or covariates in the final model and all variables identified by contm, catm, or jointm as mediators.
+The potential mediators are not tested in this function.  data.org should be used for the tests and the resulted list can be used directly to define the parameters in this function. boot.med.binx considers all variables in x as mediators or covariates in the final model and all variables identified by contm, catm, or jointm as mediators.
 }
 \value{
 Returns an mma object.

@@ -50,7 +50,7 @@ define the conditional distribution of y given x, and the linkage function that 
 }
 }
 \details{
-The mediators are not tested in this function.  data.org or data.org2 should be used for the tests and the resulted list can be used directly to define the parameters in this function. med.binx considers all variables in x as mediators or covariates in the final model and all variables identified by contm, catm, allm, or jointm as mediators.
+The mediators are not tested in this function.  data.org should be used for the tests and the resulted list can be used directly to define the parameters in this function. med.binx considers all variables in x as mediators or covariates in the final model and all variables identified by contm, catm, allm, or jointm as mediators.
 }
 \value{
   \item{denm }{a matrix where each column gives the estimated direct effect not from the corresponding mediator (identified by the column name) and each row corresponding to the results from one resampling.}
