@@ -117,7 +117,7 @@ if(!is.null(binmed))
 covr.cat<-rep(F,length(catmed))
 if(!is.null(catmed))
 {for (i in 1:length(catmed))
-  covr.cat[i]<-ifelse(min(fullmodel$coef[catnewx[[i+1]],4])<alpha,T,F)
+  covr.cat[i]<-ifelse(min(fullmodel$coef[grep(xname[catmed[i]],rownames(fullmodel$coef)),4])<alpha,T,F) #version 6: change to fit names instead of line numbers
  covr.cat<-ifelse(covr.cat+cat1>0,T,F)
  cat2<-cat1[covr.cat]
  catmed1<-catmed[covr.cat]
@@ -234,7 +234,7 @@ else
    rela_var<-c(rela_var,name_newx[catm1[i]])
    rela_p<-c(rela_p,tempmodel$coef[2,4])
   }
-  med.cat<-ifelse(med.cat|cat2,T,F)
+  med.cat<-(med.cat|cat2)
   cat3<-cat2[med.cat]
   catm2<-catm1[med.cat]
   catref2<-catref1[med.cat]}
@@ -311,30 +311,33 @@ summary.med_iden<-function(object,...)
  result
 }
 
-print.summary.med_iden<-function(x,...)
+print.summary.med_iden<-function(x,...)  #version 6: changed typos in the function--tests->x$tests
 {cat("Identified as mediators: \n")
  print(x$mediator)
  cat("Selected as covariates: \n")
  print(x$covariates)
  cat("Tests: \n")
- temp<-dimnames(tests)[[1]]
+ temp<-rownames(x$tests)
  for (z in x$mediator)
-   dimnames(x$tests)[[1]][grep(z,temp)]<-paste(z,"*")
+   dimnames(x$tests)[[1]][grep(z,temp)]<-paste(temp[grep(z,temp)],"*")
  if (!is.null(x$results$jointm))
   {tt<-NULL
    for (i in 1:(length(x$results$jointm)-1)) 
      tt<-c(tt,x$results$jointm[[i+1]])
    tt<-unique(tt)
    for (z in names(x$results$x)[tt])
-     dimnames(x$tests)[[1]][grep(z,temp)]<-paste(z,"-")}
- dimnames(tests)[[2]]<-c("P-Value in the Full Linear Model", "P-Value Relate to Predictor")
+     rownames(x$tests)[grep(z,temp)]<-paste(temp[grep(z,temp)],"-")}
+ dimnames(x$tests)[[2]]<-c("P-Value in the Full Linear Model", "P-Value Relate to Predictor")
  print(round(x$tests,3))
  cat("----\n *:mediator,-:joint mediator")
 }
 #for binary predictor
 med.binx<-function(x,y,dirx,contm=NULL,catm=NULL,jointm=NULL,allm=c(contm,catm),
                    n=20,seed=sample(1:1000,1),mart=F,nu=0.001,D=3,distn="bernoulli",family1=binomial("logit"))
-{te.binx<-function(full.model,x,y,dirx,best.iter1=NULL)       
+{if (is.null(allm))
+  stop("Error: no potential mediator is specified")
+  
+  te.binx<-function(full.model,x,y,dirx,best.iter1=NULL)       
 {x1<-x[x[,dirx]==1,]
  x0<-x[x[,dirx]==0,]
  n3<-dim(x)[1]
@@ -365,8 +368,9 @@ med.binx.jointm<-function(full.model,x,y,med,dirx,best.iter1=NULL)
  x0<-x[x[,dirx]==0,]
  n3<-dim(x)[1]
  if (length(med)==1)                       #added for the new program, when there is only one mediator
-   {marg.m<-c(x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),med],x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),med])  #added for the new program
-    marg.m<-marg.m[sample(2*floor(n3/2))]}        #added for the new program
+   {sample.temp<-sample(c(sample(which(x[,dirx]==1),floor(n3/2),replace=T),
+                   sample(which(x[,dirx]==0),floor(n3/2),replace=T)))
+    marg.m<-x[sample.temp,med]}        #added for the new program
  else                                         #added for the new program
    {marg.m<-rbind(x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),med],x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),med])
     marg.m<-marg.m[sample(2*floor(n3/2)),]  }     
@@ -459,7 +463,9 @@ boot.med.binx<-function(x,y,dirx,contm=NULL,catm=NULL,jointm=NULL,
                         D=3,distn="bernoulli",family1=binomial("logit"),
                         weight=rep(1,length(y)))
   #n2 is the time of bootstrap
-{allm=c(contm,catm)
+{if (is.null(c(contm,catm)))
+  stop("Error: no potential mediator is specified")
+ allm=c(contm,catm)
  te<-rep(0,n2+1)
  de<-rep(0,n2+1)
  if(is.null(jointm))
@@ -492,7 +498,10 @@ boot.med.binx<-function(x,y,dirx,contm=NULL,catm=NULL,jointm=NULL,
 #for continous predictor
 med.contx<-function(x,y,dirx,binm=NULL,contm=NULL,catm=NULL, jointm=NULL, margin=1, n=20,seed=sample(1:1000,1),
                     mart=F,nu=0.001,D=3,distn="gaussian",family1=gaussian(link="identity"))
-{anymissing<-function(vec)
+{if (is.null(c(binm,contm,catm)))
+  stop("Error: no potential mediator is specified")
+  
+  anymissing<-function(vec)
 {if(sum(is.na(vec))>0)
   return(F)
  else return(T)
@@ -632,9 +641,9 @@ x1
   mul<-ifelse(is.null(listm$multi),0,listm$multi[[1]])        #added in the new program, in case multi is null
   denm<-matrix(0,n,1+length(listm$single)+mul)                #added in the new program, in case multi is null
   if(!is.null(listm$multi))
-    dimnames(denm)[[2]]<-c("de",names(x)[listm$single],paste("j",1:listm$multi[[1]],sep=""))
+    colnames(denm)<-c("de",names(x)[listm$single],paste("j",1:listm$multi[[1]],sep=""))
   else 
-    dimnames(denm)[[2]]<-c("de",names(x)[listm$single])
+    colnames(denm)<-c("de",names(x)[listm$single])
   ie<-denm
   
   #3. get the joint distribution of m given x
@@ -683,7 +692,10 @@ boot.med.contx<-function(x,y,dirx,binm=NULL,contm=NULL,catm=NULL,
                          mart=F,nu=0.001,D=3,distn="gaussian",
                          family1=gaussian(link="identity"),n2=50,
                          weight=rep(1,length(y)))
-{if(is.null(catm))
+{if (is.null(c(binm,contm,catm)))
+  stop("Error: no potential mediator is specified")
+  
+ if(is.null(catm))
   {multi=jointm
    name1<-NULL                       #added in the new program
    if (!is.null(multi))              #added in the new program, in case that multi is NULL

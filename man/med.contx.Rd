@@ -80,7 +80,7 @@ data("weight_behavior")
  #binary y
  x=weight_behavior[,2:14]
  y=weight_behavior[,15]
- data.contx<-data.org(x,y,pred=1,contmed=c(8:10),binmed=c(7,11),
+ data.contx<-data.org(x,y,pred=1,contmed=c(5,8:10),binmed=c(7,11),
    binref=c(1,1),catmed=6,catref=1,binpred=FALSE,alpha=0.4,alpha2=0.4)
  temp5<-med.contx(x=data.contx$x,y,dirx=data.contx$dirx,binm=data.contx$binm, 
    contm=data.contx$contm,catm=data.contx$catm,seed=1,n=2,
