@@ -1,7 +1,3 @@
-#1. changed dimnames(f)[[2]] to colnames(f)
-#2. when some case is very few, do glm.fit may cause warning: glm.fit: fitted probabilities numerically 0 or 1 occurred 
-#3. consider weight in bootstrap for model fitting
-
 #to organize data
 data.org<-function(x,y,pred,contmed=NULL,binmed=NULL,binref=rep(1,length(binmed)),catmed=NULL,
                    catref=rep(1,length(catmed)),jointm=NULL,biny=T, family1=binomial(link = "logit"),
@@ -833,17 +829,26 @@ op <- par(no.readonly = TRUE) # the whole list of settable par's.
   if(data$binpred)
   {if(!is.factor(data$x[,vari]))
    {par(mfrow=c(3,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
-    suppressWarnings(plot.gbm(full.model, i.var=vari,best.iter,xlim=xlim,type="response"))
+    if(full.model$distribution=="gaussian")
+      suppressWarnings(plot.gbm(full.model, i.var=vari,best.iter,xlim=xlim))
+    else
+      suppressWarnings(plot.gbm(full.model, i.var=vari,best.iter,xlim=xlim,type="response"))
     for (j in unique(data$x[,data$dirx]))
     hist(data$x[data$x[,data$dirx]==j,vari],xlab="",xlim=xlim, freq=F,main=paste(names(data$x)[data$dirx],j,sep="="))}
    else{par(mfrow=c(2,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
-        suppressWarnings(plot.gbm(full.model, i.var=vari,best.iter,type="response"))
-        plot(data$x[,vari]~data$x[,data$dirx],ylab=mname,xlab=names(data$x)[data$dirx])}
+        if(full.model$distribution=="gaussian")
+          suppressWarnings(plot.gbm(full.model, i.var=vari,best.iter))
+        else
+          suppressWarnings(plot.gbm(full.model, i.var=vari,best.iter,type="response"))
+     plot(data$x[,vari]~data$x[,data$dirx],ylab=mname,xlab=names(data$x)[data$dirx])}
   }
   else
   {par(mfrow=c(2,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
     if(!is.factor(data$x[,vari]))
-   {suppressWarnings(plot.gbm(full.model, i.var=vari,best.iter,xlim=xlim,type="response"))
+   {if(full.model$distribution=="gaussian")
+      suppressWarnings(plot.gbm(full.model, i.var=vari,best.iter,xlim=xlim))
+    else
+      suppressWarnings(plot.gbm(full.model, i.var=vari,best.iter,xlim=xlim,type="response"))
     axis(1,at=data$x[,vari],labels=F)
     a<-marg.den(data$x[,data$dirx],data$x[,vari])
     plot(a[,2:1],ylab=names(data$x)[data$dirx],xlim=xlim,xlab="")
@@ -855,7 +860,10 @@ op <- par(no.readonly = TRUE) # the whole list of settable par's.
     #plot(data$x[,vari],data$x[,data$dirx],xlim=xlim,ylab=names(data$x)[data$dirx],xlab="")
     #lines(predict(lo), col='red', lwd=2)}
    else
-   {suppressWarnings(plot.gbm(full.model, i.var=vari,best.iter,type="response"))
+   {if(full.model$distribution=="gaussian")
+      suppressWarnings(plot.gbm(full.model, i.var=vari,best.iter))
+    else
+      suppressWarnings(plot.gbm(full.model, i.var=vari,best.iter,type="response"))
     plot(data$x[,vari],data$x[,data$dirx],ylab=names(data$x)[data$dirx],xlab="")}
   }
 }
@@ -866,32 +874,51 @@ else
  if(data$binpred)
  {if(!is.factor(data$x[,vari]))
  {par(mfrow=c(3,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
-  b<-marg.den(full.model$data[-full.model$na.action,vari],full.model$fitted)
+  if(is.null(full.model$na.action))
+    data1<-full.model$data[,vari]
+  else
+    data1<-full.model$data[-full.model$na.action,vari]
+  b<-marg.den(data1,full.model$fitted)
   plot(b,xlab=mname,ylab=paste("f(",mname,")",sep=""),xlim=xlim)
   lo1 <- loess(b[,2]~b[,1])
   lines(lo1$x[order(lo1$x)], lo1$fitted[order(lo1$x)], lwd=1)
-  axis(1,at=full.model$data[-full.model$na.action,vari],labels=F)
+  if(is.null(full.model$na.action))
+    axis(1,at=full.model$data[,vari],labels=F)
+  else
+    axis(1,at=full.model$data[-full.model$na.action,vari],labels=F)
   for (j in unique(data$x[,data$dirx]))
     hist(data$x[data$x[,data$dirx]==j,vari],xlab="",xlim=xlim, freq=F,main=paste(names(data$x)[data$dirx],j,sep="="))}
  else{par(mfrow=c(2,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
-      plot(full.model$y~full.model$data[-full.model$na.action,vari],ylab=paste("f(",mname,")",sep=""),xlab=mname)
+      if(is.null(full.model$na.action))
+        plot(full.model$y~full.model$data[,vari],ylab=paste("f(",mname,")",sep=""),xlab=mname)
+      else
+        plot(full.model$y~full.model$data[-full.model$na.action,vari],ylab=paste("f(",mname,")",sep=""),xlab=mname)
       plot(data$x[,vari]~data$x[,data$dirx],ylab=mname,xlab=names(data$x)[data$dirx])}
  }
  else
  {par(mfrow=c(2,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
   if(!is.factor(data$x[,vari]))
-  {b<-marg.den(full.model$data[-full.model$na.action,vari],full.model$fitted)
+  {if(is.null(full.model$na.action))
+    b<-marg.den(full.model$data[,vari],full.model$fitted)
+   else
+    b<-marg.den(full.model$data[-full.model$na.action,vari],full.model$fitted)
    plot(b,xlab=mname,ylab=paste("f(",mname,")",sep=""),xlim=xlim)
    lo1 <- loess(b[,2]~b[,1])
    lines(lo1$x[order(lo1$x)], lo1$fitted[order(lo1$x)], lwd=1)
-  axis(1,at=full.model$data[-full.model$na.action,vari],labels=F)
+   if(is.null(full.model$na.action))
+     axis(1,at=full.model$data[,vari],labels=F)
+   else
+     axis(1,at=full.model$data[-full.model$na.action,vari],labels=F)
    a<-marg.den(data$x[,data$dirx],data$x[,vari])
    plot(a[,2:1],ylab=names(data$x)[data$dirx],xlim=xlim,xlab="")
    lo <- loess(a[,2]~a[,1])
    lines(lo$fitted[order(lo$x)], lo$x[order(lo$x)],lwd=1)}
   else
-  {plot(full.model$y~full.model$data[-full.model$na.action,vari],ylab=paste("f(",mname,")",sep=""),xlab=mname)
-   plot(data$x[,vari],data$x[,data$dirx],ylab=names(data$x)[data$dirx],xlab="")}
+  {if(is.null(full.model$na.action))
+     plot(full.model$y~full.model$data[,vari],ylab=paste("f(",mname,")",sep=""),xlab=mname)
+   else
+     plot(full.model$y~full.model$data[-full.model$na.action,vari],ylab=paste("f(",mname,")",sep=""),xlab=mname)
+    plot(data$x[,vari],data$x[,data$dirx],ylab=names(data$x)[data$dirx],xlab="")}
  }
 }
 par(op)

@@ -35,7 +35,7 @@ The function summary.med_iden return a list of covariates and mediators as ident
   \item{results }{the original object.}
 }
 \references{
-Yu, Q., Fan, Y., and Wu, X. (2014). "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189. 
+Yu, Q., Fan, Y., and Wu, X. (2014) <doi: 10.4172/2155-6180.1000189>. "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189. 
 }
 \author{
 Qingzhao Yu \email{qyu@lsuhsc.edu}
@@ -46,13 +46,12 @@ Qingzhao Yu \email{qyu@lsuhsc.edu}
 }
 \examples{
 data("weight_behavior")
- x=weight_behavior[,2:14]
- y=weight_behavior[,15]
- temp.b.b.glm<-mma(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
-   binref=c(1,1),catmed=6,catref=1,predref="M",alpha=0.4,alpha2=0.4, 
-   jointm=NULL,margin=1, n=2,seed=sample(1:1000,1),mart=FALSE,nu=0.001,
-   D=3,distn="bernoulli",family1=binomial(link = "logit"),n2=2)
- summary(temp.b.b.glm)
+x=weight_behavior[,2:14]
+y=weight_behavior[,15]
+data.b.b.2<-data.org(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
+   binref=c(1,1),catmed=6,catref=1,jointm=list(n=1,j1=c(6,8,10)),
+   predref="M",alpha=0.4,alpha2=0.4)
+summary(data.b.b.2)
 }
 
 %\keyword{ Summary }

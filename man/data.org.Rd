@@ -74,7 +74,7 @@ data.org returns a list with the organized data and identifiers of the potential
   \item{rela}{p-values of tests on the realtionship between the predictor and each potiential mediator.}
 }
 \references{
-Baron, R.M., and Kenny, D.A. (1986). The moderator-mediator variable distinction in social psychological research: conceptual, strategic, and statistical considerations. J. Pers Soc Psychol, 51(6), 1173-1182.
+Baron, R.M., and Kenny, D.A. (1986) <doi: 10.1037/0022-3514.51.6.1173>. The moderator-mediator variable distinction in social psychological research: conceptual, strategic, and statistical considerations. J. Pers Soc Psychol, 51(6), 1173-1182.
 }
 \author{
 Qingzhao Yu  \email{qyu@lsuhsc.edu}

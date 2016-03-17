@@ -39,7 +39,7 @@ The function summary.mma return a list.  In each of the following item, est is t
 If plot=T, draw a barplot of the relative mediation effects.
 }
 \references{
-Yu, Q., Fan, Y., and Wu, X. (2014). "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189. 
+Yu, Q., Fan, Y., and Wu, X. (2014) <doi: 10.4172/2155-6180.1000189>. "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189. 
 }
 \author{
 Qingzhao Yu \email{qyu@lsuhsc.edu}
