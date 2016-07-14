@@ -9,7 +9,7 @@ Summary of an mma project
 Compute the estimations, standard deviations and confidence intervals of the mediation effects.
 }
 \usage{
-\method{summary}{mma}(object,..., alpha=0.05, plot=TRUE) 
+\method{summary}{mma}(object,..., alpha=0.05, plot=TRUE, RE=FALSE,quant=T) 
 \method{print}{summary.mma}(x,...) 
 }
 %- maybe also 'usage' for other objects documented here.
@@ -26,16 +26,20 @@ other arguments passed to the print function.
   \item{alpha}{
 the alpha level for confidence interval.}
   \item{plot}{
-default is TRUE, if ture, draw a barplot of the relative mediation effects.}
+default is TRUE, if ture, draw a barplot of the relative mediation effects with confidence intervals.}
+  \item{RE}{
+default is FALSE, if ture, show the inferences on relative mediation effects.}
+  \item{quant}{
+default is TRUE, if ture, draw the confidence intervals of relative effects using quantile.}
 }
 \details{
 summary.mma gives a list of the estimations and summary statistics based on the bootstrap results. If plot=T, draw a barplot of the relative effects of the direct effect of the predictor and indirect effects of the mediators. Relative effects is defined as the (in)direct effect divided by the total effect. The plot is arranged in order from the largest to the smallest relative effect.
 }
 \value{
-The function summary.mma return a list.  In each of the following item, est is the estimation of the corresponding mediation effects based on the whole data, mean is the average estimated effects from the bootstrap samples, sd is the standard deviation of the estimates from the bootstrap sample. upbd and lwbd are the upper and lower bound of the confidence interval of the estimation using parametric method from the bootstrap sample, upbd_q and lwbd_q are the corresponding quantiles of the estimation from the bootstrap sample.
-  \item{ie }{a matrix of statistics inference on the indirect effects from the mma object.}
+The function summary.mma return a list. The first item, results, is the list for mediation effects, and the second item, re, is the list for relative effects. Under them, results have the items ie, te and de; re has the items ie and de. In each of the items, est is the estimation of the corresponding (relative) mediation effects based on the whole data, mean is the average estimated (relative) effects from the bootstrap samples, sd is the standard deviation of the estimates from the bootstrap sample. upbd and lwbd are the upper and lower bound of the confidence interval of the estimation using parametric method from the bootstrap sample, upbd_q and lwbd_q are the corresponding quantiles of the estimation from the bootstrap sample.
+  \item{ie }{a matrix of statistics inference on the (relative) indirect effects from the mma object.}
   \item{te }{statistics inference on the total effects from the mma object.}
-  \item{de }{statistics inference on the direct effects from the mma object.}
+  \item{de }{statistics inference on the (relative) direct effects from the mma object.}
 If plot=T, draw a barplot of the relative mediation effects.
 }
 \references{
@@ -46,7 +50,7 @@ Qingzhao Yu \email{qyu@lsuhsc.edu}
 }
 
 \seealso{
-\code{"\link[=mma]{mma}"},\code{"\link[=boot.med.binx]{boot.med.binx}"} , \code{"\link[=boot.med.contx]{boot.met.contx}"}
+\code{"\link[=mma]{mma}"},\code{"\link[=boot.med]{boot.med}"} 
 }
 \examples{
 data("weight_behavior")
@@ -54,8 +58,8 @@ data("weight_behavior")
  y=weight_behavior[,15]
  temp.b.b.glm<-mma(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
    binref=c(1,1),catmed=6,catref=1,predref="M",alpha=0.4,alpha2=0.4, 
-   jointm=NULL,margin=1, n=2,seed=sample(1:1000,1),mart=FALSE,nu=0.001,
-   D=3,distn="bernoulli",family1=binomial(link = "logit"),n2=2)
+   jointm=NULL,margin=1, n=2,seed=sample(1:1000,1),nonlinear=FALSE,nu=0.001,
+   D=3,n2=2)
  summary(temp.b.b.glm)
 }
 

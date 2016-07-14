@@ -1,14 +1,17 @@
 exportPattern("^[^\\.]")
-import(gbm)
+import(gbm,car,gplots,splines)
 importFrom("grDevices", "rainbow")
 importFrom("graphics", "axis", "barplot", "hist", "lines", "par",
           "plot")
 importFrom("stats", "binomial", "chisq.test", "cor.test", "gaussian",
            "glm", "loess", "predict", "qnorm", "quantile", "rbinom",
            "rmultinom", "rnorm", "sd", "var")
+importFrom("graphics", "abline", "polygon")
+importFrom("stats", "scatter.smooth")
 S3method(summary,med_iden)
 S3method(print,summary.med_iden)
 S3method(summary,mma)
 S3method(print,summary.mma)
 S3method(print,mma)
 S3method(plot,mma)
+S3method(print,med)

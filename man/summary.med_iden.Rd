@@ -42,7 +42,7 @@ Qingzhao Yu \email{qyu@lsuhsc.edu}
 }
 
 \seealso{
-\code{"\link[=mma]{mma}"},\code{"\link[=boot.med.binx]{boot.med.binx}"} , \code{"\link[=boot.med.contx]{boot.met.contx}"}
+\code{"\link[=mma]{mma}"},\code{"\link[=boot.med]{boot.med}"} 
 }
 \examples{
 data("weight_behavior")

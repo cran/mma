@@ -15,7 +15,7 @@ Version: \tab 1.0\cr
 Date: \tab 2015-02-18\cr
 License: \tab GPL (>= 2)\cr
 }
-\code{"\link[=data.org]{data.org}"} is used to identify potential mediators. \code{"\link[=med.binx]{med.binx}"} , \code{"\link[=boot.med.binx]{boot.med.binx}"}, \code{"\link[=med.contx]{med.contx}"}, and \code{"\link[=boot.med.contx]{boot.med.contx}"} are used for statistical inferences on the mediation effects when the predictor is binary or continuous according to the name of the function. \code{"\link[=mma]{mma}"} is a combined function that automatically identify potential mediators, based on which to make statistical inference on the mediation effects.
+\code{"\link[=data.org]{data.org}"} is used to identify potential mediators. \code{"\link[=med]{med}"} , and \code{"\link[=boot.med]{boot.med}"} are used for statistical inferences on the mediation effects when the predictor is binary or continuous. \code{"\link[=mma]{mma}"} is a combined function that automatically identify potential mediators, based on which to make statistical inference on the mediation effects.
 }
 \author{
 Qingzhao Yu  \email{qyu@lsuhsc.edu}
@@ -40,22 +40,22 @@ data("weight_behavior")
  y=weight_behavior[,15]
  temp.b.b.glm<-mma(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
    binref=c(1,1),catmed=6,catref=1,predref="M",alpha=0.4,alpha2=0.4, 
-   jointm=NULL,margin=1, n=2,seed=sample(1:1000,1),mart=FALSE,nu=0.001,
-   D=3,distn="bernoulli",family1=binomial(link = "logit"),n2=2)
+   jointm=NULL,margin=1, n=2,seed=sample(1:1000,1),nonlinear=FALSE,nu=0.001,
+   D=3,n2=2)
  temp.b.b.mart<-mma(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
    binref=c(1,1),catmed=6,catref=1,predref="M",alpha=0.4,alpha2=0.4, 
-   jointm=NULL,margin=1, n=2,seed=sample(1:1000,1),mart=TRUE,nu=0.05,
-   D=3,family1=binomial(link = "logit"),n2=5)
+   jointm=NULL,margin=1, n=2,seed=sample(1:1000,1),nonlinear=TRUE,nu=0.05,
+   D=3,n2=5)
  
+ \donttest{
  #continuous y
  x=weight_behavior[,2:14]
  y=weight_behavior[,1]
  temp.b.c.glm<-mma(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
-   binref=c(1,1),catmed=6,catref=1,jointm=list(n=1,j1=8:10),biny=FALSE, 
-   predref="M",alpha=0.4,alpha2=0.4,n=2,seed=1,mart=FALSE,nu=0.05,D=3,
-   distn="gaussian",family1=gaussian(link = "identity"),n2=2)
+   binref=c(1,1),catmed=6,catref=1,jointm=list(n=1,j1=8:10),predref="M",
+   alpha=0.4,alpha2=0.4,n=2,seed=1,nonlinear=FALSE,nu=0.05,D=3,n2=2)
  temp.b.c.mart<-mma(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
-   binref=c(1,1),catmed=6,catref=1,jointm=list(n=1,j1=8:10, j2=12:13),biny=FALSE, 
-   predref="M",alpha=0.4,alpha2=0.4, margin=1, n=2,seed=1,mart=TRUE,
-   nu=0.05,distn="gaussian",family1=gaussian(link = "identity"),n2=2)
+   binref=c(1,1),catmed=6,catref=1,jointm=list(n=1,j1=8:10, j2=12:13), 
+   predref="M",alpha=0.4,alpha2=0.4, margin=1, n=2,seed=1,nonlinear=TRUE,
+   nu=0.05,n2=2)}
 }

@@ -13,7 +13,7 @@ Print the estimation of mediation effects from an mma object.
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{
-a mma object created initially call to mma, boot.met.binx, or boot.met.contx.
+a mma object created initially call to mma, boot.med.binx, or boot.med.contx.
 }
   \item{\dots}{
 other arguments passed to the print function.
@@ -35,7 +35,7 @@ Qingzhao Yu \email{qyu@lsuhsc.edu}
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{"\link[=mma]{mma}"},\code{"\link[=boot.med.binx]{boot.med.binx}"} , \code{"\link[=boot.med.contx]{boot.med.contx}"}
+\code{"\link[=mma]{mma}"},\code{"\link[=boot.med]{boot.med}"}
 }
 \examples{
 data("weight_behavior")
@@ -43,8 +43,8 @@ data("weight_behavior")
  y=weight_behavior[,15]
  temp.b.b.glm<-mma(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
    binref=c(1,1),catmed=6,catref=1,predref="M",alpha=0.4,alpha2=0.4, 
-   jointm=NULL,margin=1, n=2,seed=sample(1:1000,1),mart=FALSE,nu=0.001,
-   D=3,distn="bernoulli",family1=binomial(link = "logit"),n2=2)
+   jointm=NULL,margin=1, n=2,seed=sample(1:1000,1),nonlinear=FALSE,nu=0.001,
+   D=3,n2=2)
  print(temp.b.b.glm)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

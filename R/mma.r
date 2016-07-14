@@ -1,7 +1,7 @@
 #to organize data
-data.org<-function(x,y,pred,contmed=NULL,binmed=NULL,binref=rep(1,length(binmed)),catmed=NULL,
-                   catref=rep(1,length(catmed)),jointm=NULL,biny=T, family1=binomial(link = "logit"),
-                   binpred=T,predref=1,alpha=0.1,alpha2=0.1)
+data.org<-function(x,y,pred,mediator=NULL,contmed=NULL,binmed=NULL,binref=rep(1,length(binmed)),catmed=NULL,
+                   catref=rep(1,length(catmed)),jointm=NULL,refy=NULL, family1=NULL,
+                   predref=NULL,alpha=0.1,alpha2=0.1)
 {cattobin<-function(x,cat1,cat2=rep(1,length(cat1)))
 { ad1<-function(vec)
 {vec1<-vec[-1]
@@ -41,6 +41,73 @@ colnum<-function(vec,cutx)
    z[i]<-vec[i]-sum(vec[i]>cutx)
  z}
 
+
+if(is.character(y) | is.factor(y) | nlevels(as.factor(y))==2)
+{biny=T
+if(is.null(family1))
+  family1 = binomial("logit")
+#if(is.null(distn))
+#  distn = "bernoulli"
+if(!is.null(refy))
+  y<-ifelse(y==refy,0,1)
+else
+  y<-ifelse(as.factor(y)==levels(as.factor(y))[1],0,1)
+}
+else
+{biny=F
+if(is.null(family1))
+  family1 = gaussian(link = "identity")
+#if(is.null(distn))
+#  distn = "gaussian"
+}
+
+xnames<-colnames(x)
+if(is.character(pred))
+  pred<-grep(pred,xnames)
+
+if(is.character(x[,pred]) | is.factor(x[,pred]) | nlevels(as.factor(x[,pred]))==2)
+ {binpred=T
+  if(!is.null(predref))
+      x[,pred]<-as.factor(ifelse(x[,pred]==predref,0,1))
+  else
+      {x[,pred]<-as.factor(x[,pred])
+       x[,pred]<-as.factor(ifelse(x[,pred]==levels(x[,pred])[1],0,1))}
+ }
+else
+  binpred=F
+
+if(is.character(contmed))
+  contmed<-unlist(sapply(contmed,grep,xnames))
+if(is.character(binmed))
+  binmed<-unlist(sapply(binmed,grep,xnames))
+if(is.character(catmed))
+  catmed<-unlist(sapply(catmed,grep,xnames))
+if(!is.null(jointm))
+  for (i in 2:length(jointm))
+   if(is.character(jointm[[i]]))
+     jointm[[i]]<-unlist(sapply(jointm[[i]],grep,xnames))
+
+
+if(!is.null(mediator))   #add a mediator argument
+ {if(is.character(mediator))
+   mediator<-unlist(sapply(mediator,grep,xnames))
+  for (i in 1:length(mediator))
+    {if(is.character(x[,mediator[i]]))
+      x[,mediator[i]]<-as.factor(x[,mediator[i]])
+     if(is.factor(x[,mediator[i]]))
+       if(nlevels(x[,mediator[i]])==2)
+       {if(sum(binmed==mediator[i])==0)
+        {binmed<-c(binmed,mediator[i])
+         binref<-c(binref,levels(x[,mediator[i]])[1])}}
+      else
+       {if(sum(catmed==mediator[i])==0)
+        {catmed<-c(catmed,mediator[i])
+         catref<-c(catref,levels(x[,mediator[i]])[1])}}
+     else if(sum(contmed==mediator[i])==0)
+        contmed<-c(contmed,mediator[i])}
+ }
+
+
 if(!is.null(jointm))  #identify mediators that should be jointly considered
 {joint<-NULL 
  for (i in 2:(jointm[[1]]+1))
@@ -74,17 +141,15 @@ else
    cat1<-rep(F,length(catmed))
 }
 
-if(binpred)
-  x[,pred]<-ifelse(x[,pred]==predref,0,1)
-
 if(!is.null(binmed))
 {j<-1
  for (i in binmed)
-   x[,i]<-ifelse(x[,i]==binref[j],0,1)
+   x[,i]<-as.factor(ifelse(x[,i]==binref[j],0,1))
  j<-j+1}
 
 if(!is.null(catmed))
-{tempx<-cattobin(x,catmed,catref)
+{x[,catmed]<-as.factor(x[,catmed])
+ tempx<-cattobin(x,catmed,catref)
  newx<-tempx$x
  catnewx<-tempx$catm}
 else newx<-x
@@ -92,11 +157,15 @@ else newx<-x
 #delete variables that are not significant
 fullmodel<-summary(glm(y~.,data=data.frame(newx),family=family1))
 xname<-names(x)
+fullmodel1<-glm(y~.,data=data.frame(x),family=family1) #use type three error to test the full model
+type3<-Anova(fullmodel1,type="III")
+xnames3<-rownames(type3)
 
 covr.cont<-rep(F,length(contmed))
 if(!is.null(contmed))
 {for (i in 1:length(contmed))
-  covr.cont[i]<-ifelse(fullmodel$coef[dimnames(fullmodel$coef)[[1]]==xname[contmed[i]],4]<alpha,T,F)
+  covr.cont[i]<-ifelse(type3[xnames3==xname[contmed[i]],3]<alpha,T,F)
+  #covr.cont[i]<-ifelse(fullmodel$coef[dimnames(fullmodel$coef)[[1]]==xname[contmed[i]],4]<alpha,T,F)
  covr.cont<-ifelse(covr.cont|cont1,T,F)
  cont2<-cont1[covr.cont]
  contmed1<-contmed[covr.cont]
@@ -105,7 +174,8 @@ if(!is.null(contmed))
 covr.bin<-rep(F,length(binmed))
 if(!is.null(binmed))
 {for (i in 1:length(binmed))
-  covr.bin[i]<-ifelse(fullmodel$coef[dimnames(fullmodel$coef)[[1]]==xname[binmed[i]],4]<alpha,T,F)
+  covr.bin[i]<-ifelse(type3[xnames3==xname[binmed[i]],3]<alpha,T,F)
+ #covr.bin[i]<-ifelse(fullmodel$coef[dimnames(fullmodel$coef)[[1]]==xname[binmed[i]],4]<alpha,T,F)
  covr.bin<-ifelse(covr.bin+bin1>0,T,F) 
  bin2<-bin1[covr.bin]
  binmed1<-binmed[covr.bin]}
@@ -113,7 +183,8 @@ if(!is.null(binmed))
 covr.cat<-rep(F,length(catmed))
 if(!is.null(catmed))
 {for (i in 1:length(catmed))
-  covr.cat[i]<-ifelse(min(fullmodel$coef[grep(xname[catmed[i]],rownames(fullmodel$coef)),4])<alpha,T,F) #version 6: change to fit names instead of line numbers
+  covr.cat[i]<-ifelse(type3[xnames3==xname[catmed[i]],3]<alpha,T,F) #version 6: change to fit names instead of line numbers
+  #covr.cat[i]<-ifelse(min(fullmodel$coef[grep(xname[catmed[i]],rownames(fullmodel$coef)),4])<alpha,T,F) #version 6: change to fit names instead of line numbers
  covr.cat<-ifelse(covr.cat+cat1>0,T,F)
  cat2<-cat1[covr.cat]
  catmed1<-catmed[covr.cat]
@@ -252,8 +323,8 @@ if (binpred)
  if(!is.null(binm2))
    for (i in 1:length(binm2))
      newx2[,binm2[i]]<-as.factor(newx2[,binm2[i]])
- results<-list(x=newx2, dirx=pred1, contm=contm2, catm=c(binm2,catm2),
-              jointm=jointm,fullmodel=fullmodel,rela=data.frame(name=rela_var,p=rela_p))
+ results<-list(x=newx2, dirx=pred1, contm=contm2, catm=c(binm2,catm2),jointm=jointm,
+              y=y,fullmodel=fullmodel1,rela=data.frame(name=rela_var,p=rela_p),binpred=binpred)
  class(results)<-"med_iden"
  return(results)
 }
@@ -285,8 +356,8 @@ else
       jointm[[i]]<-b}
   }
  }
- results<-list(x=newx2,dirx=pred1,contm=contm2,binm=binm2,catm=catm, jointm=jointm, 
-               fullmodel=fullmodel,rela=data.frame(name=rela_var,p=rela_p))
+ results<-list(x=newx2,dirx=pred1,contm=contm2,binm=binm2,catm=catm, jointm=jointm, y=y,
+               fullmodel=fullmodel1,rela=data.frame(name=rela_var,p=rela_p),binpred=binpred)
  class(results)<-"med_iden"
  return(results)
 }
@@ -294,11 +365,18 @@ else
 
 summary.med_iden<-function(object,...)
 {var.name<-names(object$x)
- mediator<-var.name[c(object$contm,object$binm,object$catm)]
- covariates<-var.name[-c(object$dirx,object$contm,object$binm,object$catm)]
- tests<-object$fullmodel$coefficients
- tests<-cbind(tests[,4],rep(NA,nrow(tests)))
- temp<-dimnames(tests)[[1]]
+ if(is.list(object$catm))                  #revised to show catm when it is a list (when x is continuous)
+ {t.catm<-NULL
+  for (i in 2:length(object$catm))
+  t.catm<-c(t.catm,object$catm[[i]])}
+ else
+ {t.catm<-object$catm}
+ mediator<-var.name[c(object$contm,object$binm,t.catm)]
+ covariates<-var.name[-c(object$dirx,object$contm,object$binm,t.catm)]
+ tests<-Anova(object$fullmodel,type="III")
+ temp<-rownames(tests)
+ tests<-cbind(tests[,3],rep(NA,nrow(tests)))
+ rownames(tests)<-temp
  for (i in 1:nrow(object$rela))
    tests[grep(object$rela[i,"name"],temp)[1],2]<-object$rela[i,"p"]
  dimnames(tests)[[2]]<-c("P-Value 1", "P-Value 2")
@@ -314,116 +392,148 @@ print.summary.med_iden<-function(x,...)  #version 6: changed typos in the functi
  print(x$covariates)
  cat("Tests: \n")
  temp<-rownames(x$tests)
- for (z in x$mediator)
-   dimnames(x$tests)[[1]][grep(z,temp)]<-paste(temp[grep(z,temp)],"*")
+ for (z in 1:length(temp))
+   if(length(grep(temp[z],x$mediator))>0)
+     dimnames(x$tests)[[1]][z]<-paste(temp[z],"*")
  if (!is.null(x$results$jointm))
   {tt<-NULL
    for (i in 1:(length(x$results$jointm)-1)) 
      tt<-c(tt,x$results$jointm[[i+1]])
    tt<-unique(tt)
-   for (z in names(x$results$x)[tt])
-     rownames(x$tests)[grep(z,temp)]<-paste(temp[grep(z,temp)],"-")}
- dimnames(x$tests)[[2]]<-c("P-Value in the Full Linear Model", "P-Value Relate to Predictor")
+   for (z in 1:length(temp))
+     if(length(grep(temp[z],names(x$results$x)[tt]))>0)
+       dimnames(x$tests)[[1]][z]<-paste(temp[z],"-")}
+   #for (z in names(x$results$x)[tt])
+     #rownames(x$tests)[grep(z,temp)]<-paste(temp[grep(z,temp)],"-")
+ dimnames(x$tests)[[2]]<-c("P-Value 1", "P-Value 2")
  print(round(x$tests,3))
- cat("----\n *:mediator,-:joint mediator")
+ cat("----\n *:mediator,-:joint mediator\n P-Value 1:Type-3 tests in the full model\n P-Value 2:Tests of relation with the Predictor")
 }
-#for binary predictor
-med.binx<-function(x,y,dirx,contm=NULL,catm=NULL,jointm=NULL,allm=c(contm,catm),
-                   n=20,seed=sample(1:1000,1),mart=F,nu=0.001,D=3,distn="bernoulli",family1=binomial("logit"))
+
+med<-function(data, x=data$x, y=data$y, dirx=data$dirx, binm=data$binm,contm = data$contm, 
+              catm = data$catm, jointm = data$jointm, allm = c(contm, catm), margin=1,
+              n=20,seed=sample(1:1000,1), nonlinear=F, df=1, nu=0.001,D=3,
+              distn=NULL,family1=NULL,refy=0,binpred=data$binpred,x.new=x)
+{#for binary predictor
+ med.binx<-function(data, x=data$x, y=data$y, dirx=data$dirx, contm = data$contm, 
+                    catm = data$catm, jointm = data$jointm, 
+                    allm = c(contm, catm), n=20,seed=sample(1:1000,1),nonlinear=F,nu=0.001,
+                    D=3,distn="bernoulli",family1=binomial("logit"),
+                    biny=F,refy=0)
 {if (is.null(allm))
   stop("Error: no potential mediator is specified")
   
+  xnames<-colnames(x)
+  if(is.character(dirx))
+    pred<-grep(dirx,xnames)
+  if(is.character(contm))
+    contm<-unlist(sapply(contm,grep,xnames))
+  if(is.character(catm))
+    catm<-unlist(sapply(catm,grep,xnames))
+  if(!is.null(jointm))
+    for (i in 2:length(jointm))
+      if(is.character(jointm[[i]]))
+        jointm[[i]]<-unlist(sapply(jointm[[i]],grep,xnames))
+  
+  allm=c(contm,catm)
+  
+  if(biny)                     #recode y if y is binary
+    y<-ifelse(y==refy,0,1)
+  
+  x<-x[!is.na(y),]             #delete nas in y for mart
+  y<-y[!is.na(y)]
+  
   te.binx<-function(full.model,x,y,dirx,best.iter1=NULL)       
-{x1<-x[x[,dirx]==1,]
- x0<-x[x[,dirx]==0,]
- n3<-dim(x)[1]
- new1<-x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),]
- new0<-x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),]
- te<-mean(predict(full.model,new1,best.iter1),na.rm=T)- mean(predict(full.model,new0,best.iter1),na.rm=T)
- te
-}
-
-med.binx.contm<-function(full.model,x,y,med,dirx,best.iter1=NULL)  
-{x1<-x[x[,dirx]==1,]                               
- x0<-x[x[,dirx]==0,]
- n3<-dim(x)[1]
- marg.m<-c(x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),med],x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),med])
- marg.m<-marg.m[sample(2*floor(n3/2))]
- nom1<-x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),]
- nom0<-x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),]
- new1<-nom1
- new1[,med]<-marg.m[1:floor(n3/2)]
- new0<-nom0
- new0[,med]<-marg.m[(floor(n3/2)+1):(2*floor(n3/2))]
- dir.nom<-mean(predict(full.model,new1,best.iter1),na.rm=T)- mean(predict(full.model,new0,best.iter1),na.rm=T)
- dir.nom
-}
-
-med.binx.jointm<-function(full.model,x,y,med,dirx,best.iter1=NULL)  
-{x1<-x[x[,dirx]==1,]                               
- x0<-x[x[,dirx]==0,]
- n3<-dim(x)[1]
- if (length(med)==1)                       #added for the new program, when there is only one mediator
-   {sample.temp<-sample(c(sample(which(x[,dirx]==1),floor(n3/2),replace=T),
-                   sample(which(x[,dirx]==0),floor(n3/2),replace=T)))
-    marg.m<-x[sample.temp,med]}        #added for the new program
- else                                         #added for the new program
-   {marg.m<-rbind(x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),med],x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),med])
-    marg.m<-marg.m[sample(2*floor(n3/2)),]  }     
- nom1<-x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),]
- nom0<-x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),]
- new1<-nom1
- new0<-nom0
- if(length(med)==1)                                       #added for the new program, when there is only one mediator
-   {new1[,med]<-marg.m[1:floor(n3/2)]                     #added for the new program 
-    new0[,med]<-marg.m[(floor(n3/2)+1):(2*floor(n3/2))]}  #added for the new program
- else                                                     #added for the new program
-   {new1[,med]<-marg.m[1:floor(n3/2),]
-    new0[,med]<-marg.m[(floor(n3/2)+1):(2*floor(n3/2)),]}
- dir.nom<-mean(predict(full.model,new1,best.iter1),na.rm=T)- mean(predict(full.model,new0,best.iter1),na.rm=T)
- dir.nom
-}
-
-med.binx.catm<-function(full.model,x,y,med,dirx,best.iter1=NULL)  
-{x1<-x[x[,dirx]==1,]                               
- x0<-x[x[,dirx]==0,]
- n3<-dim(x)[1]
- marg.m1<-x1[sample(dim(x1)[1],floor(n3/2),replace=T),med]
- marg.m2<-x0[sample(dim(x0)[1],floor(n3/2),replace=T),med]
- nom1<-x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),]
- nom0<-x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),]
- dir.nom<-0
- for (i in levels(x[,med]))
- {new1<-nom1
+  {x1<-x[x[,dirx]==1,]
+  x0<-x[x[,dirx]==0,]
+  n3<-dim(x)[1]
+  new1<-x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),]
+  new0<-x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),]
+  te<-mean(predict(full.model,new1,best.iter1),na.rm=T)- mean(predict(full.model,new0,best.iter1),na.rm=T)
+  te
+  }
+  
+  med.binx.contm<-function(full.model,x,y,med,dirx,best.iter1=NULL)  
+  {x1<-x[x[,dirx]==1,]                               
+  x0<-x[x[,dirx]==0,]
+  n3<-dim(x)[1]
+  marg.m<-c(x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),med],x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),med])
+  marg.m<-marg.m[sample(2*floor(n3/2))]
+  nom1<-x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),]
+  nom0<-x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),]
+  new1<-nom1
+  new1[,med]<-marg.m[1:floor(n3/2)]
+  new0<-nom0
+  new0[,med]<-marg.m[(floor(n3/2)+1):(2*floor(n3/2))]
+  dir.nom<-mean(predict(full.model,new1,best.iter1),na.rm=T)- mean(predict(full.model,new0,best.iter1),na.rm=T)
+  dir.nom
+  }
+  
+  med.binx.jointm<-function(full.model,x,y,med,dirx,best.iter1=NULL)  
+  {x1<-x[x[,dirx]==1,]                               
+  x0<-x[x[,dirx]==0,]
+  n3<-dim(x)[1]
+  if (length(med)==1)                       #added for the new program, when there is only one mediator
+  {sample.temp<-sample(c(sample(which(x[,dirx]==1),floor(n3/2),replace=T),
+                         sample(which(x[,dirx]==0),floor(n3/2),replace=T)))
+  marg.m<-x[sample.temp,med]}        #added for the new program
+  else                                         #added for the new program
+  {marg.m<-rbind(x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),med],x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),med])
+  marg.m<-marg.m[sample(2*floor(n3/2)),]  }     
+  nom1<-x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),]
+  nom0<-x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),]
+  new1<-nom1
+  new0<-nom0
+  if(length(med)==1)                                       #added for the new program, when there is only one mediator
+  {new1[,med]<-marg.m[1:floor(n3/2)]                     #added for the new program 
+  new0[,med]<-marg.m[(floor(n3/2)+1):(2*floor(n3/2))]}  #added for the new program
+  else                                                     #added for the new program
+  {new1[,med]<-marg.m[1:floor(n3/2),]
+  new0[,med]<-marg.m[(floor(n3/2)+1):(2*floor(n3/2)),]}
+  dir.nom<-mean(predict(full.model,new1,best.iter1),na.rm=T)- mean(predict(full.model,new0,best.iter1),na.rm=T)
+  dir.nom
+  }
+  
+  med.binx.catm<-function(full.model,x,y,med,dirx,best.iter1=NULL)  
+  {x1<-x[x[,dirx]==1,]                               
+  x0<-x[x[,dirx]==0,]
+  n3<-dim(x)[1]
+  marg.m1<-x1[sample(dim(x1)[1],floor(n3/2),replace=T),med]
+  marg.m2<-x0[sample(dim(x0)[1],floor(n3/2),replace=T),med]
+  nom1<-x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),]
+  nom0<-x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),]
+  dir.nom<-0
+  for (i in levels(x[,med]))
+  {new1<-nom1
   new1[1:dim(new1)[1],med]<-i
   new0<-nom0
   new0[1:dim(new0)[1],med]<-i
   p<-0.5*mean(marg.m1==i,na.rm=T)+ 0.5*mean(marg.m2==i,na.rm=T)
   dir.nom<-dir.nom+p*(mean(predict(full.model,new1,best.iter1),na.rm=T)- mean(predict(full.model,new0,best.iter1),na.rm=T))
- }
- dir.nom
-}
-
+  }
+  dir.nom
+  }
+  
   #1.fit the model
-  if (mart)
+  if (nonlinear)
   {full.model<-suppressWarnings(gbm.fit(x,y, n.trees=200, interaction.depth=D, shrinkage=nu,
-                       distribution=distn,train.fraction=1.0, bag.fraction=0.5, verbose=FALSE))
-   best.iter1<-suppressWarnings(gbm.perf(full.model,plot.it=FALSE,method="OOB"))
-   while(full.model$n.trees-best.iter1<30){
-     full.model<-gbm.more(full.model, 50)           # do another 50 iterations
-     best.iter1<-suppressWarnings(gbm.perf(full.model,plot.it=FALSE,method="OOB"))}}
+                                        distribution=distn,train.fraction=1.0, bag.fraction=0.5, verbose=FALSE))
+  best.iter1<-suppressWarnings(gbm.perf(full.model,plot.it=FALSE,method="OOB"))
+  while(full.model$n.trees-best.iter1<30){
+    full.model<-gbm.more(full.model, 50)           # do another 50 iterations
+    best.iter1<-suppressWarnings(gbm.perf(full.model,plot.it=FALSE,method="OOB"))}}
   else
   {full.model<-glm(y~., data=x, family=family1)
-   best.iter1=NULL}
+  best.iter1=NULL}
   #2. prepare for the store of results
   set.seed(seed)
   te<-rep(0,n)
   if(!is.null(jointm))
   {denm<-matrix(0,n,1+length(c(contm,catm))+jointm[[1]])
-   dimnames(denm)[[2]]<-c("de",names(x)[c(contm,catm)],paste("j",1:jointm[[1]],sep=""))}
+  dimnames(denm)[[2]]<-c("de",names(x)[c(contm,catm)],paste("j",1:jointm[[1]],sep=""))}
   else
   {denm<-matrix(0,n,1+length(c(contm,catm)))
-   dimnames(denm)[[2]]<-c("de",names(x)[c(contm,catm)])}
+  dimnames(denm)[[2]]<-c("de",names(x)[c(contm,catm)])}
   ie<-denm
   #3. repeat to get the mediation effect
   for (k in 1:n)
@@ -435,325 +545,1429 @@ med.binx.catm<-function(full.model,x,y,med,dirx,best.iter1=NULL)
     if (!is.null(contm))
       for (i in contm)          #full.model,x,y,med,dirx,best.iter1=NULL
       {denm[k,j]<-med.binx.contm(full.model,x,y,i,dirx,best.iter1)
-       j<-j+1}
+      j<-j+1}
     #3.3.mediation effect from the categorical mediator
     if (!is.null(catm))
       for (i in catm)           #full.model,x,y,med,dirx,best.iter1=NULL
       {denm[k,j]<-med.binx.catm(full.model,x,y,i,dirx,best.iter1)
-       j<-j+1}
+      j<-j+1}
     #3.4 mediation effect from the joint mediators
     if (!is.null(jointm))
       for (i in 1:jointm[[1]])          #full.model,x,y,med,dirx,best.iter1=NULL
       {denm[k,j]<-med.binx.jointm(full.model,x,y,jointm[[i+1]],dirx,best.iter1)
-       j<-j+1}
+      j<-j+1}
     
     #3.5 get the indirect effects
     ie[k,]<-te[k]-denm[k,]
+    if(!is.null(jointm))
+      dimnames(ie)[[2]]<-c("all",names(x)[c(contm,catm)],paste("j",1:jointm[[1]],sep=""))
+    else
+      dimnames(ie)[[2]]<-c("all",names(x)[c(contm,catm)])
   }
   a<-list(denm=denm,ie=ie,te=te,model=full.model,best.iter=best.iter1)
+  class(a)<-"med"
   return(a)
 }
 
-boot.med.binx<-function(x,y,dirx,contm=NULL,catm=NULL,jointm=NULL,
-                        n=20,seed=sample(1:1000,1),n2=50,mart=F,nu=0.001,
-                        D=3,distn="bernoulli",family1=binomial("logit"),
-                        weight=rep(1,length(y)))
-  #n2 is the time of bootstrap
-{if (is.null(c(contm,catm)))
-  stop("Error: no potential mediator is specified")
- allm=c(contm,catm)
- te<-rep(0,n2+1)
- de<-rep(0,n2+1)
- if(is.null(jointm))
- {ie<-matrix(0,n2+1,1+length(c(contm,catm)))
-  dimnames(ie)[[2]]<-c("all",names(x)[c(contm,catm)])}
- else
- {ie<-matrix(0,n2+1,1+length(c(contm,catm))+jointm[[1]])
-  dimnames(ie)[[2]]<-c("all",names(x)[c(contm,catm)],paste("j",1:jointm[[1]],sep=""))}
- temp<-med.binx(x,y,dirx,contm,catm,jointm,allm,n,seed,mart,nu,D,distn,family1)
- te[1]<-mean(temp$te)
- de[1]<-mean(temp$denm[,1])
- ie[1,]<-apply(temp$ie,2,mean)  #first row is the estimated value
- model<-temp$model
- best.iter<-temp$best.iter
- for (i in 1:n2)
- {boots<-sample(1:length(y),replace=T,prob=weight)
-  x1<-x[boots,]
-  y1<-y[boots]
-  temp<-med.binx(x1,y1,dirx,contm,catm,jointm,allm,n,seed+i,mart,nu,D,distn,family1)
-  te[1+i]<-mean(temp$te)
-  de[1+i]<-mean(temp$denm[,1])
-  ie[1+i,]<-apply(temp$ie,2,mean)  #first row is the estimated value
- }
- a<-list(estimation=list(ie=ie[1,],te=te[1],de=de[1]),bootsresults=list(ie=ie[-1,],te=te[-1],de=de[-1]),model=list(MART=mart,model=model,best.iter=best.iter), 
-         data=list(x=x,y=y,dirx=dirx,contm=contm,catm=catm,jointm=jointm,binpred=T))
- class(a)<-"mma"
- return(a)
-}
-
 #for continous predictor
-med.contx<-function(x,y,dirx,binm=NULL,contm=NULL,catm=NULL, jointm=NULL, margin=1, n=20,seed=sample(1:1000,1),
-                    mart=F,nu=0.001,D=3,distn="gaussian",family1=gaussian(link="identity"))
+ med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,binm=data$binm,contm=data$contm,
+                    catm=data$catm, jointm=data$jointm, margin=1, n=20,seed=sample(1:1000,1),
+                    nonlinear=F,df=1,nu=0.001,D=3,distn="gaussian",family1=gaussian(link="identity"),
+                    biny=F,refy=0,x.new=x)
 {if (is.null(c(binm,contm,catm)))
   stop("Error: no potential mediator is specified")
   
+  xnames<-colnames(x)
+  if(is.character(dirx))
+    pred<-grep(dirx,xnames)
+  if(is.character(contm))
+    contm<-unlist(sapply(contm,grep,xnames))
+  if(is.character(binm))
+    binm<-unlist(sapply(binm,grep,xnames))
+  if(!is.null(catm))
+    for (i in 2:length(catm))
+      if(is.character(catm[[i]]))
+        catm[[i]]<-unlist(sapply(catm[[i]],grep,xnames))
+  if(!is.null(jointm))
+    for (i in 2:length(jointm))
+      if(is.character(jointm[[i]]))
+        jointm[[i]]<-unlist(sapply(jointm[[i]],grep,xnames))
+  
+  if(biny)                     #recode y if y is binary
+    y<-ifelse(y==refy,0,1)
+  
+  x<-x[!is.na(y),]             #delete nas in y for mart
+  y<-y[!is.na(y)]
+  
   anymissing<-function(vec)
-{if(sum(is.na(vec))>0)
-  return(F)
- else return(T)
-}
-
-dist.m.given.x<-function(x,dirx,binm=NULL,contm=NULL,catm=NULL)
-{models<-NULL
- res<-NULL
- if(!is.null(catm))
- {for (i in 2:(catm$n+1))
-   binm<-c(binm,catm[[i]])}
- 
- z<-x[,dirx]
- j<-1
- if(!is.null(binm))
- {for(i in binm)
- {models[[j]]<-glm(x[,i]~z,family=binomial(link = "logit"))
+  {if(sum(is.na(vec))>0)
+    return(F)
+    else return(T)
+  }
+  
+  col_mean<-function(col,n.row)
+  {temp<-matrix(col,n.row)
+  apply(temp,1,mean,na.rm=T)}
+  
+  
+  dist.m.given.x<-function(x,dirx,binm=NULL,contm=NULL,catm=NULL,nonlinear,df)
+  {models<-NULL
+  res<-NULL
+  if(!is.null(catm))
+  {for (i in 2:(catm$n+1))
+    binm<-c(binm,catm[[i]])}
+  
+  z<-x[,dirx]
+  j<-1
+  if(!is.null(binm))
+  {for(i in binm)
+  {if(nonlinear)
+    models[[j]]<-glm(x[,i]~ns(z,df=df),family=binomial(link = "logit"))
+  else
+    models[[j]]<-glm(x[,i]~z,family=binomial(link = "logit"))
   res<-cbind(res,x[,i]-predict(models[[j]],type = "response",newdata=data.frame(z=z)))
   j<-j+1}
- }
- for (i in contm)
- {models[[j]]<-glm(x[,i]~z,family=gaussian(link="identity"))
+  }
+  for (i in contm)
+  {if(nonlinear)
+    models[[j]]<-glm(x[,i]~ns(z,df=df),family=gaussian(link="identity"))
+  else
+    models[[j]]<-glm(x[,i]~z,family=gaussian(link="identity"))
   res<-cbind(res,models[[j]]$res)
   j<-j+1
- }
- list(models=models,varmat=var(res))
-}
-
-
-sim.xm<-function(distmgivenx,x1,dirx,binm,contm,catm)
-{mult.norm<-function(mu,vari,n) 
-{  if (nrow(vari)!=ncol(vari)) 
-{result<-c("Error: Variance matrix is not square")}  
-else if (length(mu)!=nrow(vari)) 
-{result<-c("Error: length mu is not right!")}  
-else {   p<-length(mu)
-         tmp1<-eigen(vari)$values
-         tmp2<-eigen(vari)$vectors   
-         result<-matrix(0,n,p)   
-         for (i in 1:p)
-         {result[,i]<-rnorm(n,mean=0,sd=sqrt(tmp1[i]))}   
-         for (i in 1:n)
-         {result[i,]<-tmp2%*%result[i,]+mu}
-}  
-result
-}
-
-match.margin<-function(vec)   
-{range1<-vec[1:2]
- vec1<-vec[-(1:2)]
- range2<-range(vec1)
- vec1<-range1[1]+diff(range1)/diff(range2)*(vec1-range2[1])
- vec1
-}
-
-gen.mult<-function(vec)
-{l<-1-sum(vec)
- l<-ifelse(l<0,0,l)
- rmultinom(1,size=1,prob=c(l,vec))[-1]
-}
-
-means<-NULL
-z<-x1[,dirx]
-binm1<-binm
-if(!is.null(catm))
-{for (i in 2:(catm$n+1))
-  binm1<-c(binm1,catm[[i]])}
-
-if(!is.null(binm1))
-  for (i in 1:length(binm1))
-    means<-cbind(means,predict(distmgivenx$models[[i]],type = "response",newdata=data.frame(z=z)))
-
-if(!is.null(contm))
-  for (i in (length(binm1)+1):length(c(binm1,contm)))
-    means<-cbind(means,predict(distmgivenx$models[[i]],newdata=data.frame(z=z)))
-
-if(dim(means)[2]==1)                                                   #added in the new program, in case there is only one mediator
+  }
+  list(models=models,varmat=var(res))
+  }
+  
+  
+  sim.xm<-function(distmgivenx,x1,dirx,binm,contm,catm)
+  {mult.norm<-function(mu,vari,n) 
+  {  if (nrow(vari)!=ncol(vari)) 
+  {result<-c("Error: Variance matrix is not square")}  
+    else if (length(mu)!=nrow(vari)) 
+    {result<-c("Error: length mu is not right!")}  
+    else {   p<-length(mu)
+    tmp1<-eigen(vari)$values
+    tmp2<-eigen(vari)$vectors   
+    result<-matrix(0,n,p)   
+    for (i in 1:p)
+    {result[,i]<-rnorm(n,mean=0,sd=sqrt(tmp1[i]))}   
+    for (i in 1:n)
+    {result[i,]<-tmp2%*%result[i,]+mu}
+    }  
+    result
+  }
+  
+  match.margin<-function(vec)   
+  {range1<-vec[1:2]
+  vec1<-vec[-(1:2)]
+  range2<-range(vec1,na.rm=T)
+  vec1<-range1[1]+diff(range1)/diff(range2)*(vec1-range2[1])
+  vec1
+  }
+  
+  gen.mult<-function(vec)
+  {l<-1-sum(vec)
+  l<-ifelse(l<0,0,l)
+  rmultinom(1,size=1,prob=c(l,vec))[-1]
+  }
+  
+  means<-NULL
+  z<-x1[,dirx]
+  binm1<-binm
+  if(!is.null(catm))
+  {for (i in 2:(catm$n+1))
+    binm1<-c(binm1,catm[[i]])}
+  
+  if(!is.null(binm1))
+    for (i in 1:length(binm1))
+      means<-cbind(means,predict(distmgivenx$models[[i]],type = "response",newdata=data.frame(z=z)))
+  
+  if(!is.null(contm))
+    for (i in (length(binm1)+1):length(c(binm1,contm)))
+      means<-cbind(means,predict(distmgivenx$models[[i]],newdata=data.frame(z=z)))
+  
+  if(dim(means)[2]==1)                                                   #added in the new program, in case there is only one mediator
   {sim.m<-rnorm(length(means),mean=means,sd=sqrt(distmgivenx$varmat))     #added in the new program
-   sim.m2<-match.margin(c(range(means),sim.m))}                          #added in the new program   
-else{
-sim.m<-t(apply(means,1,mult.norm,vari=distmgivenx$varmat,n=1))
-
-range.means<-apply(means,2,range)
-
-sim.m2<-apply(rbind(range.means,sim.m),2,match.margin)    #to make the simulate fit the means' ranges
-}
-n<-dim(sim.m2)[1]
-if(!is.null(binm))
-  for (i in 1:length(binm))
-    sim.m2[,i]<-rbinom(n,size=1,prob=sim.m2[,i])
-
-if(!is.null(catm))
-{j<-length(binm)+1
- for (i in 2:(catm$n+1))
- {a<-sim.m2[,j:(j+length(catm[[i]])-1)]
+  sim.m2<-match.margin(c(range(means,na.rm=T),sim.m))}                          #added in the new program   
+  else{
+    sim.m<-t(apply(means,1,mult.norm,vari=distmgivenx$varmat,n=1))
+    
+    range.means<-apply(means,2,range,na.rm=T)
+    
+    sim.m2<-apply(rbind(range.means,sim.m),2,match.margin)    #to make the simulate fit the means' ranges
+  }
+  n<-dim(sim.m2)[1]
+  if(!is.null(binm))
+    for (i in 1:length(binm))
+      sim.m2[,i]<-rbinom(n,size=1,prob=sim.m2[,i])
+  
+  if(!is.null(catm))
+  {j<-length(binm)+1
+  for (i in 2:(catm$n+1))
+  {a<-sim.m2[,j:(j+length(catm[[i]])-1)]
   sim.m2[,j:(j+length(catm[[i]])-1)]<-t(apply(a,1,gen.mult))
   j<-j+length(catm[[i]])}
-}
-
-x1[,c(binm1,contm)]<-sim.m2
-
-x1
-}
-
+  }
+  
+  x1[,c(binm1,contm)]<-sim.m2
+  
+  x1
+  }
+  
   
   if(is.null(catm))
-  multi=jointm
+    multi=jointm
   else if(is.null(jointm))
     multi=catm
   else {temp1<-catm
-        temp2<-jointm
-        temp1[[1]]=catm[[1]]+jointm[[1]]
-        temp2[[1]]<-NULL
-        multi=append(temp1,temp2)} 
- listm=list(single=c(contm,binm),multi=multi)
- 
- nonmissing<-apply(cbind(y,x[,c(dirx,listm$single)]),1,anymissing)
+  temp2<-jointm
+  temp1[[1]]=catm[[1]]+jointm[[1]]
+  temp2[[1]]<-NULL
+  multi=append(temp1,temp2)} 
+  listm=list(single=c(contm,binm),multi=multi)
+  
+  nonmissing<-apply(cbind(y,x[,c(dirx,listm$single)]),1,anymissing)
   x<-x[nonmissing,]
   y<-y[nonmissing]
- 
+  
   #1.fit the model
-  if(mart)
+  if(nonlinear)
   {full.model<-suppressWarnings(gbm.fit(x,y, n.trees=200, interaction.depth=D, shrinkage=nu,
-                       distribution=distn,train.fraction=1.0, bag.fraction=0.5, verbose=FALSE))
-   best.iter1<-suppressWarnings(gbm.perf(full.model,plot.it=FALSE,method="OOB"))         
-   while(full.model$n.trees-best.iter1<30){
-     full.model<-gbm.more(full.model, 50)           # do another 50 iterations
-     best.iter1<-suppressWarnings(gbm.perf(full.model,plot.it=FALSE,method="OOB"))}
+                                        distribution=distn,train.fraction=1.0, bag.fraction=0.5, verbose=FALSE))
+  best.iter1<-suppressWarnings(gbm.perf(full.model,plot.it=FALSE,method="OOB"))         
+  while(full.model$n.trees-best.iter1<30){
+    full.model<-gbm.more(full.model, 50)           # do another 50 iterations
+    best.iter1<-suppressWarnings(gbm.perf(full.model,plot.it=FALSE,method="OOB"))}
   }
   else
-    {full.model<-glm(y~., data=x, family=family1)
-     best.iter1=NULL}
+  {full.model<-glm(y~., data=x, family=family1)
+  best.iter1=NULL}
   
   #2. prepare for the store of results
   set.seed(seed)
-  te<-rep(0,n)
-  mul<-ifelse(is.null(listm$multi),0,listm$multi[[1]])        #added in the new program, in case multi is null
-  denm<-matrix(0,n,1+length(listm$single)+mul)                #added in the new program, in case multi is null
+  n.new<-nrow(x.new)
+  te<-rep(0,n.new)
+  
+  #3. get the joint distribution of m given x
+  distmgivenx<-dist.m.given.x(x,dirx,binm,contm,catm,nonlinear,df)
+  te1<-NULL
+  #x1<-x.new
+  #x1[,dirx]<-x[,dirx]+margin
+  #ybar0<-mean(predict(full.model,x,best.iter1),na.rm=T)
+  
+  n1<-dim(x)[1]
+  denm1<-NULL
+  
+  #4. repeat to get the mediation effect
+  for (k in 1:n)
+  {new0<-sim.xm(distmgivenx,x.new,dirx,binm,contm,catm) #draw ms conditional on x.new
+  x1<-new0
+  x1[,dirx]<-new0[,dirx]+margin #assume can change x without changing others
+  ybar0<-predict(full.model,new0,best.iter1)
+  denm2<-(predict(full.model,x1,best.iter1)-ybar0)/margin
+  new1<-sim.xm(distmgivenx,x1,dirx,binm,contm,catm)  #draw from the conditional distribution of m given x
+  #4.1 get the te
+  te1<-cbind(te1, (predict(full.model,new1,best.iter1)-ybar0)/margin)
+  
+  #4.2 mediation effect from the single mediator
+  if (!is.null(listm$single))
+    for (i in 1:length(listm$single))
+    {new1.nm<-new1
+    new1.nm[,listm$single[i]]<-new0[,listm$single[i]]    #draw m from its original distribution
+    denm2<-cbind(denm2,(predict(full.model,new1.nm,best.iter1)-ybar0)/margin)
+    }
+  
+  #4.3.mediation effect from the joint mediator
+  if (!is.null(listm$multi))
+    for (i in 2:(listm$multi[[1]]+1))
+    {new1.nm<-new1
+    new1.nm[,listm$multi[[i]]]<-new0[,listm$multi[[i]]]    #draw joint m from its original distribution
+    denm2<-cbind(denm2,(predict(full.model,new1.nm,best.iter1)-ybar0)/margin)
+    }
+  denm1<-rbind(denm1,denm2)
+  } 
+  
+  #4.4 get the indirect effects
+  denm<-apply(denm1,2,col_mean,n.new)
+  te<-apply(te1,1,mean)
+  ie<-te-denm
   if(!is.null(listm$multi))
     colnames(denm)<-c("de",names(x)[listm$single],paste("j",1:listm$multi[[1]],sep=""))
   else 
     colnames(denm)<-c("de",names(x)[listm$single])
-  ie<-denm
+  if(!is.null(listm$multi))
+    colnames(ie)<-c("all",names(x)[listm$single],paste("j",1:listm$multi[[1]],sep=""))
+  else 
+    colnames(ie)<-c("all",names(x)[listm$single])
   
-  #3. get the joint distribution of m given x
-  distmgivenx<-dist.m.given.x(x,dirx,binm,contm,catm) 
-  x1<-x
-  x1[,dirx]<-x[,dirx]+margin
-  ybar0<-mean(predict(full.model,x,best.iter1),na.rm=T)
-  
-  n1<-dim(x)[1]
-  
-  denm[1:n,1]<-mean(predict(full.model,x1,best.iter1),na.rm=T)-ybar0   #assume can change x without changing others
-  
-  #4. repeat to get the mediation effect
-  for (k in 1:n)
-  {new1<-sim.xm(distmgivenx,x1,dirx,binm,contm,catm)  #draw from the conditional distribution of m given x
-   #4.1 get the te
-   te[k]<-mean(predict(full.model,new1,best.iter1),na.rm=T)-ybar0
-   
-   j<-2
-   #4.2 mediation effect from the single mediator
-   if (!is.null(listm$single))
-     for (i in listm$single)
-     {new1.nm<-new1
-      new1.nm[,listm$single[j-1]]<-x[sample(n1,replace=T),listm$single[j-1]]    #draw m from its original distribution
-      denm[k,j]<-mean(predict(full.model,new1.nm,best.iter1),na.rm=T)-ybar0
-      j<-j+1}
-   
-   #4.3.mediation effect from the joint mediator
-   if (!is.null(listm$multi))
-     for (i in 2:(listm$multi[[1]]+1))
-     {new1.nm<-new1
-      new1.nm[,listm$multi[[i]]]<-x[sample(n1,replace=T),listm$multi[[i]]]    #draw joint m from its original distribution
-      denm[k,j]<-mean(predict(full.model,new1.nm,best.iter1),na.rm=T)-ybar0
-      j<-j+1}
-   
-   #4.4 get the indirect effects
-   ie[k,]<-te[k]-denm[k,]
-  } 
-  a<-list(denm=denm,ie=ie,te=te,model=list(MART=mart,model=full.model,best.iter=best.iter1))
+  a<-list(denm=denm,ie=ie,te=te,model=list(MART=nonlinear,model=full.model,best.iter=best.iter1))
+  class(a)<-"med"
   return(a)
 }
 
+ if(is.character(y) | is.factor(y) | nlevels(as.factor(y))==2)
+  {biny=T
+   if(is.null(family1))
+     family1 = binomial("logit")
+   if(is.null(distn))
+     distn = "bernoulli"}
+  else
+  {biny=F
+   if(is.null(family1))
+    family1 = gaussian(link = "identity")
+   if(is.null(distn))
+    distn = "gaussian"}
+  
+  if(binpred)
+    a<-med.binx(data=data, x=x, y=y, dirx=dirx, contm = contm, 
+                catm=catm, jointm=jointm, allm=allm, n=n,seed=seed,
+                nonlinear=nonlinear,nu=nu,D=D,distn=distn,family1=family1,
+                biny=biny,refy=refy)
+  else
+    a<-med.contx(data=data,x=x,y=y,dirx=dirx,binm=binm,contm=contm,
+                 catm=catm, jointm=jointm, margin=margin, n=n, seed=seed, 
+                 nonlinear=nonlinear, df=df, nu=nu,D=D, distn=distn, 
+                 family1=family1,biny=biny,refy=refy,x.new=x.new)
+  return(a)
+}
+  
 
-boot.med.contx<-function(x,y,dirx,binm=NULL,contm=NULL,catm=NULL, 
-                         jointm=NULL, margin=1, n=20,seed=sample(1:1000,1),
-                         mart=F,nu=0.001,D=3,distn="gaussian",
+print.med<-function(x,...)
+{cat("The estimated total effect:")
+  print(mean(x$te,na.rm=T))
+ cat("\nThe estimated indirect effect:\n")
+  print(apply(x$ie,2,mean,na.rm=T))
+}
+
+boot.med<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,contm=data$contm,catm=data$catm,
+                        jointm=data$jointm,margin=1,n=20,seed=sample(1:1000,1),nonlinear=F,df=1,nu=0.001,
+                        D=3,distn=NULL,family1=NULL,n2=50,
+                        weight=rep(1,length(y)),refy=NULL,x.new=x,binpred=data$binpred)
+{boot.med.binx<-function(data,x=data$x, y=data$y,dirx=data$dirx,contm=data$contm,catm=data$catm,
+                         jointm=data$jointm,n=20,seed=sample(1:1000,1),n2=50,nonlinear=F,nu=0.001,
+                         D=3,distn="bernoulli",family1=binomial("logit"),
+                         weight=rep(1,length(y)),biny=F,refy=0)
+  #n2 is the time of bootstrap
+{
+  med.binx<-function(data, x=data$x, y=data$y, dirx=data$dirx, contm = data$contm, 
+                     catm = data$catm, jointm = data$jointm, 
+                     allm = c(contm, catm), n=20,seed=sample(1:1000,1),nonlinear=F,nu=0.001,
+                     D=3,distn="bernoulli",family1=binomial("logit"),
+                     biny=F,refy=0)
+  {if (is.null(allm))
+    stop("Error: no potential mediator is specified")
+    
+    xnames<-colnames(x)
+    if(is.character(dirx))
+      pred<-grep(dirx,xnames)
+    if(is.character(contm))
+      contm<-unlist(sapply(contm,grep,xnames))
+    if(is.character(catm))
+      catm<-unlist(sapply(catm,grep,xnames))
+    if(!is.null(jointm))
+      for (i in 2:length(jointm))
+        if(is.character(jointm[[i]]))
+          jointm[[i]]<-unlist(sapply(jointm[[i]],grep,xnames))
+    
+    allm=c(contm,catm)
+    
+    if(biny)                     #recode y if y is binary
+      y<-ifelse(y==refy,0,1)
+    
+    x<-x[!is.na(y),]             #delete nas in y for mart
+    y<-y[!is.na(y)]
+    
+    te.binx<-function(full.model,x,y,dirx,best.iter1=NULL)       
+    {x1<-x[x[,dirx]==1,]
+    x0<-x[x[,dirx]==0,]
+    n3<-dim(x)[1]
+    new1<-x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),]
+    new0<-x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),]
+    te<-mean(predict(full.model,new1,best.iter1),na.rm=T)- mean(predict(full.model,new0,best.iter1),na.rm=T)
+    te
+    }
+    
+    med.binx.contm<-function(full.model,x,y,med,dirx,best.iter1=NULL)  
+    {x1<-x[x[,dirx]==1,]                               
+    x0<-x[x[,dirx]==0,]
+    n3<-dim(x)[1]
+    marg.m<-c(x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),med],x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),med])
+    marg.m<-marg.m[sample(2*floor(n3/2))]
+    nom1<-x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),]
+    nom0<-x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),]
+    new1<-nom1
+    new1[,med]<-marg.m[1:floor(n3/2)]
+    new0<-nom0
+    new0[,med]<-marg.m[(floor(n3/2)+1):(2*floor(n3/2))]
+    dir.nom<-mean(predict(full.model,new1,best.iter1),na.rm=T)- mean(predict(full.model,new0,best.iter1),na.rm=T)
+    dir.nom
+    }
+    
+    med.binx.jointm<-function(full.model,x,y,med,dirx,best.iter1=NULL)  
+    {x1<-x[x[,dirx]==1,]                               
+    x0<-x[x[,dirx]==0,]
+    n3<-dim(x)[1]
+    if (length(med)==1)                       #added for the new program, when there is only one mediator
+    {sample.temp<-sample(c(sample(which(x[,dirx]==1),floor(n3/2),replace=T),
+                           sample(which(x[,dirx]==0),floor(n3/2),replace=T)))
+    marg.m<-x[sample.temp,med]}        #added for the new program
+    else                                         #added for the new program
+    {marg.m<-rbind(x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),med],x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),med])
+    marg.m<-marg.m[sample(2*floor(n3/2)),]  }     
+    nom1<-x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),]
+    nom0<-x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),]
+    new1<-nom1
+    new0<-nom0
+    if(length(med)==1)                                       #added for the new program, when there is only one mediator
+    {new1[,med]<-marg.m[1:floor(n3/2)]                     #added for the new program 
+    new0[,med]<-marg.m[(floor(n3/2)+1):(2*floor(n3/2))]}  #added for the new program
+    else                                                     #added for the new program
+    {new1[,med]<-marg.m[1:floor(n3/2),]
+    new0[,med]<-marg.m[(floor(n3/2)+1):(2*floor(n3/2)),]}
+    dir.nom<-mean(predict(full.model,new1,best.iter1),na.rm=T)- mean(predict(full.model,new0,best.iter1),na.rm=T)
+    dir.nom
+    }
+    
+    med.binx.catm<-function(full.model,x,y,med,dirx,best.iter1=NULL)  
+    {x1<-x[x[,dirx]==1,]                               
+    x0<-x[x[,dirx]==0,]
+    n3<-dim(x)[1]
+    marg.m1<-x1[sample(dim(x1)[1],floor(n3/2),replace=T),med]
+    marg.m2<-x0[sample(dim(x0)[1],floor(n3/2),replace=T),med]
+    nom1<-x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),]
+    nom0<-x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),]
+    dir.nom<-0
+    for (i in levels(x[,med]))
+    {new1<-nom1
+    new1[1:dim(new1)[1],med]<-i
+    new0<-nom0
+    new0[1:dim(new0)[1],med]<-i
+    p<-0.5*mean(marg.m1==i,na.rm=T)+ 0.5*mean(marg.m2==i,na.rm=T)
+    dir.nom<-dir.nom+p*(mean(predict(full.model,new1,best.iter1),na.rm=T)- mean(predict(full.model,new0,best.iter1),na.rm=T))
+    }
+    dir.nom
+    }
+    
+    #1.fit the model
+    if (nonlinear)
+    {full.model<-suppressWarnings(gbm.fit(x,y, n.trees=200, interaction.depth=D, shrinkage=nu,
+                                          distribution=distn,train.fraction=1.0, bag.fraction=0.5, verbose=FALSE))
+    best.iter1<-suppressWarnings(gbm.perf(full.model,plot.it=FALSE,method="OOB"))
+    while(full.model$n.trees-best.iter1<30){
+      full.model<-gbm.more(full.model, 50)           # do another 50 iterations
+      best.iter1<-suppressWarnings(gbm.perf(full.model,plot.it=FALSE,method="OOB"))}}
+    else
+    {full.model<-glm(y~., data=x, family=family1)
+    best.iter1=NULL}
+    #2. prepare for the store of results
+    set.seed(seed)
+    te<-rep(0,n)
+    if(!is.null(jointm))
+    {denm<-matrix(0,n,1+length(c(contm,catm))+jointm[[1]])
+    dimnames(denm)[[2]]<-c("de",names(x)[c(contm,catm)],paste("j",1:jointm[[1]],sep=""))}
+    else
+    {denm<-matrix(0,n,1+length(c(contm,catm)))
+    dimnames(denm)[[2]]<-c("de",names(x)[c(contm,catm)])}
+    ie<-denm
+    #3. repeat to get the mediation effect
+    for (k in 1:n)
+    {#3.1 get the te         full.model,x,y,dirx,best.iter1=NULL
+      te[k]<-te.binx(full.model,x,y,dirx,best.iter1)
+      denm[k,1]<-med.binx.jointm(full.model,x,y,allm,dirx,best.iter1)
+      j<-2
+      #3.2 mediation effect from the continuous mediator
+      if (!is.null(contm))
+        for (i in contm)          #full.model,x,y,med,dirx,best.iter1=NULL
+        {denm[k,j]<-med.binx.contm(full.model,x,y,i,dirx,best.iter1)
+        j<-j+1}
+      #3.3.mediation effect from the categorical mediator
+      if (!is.null(catm))
+        for (i in catm)           #full.model,x,y,med,dirx,best.iter1=NULL
+        {denm[k,j]<-med.binx.catm(full.model,x,y,i,dirx,best.iter1)
+        j<-j+1}
+      #3.4 mediation effect from the joint mediators
+      if (!is.null(jointm))
+        for (i in 1:jointm[[1]])          #full.model,x,y,med,dirx,best.iter1=NULL
+        {denm[k,j]<-med.binx.jointm(full.model,x,y,jointm[[i+1]],dirx,best.iter1)
+        j<-j+1}
+      
+      #3.5 get the indirect effects
+      ie[k,]<-te[k]-denm[k,]
+      if(!is.null(jointm))
+        dimnames(ie)[[2]]<-c("all",names(x)[c(contm,catm)],paste("j",1:jointm[[1]],sep=""))
+      else
+        dimnames(ie)[[2]]<-c("all",names(x)[c(contm,catm)])
+    }
+    a<-list(denm=denm,ie=ie,te=te,model=full.model,best.iter=best.iter1)
+    class(a)<-"med"
+    return(a)
+  }  
+  
+  if (is.null(c(contm,catm)))
+    stop("Error: no potential mediator is specified")
+  
+  xnames<-colnames(x)
+  if(is.character(dirx))
+    pred<-grep(dirx,xnames)
+  if(is.character(contm))
+    contm<-unlist(sapply(contm,grep,xnames))
+  if(is.character(catm))
+    catm<-unlist(sapply(catm,grep,xnames))
+  if(!is.null(jointm))
+    for (i in 2:length(jointm))
+      if(is.character(jointm[[i]]))
+        jointm[[i]]<-unlist(sapply(jointm[[i]],grep,xnames))
+  
+  allm=c(contm,catm)
+  te<-rep(0,n2+1)
+  de<-rep(0,n2+1)
+  if(is.null(jointm))
+  {ie<-matrix(0,n2+1,1+length(c(contm,catm)))
+  dimnames(ie)[[2]]<-c("all",names(x)[c(contm,catm)])}
+  else
+  {ie<-matrix(0,n2+1,1+length(c(contm,catm))+jointm[[1]])
+  dimnames(ie)[[2]]<-c("all",names(x)[c(contm,catm)],paste("j",1:jointm[[1]],sep=""))}
+  temp<-med.binx(data=F,x,y,dirx,contm,catm,jointm,allm,n,seed,nonlinear,nu,D,distn,family1,biny,refy)
+  te[1]<-mean(temp$te)
+  de[1]<-mean(temp$denm[,1])
+  ie[1,]<-apply(temp$ie,2,mean)  #first row is the estimated value
+  model<-temp$model
+  best.iter<-temp$best.iter
+  for (i in 1:n2)
+  {boots<-sample(1:length(y),replace=T,prob=weight)
+  x1<-x[boots,]
+  y1<-y[boots]
+  temp<-med.binx(data=F,x1,y1,dirx,contm,catm,jointm,allm,n,seed+i,nonlinear,nu,D,distn,family1,biny,refy)
+  te[1+i]<-mean(temp$te)
+  de[1+i]<-mean(temp$denm[,1])
+  ie[1+i,]<-apply(temp$ie,2,mean)  #first row is the estimated value
+  }
+  a<-list(estimation=list(ie=ie[1,],te=te[1],de=de[1]),bootsresults=list(ie=ie[-1,],te=te[-1],de=de[-1]),model=list(MART=nonlinear,model=model,best.iter=best.iter), 
+          data=list(x=x,y=y,dirx=dirx,contm=contm,catm=catm,jointm=jointm,binpred=T))
+  class(a)<-"mma"
+  return(a)
+}
+
+boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,binm=data$binm,contm=data$contm,
+                         catm=data$catm, jointm=data$jointm, margin=1, n=20,seed=sample(1:1000,1),
+                         nonlinear=F,df=1,nu=0.001,D=3,distn="gaussian",
                          family1=gaussian(link="identity"),n2=50,
-                         weight=rep(1,length(y)))
+                         weight=rep(1,length(y)),biny=F,refy=0,x.new=x)
+{med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,binm=data$binm,contm=data$contm,
+                     catm=data$catm, jointm=data$jointm, margin=1, n=20,seed=sample(1:1000,1),
+                     nonlinear=F,df=1,nu=0.001,D=3,distn="gaussian",family1=gaussian(link="identity"),
+                     biny=F,refy=0,x.new=x)
 {if (is.null(c(binm,contm,catm)))
   stop("Error: no potential mediator is specified")
   
- if(is.null(catm))
-  {multi=jointm
-   name1<-NULL                       #added in the new program
-   if (!is.null(multi))              #added in the new program, in case that multi is NULL
-   name1<-paste("j",1:multi[[1]],sep="")}
- else if(is.null(jointm))
-  {multi=catm
-   name1<-NULL
-   for (i in 2:(catm[[1]]+1))
-   name1<-c(name1,names(x)[multi[[i]][1]])}
- else {temp1<-catm
-       temp2<-jointm
-       temp1[[1]]=catm[[1]]+jointm[[1]]
-       temp2[[1]]<-NULL
-       multi=append(temp1,temp2)
-       name1<-NULL
-       for (i in 2:(catm[[1]]+1))
-            name1<-c(name1,names(x)[multi[[i]][1]])
-       name1<-c(name1,paste("j",1:jointm[[1]],sep=""))} 
- listm=list(single=c(contm,binm),multi=multi)
- 
- te<-rep(0,n2+1)
- de<-rep(0,n2+1)
- mul<-ifelse(is.null(multi),0,multi[[1]])        #added in the new program, in case multi is null
- ie<-matrix(0,n2+1,1+length(listm$single)+mul)   #added in the new program
- if(!is.null(listm$multi))
-   dimnames(ie)[[2]]<-c("all",names(x)[listm$single],name1)
- else 
-   dimnames(ie)[[2]]<-c("all",names(x)[listm$single])
- 
- temp<-med.contx(x,y,dirx,binm,contm,catm,jointm, margin,n,seed,mart,nu,D,distn,family1)
- 
- te[1]<-mean(temp$te)
- de[1]<-mean(temp$denm[,1]) 
- ie[1,]<-apply(temp$ie,2,mean)  #first row is the estimated value
- model<-temp$model
- for (l in 1:n2)
- {boots<-sample(1:length(y),replace=T, prob=weight)
+  xnames<-colnames(x)
+  if(is.character(dirx))
+    pred<-grep(dirx,xnames)
+  if(is.character(contm))
+    contm<-unlist(sapply(contm,grep,xnames))
+  if(is.character(binm))
+    binm<-unlist(sapply(binm,grep,xnames))
+  if(!is.null(catm))
+    for (i in 2:length(catm))
+      if(is.character(catm[[i]]))
+        catm[[i]]<-unlist(sapply(catm[[i]],grep,xnames))
+  if(!is.null(jointm))
+    for (i in 2:length(jointm))
+      if(is.character(jointm[[i]]))
+        jointm[[i]]<-unlist(sapply(jointm[[i]],grep,xnames))
+  
+  if(biny)                     #recode y if y is binary
+    y<-ifelse(y==refy,0,1)
+  
+  x<-x[!is.na(y),]             #delete nas in y for mart
+  y<-y[!is.na(y)]
+  
+  anymissing<-function(vec)
+  {if(sum(is.na(vec))>0)
+    return(F)
+    else return(T)
+  }
+  
+  col_mean<-function(col,n.row)
+  {temp<-matrix(col,n.row)
+  apply(temp,1,mean,na.rm=T)}
+  
+  
+  dist.m.given.x<-function(x,dirx,binm=NULL,contm=NULL,catm=NULL,nonlinear,df)
+  {models<-NULL
+  res<-NULL
+  if(!is.null(catm))
+  {for (i in 2:(catm$n+1))
+    binm<-c(binm,catm[[i]])}
+  
+  z<-x[,dirx]
+  j<-1
+  if(!is.null(binm))
+  {for(i in binm)
+  {if(nonlinear)
+    models[[j]]<-glm(x[,i]~ns(z,df=df),family=binomial(link = "logit"))
+  else
+    models[[j]]<-glm(x[,i]~z,family=binomial(link = "logit"))
+  res<-cbind(res,x[,i]-predict(models[[j]],type = "response",newdata=data.frame(z=z)))
+  j<-j+1}
+  }
+  for (i in contm)
+  {if(nonlinear)
+    models[[j]]<-glm(x[,i]~ns(z,df=df),family=gaussian(link="identity"))
+  else
+    models[[j]]<-glm(x[,i]~z,family=gaussian(link="identity"))
+  res<-cbind(res,models[[j]]$res)
+  j<-j+1
+  }
+  list(models=models,varmat=var(res))
+  }
+  
+  
+  sim.xm<-function(distmgivenx,x1,dirx,binm,contm,catm)
+  {mult.norm<-function(mu,vari,n) 
+  {  if (nrow(vari)!=ncol(vari)) 
+  {result<-c("Error: Variance matrix is not square")}  
+    else if (length(mu)!=nrow(vari)) 
+    {result<-c("Error: length mu is not right!")}  
+    else {   p<-length(mu)
+    tmp1<-eigen(vari)$values
+    tmp2<-eigen(vari)$vectors   
+    result<-matrix(0,n,p)   
+    for (i in 1:p)
+    {result[,i]<-rnorm(n,mean=0,sd=sqrt(tmp1[i]))}   
+    for (i in 1:n)
+    {result[i,]<-tmp2%*%result[i,]+mu}
+    }  
+    result
+  }
+  
+  match.margin<-function(vec)   
+  {range1<-vec[1:2]
+  vec1<-vec[-(1:2)]
+  range2<-range(vec1,na.rm=T)
+  vec1<-range1[1]+diff(range1)/diff(range2)*(vec1-range2[1])
+  vec1
+  }
+  
+  gen.mult<-function(vec)
+  {l<-1-sum(vec)
+  l<-ifelse(l<0,0,l)
+  rmultinom(1,size=1,prob=c(l,vec))[-1]
+  }
+  
+  means<-NULL
+  z<-x1[,dirx]
+  binm1<-binm
+  if(!is.null(catm))
+  {for (i in 2:(catm$n+1))
+    binm1<-c(binm1,catm[[i]])}
+  
+  if(!is.null(binm1))
+    for (i in 1:length(binm1))
+      means<-cbind(means,predict(distmgivenx$models[[i]],type = "response",newdata=data.frame(z=z)))
+  
+  if(!is.null(contm))
+    for (i in (length(binm1)+1):length(c(binm1,contm)))
+      means<-cbind(means,predict(distmgivenx$models[[i]],newdata=data.frame(z=z)))
+  
+  if(dim(means)[2]==1)                                                   #added in the new program, in case there is only one mediator
+  {sim.m<-rnorm(length(means),mean=means,sd=sqrt(distmgivenx$varmat))     #added in the new program
+  sim.m2<-match.margin(c(range(means,na.rm=T),sim.m))}                          #added in the new program   
+  else{
+    sim.m<-t(apply(means,1,mult.norm,vari=distmgivenx$varmat,n=1))
+    
+    range.means<-apply(means,2,range,na.rm=T)
+    
+    sim.m2<-apply(rbind(range.means,sim.m),2,match.margin)    #to make the simulate fit the means' ranges
+  }
+  n<-dim(sim.m2)[1]
+  if(!is.null(binm))
+    for (i in 1:length(binm))
+      sim.m2[,i]<-rbinom(n,size=1,prob=sim.m2[,i])
+  
+  if(!is.null(catm))
+  {j<-length(binm)+1
+  for (i in 2:(catm$n+1))
+  {a<-sim.m2[,j:(j+length(catm[[i]])-1)]
+  sim.m2[,j:(j+length(catm[[i]])-1)]<-t(apply(a,1,gen.mult))
+  j<-j+length(catm[[i]])}
+  }
+  
+  x1[,c(binm1,contm)]<-sim.m2
+  
+  x1
+  }
+  
+  
+  if(is.null(catm))
+    multi=jointm
+  else if(is.null(jointm))
+    multi=catm
+  else {temp1<-catm
+  temp2<-jointm
+  temp1[[1]]=catm[[1]]+jointm[[1]]
+  temp2[[1]]<-NULL
+  multi=append(temp1,temp2)} 
+  listm=list(single=c(contm,binm),multi=multi)
+  
+  nonmissing<-apply(cbind(y,x[,c(dirx,listm$single)]),1,anymissing)
+  x<-x[nonmissing,]
+  y<-y[nonmissing]
+  
+  #1.fit the model
+  if(nonlinear)
+  {full.model<-suppressWarnings(gbm.fit(x,y, n.trees=200, interaction.depth=D, shrinkage=nu,
+                                        distribution=distn,train.fraction=1.0, bag.fraction=0.5, verbose=FALSE))
+  best.iter1<-suppressWarnings(gbm.perf(full.model,plot.it=FALSE,method="OOB"))         
+  while(full.model$n.trees-best.iter1<30){
+    full.model<-gbm.more(full.model, 50)           # do another 50 iterations
+    best.iter1<-suppressWarnings(gbm.perf(full.model,plot.it=FALSE,method="OOB"))}
+  }
+  else
+  {full.model<-glm(y~., data=x, family=family1)
+  best.iter1=NULL}
+  
+  #2. prepare for the store of results
+  set.seed(seed)
+  n.new<-nrow(x.new)
+  te<-rep(0,n.new)
+  
+  #3. get the joint distribution of m given x
+  distmgivenx<-dist.m.given.x(x,dirx,binm,contm,catm,nonlinear,df)
+  te1<-NULL
+  #x1<-x.new
+  #x1[,dirx]<-x[,dirx]+margin
+  #ybar0<-mean(predict(full.model,x,best.iter1),na.rm=T)
+  
+  n1<-dim(x)[1]
+  denm1<-NULL
+  
+  #4. repeat to get the mediation effect
+  for (k in 1:n)
+  {new0<-sim.xm(distmgivenx,x.new,dirx,binm,contm,catm) #draw ms conditional on x.new
+  x1<-new0
+  x1[,dirx]<-new0[,dirx]+margin #assume can change x without changing others
+  ybar0<-predict(full.model,new0,best.iter1)
+  denm2<-(predict(full.model,x1,best.iter1)-ybar0)/margin
+  new1<-sim.xm(distmgivenx,x1,dirx,binm,contm,catm)  #draw from the conditional distribution of m given x
+  #4.1 get the te
+  te1<-cbind(te1, (predict(full.model,new1,best.iter1)-ybar0)/margin)
+  
+  #4.2 mediation effect from the single mediator
+  if (!is.null(listm$single))
+    for (i in 1:length(listm$single))
+    {new1.nm<-new1
+    new1.nm[,listm$single[i]]<-new0[,listm$single[i]]    #draw m from its original distribution
+    denm2<-cbind(denm2,(predict(full.model,new1.nm,best.iter1)-ybar0)/margin)
+    }
+  
+  #4.3.mediation effect from the joint mediator
+  if (!is.null(listm$multi))
+    for (i in 2:(listm$multi[[1]]+1))
+    {new1.nm<-new1
+    new1.nm[,listm$multi[[i]]]<-new0[,listm$multi[[i]]]    #draw joint m from its original distribution
+    denm2<-cbind(denm2,(predict(full.model,new1.nm,best.iter1)-ybar0)/margin)
+    }
+  denm1<-rbind(denm1,denm2)
+  } 
+  
+  #4.4 get the indirect effects
+  denm<-apply(denm1,2,col_mean,n.new)
+  te<-apply(te1,1,mean)
+  ie<-te-denm
+  if(!is.null(listm$multi))
+    colnames(denm)<-c("de",names(x)[listm$single],paste("j",1:listm$multi[[1]],sep=""))
+  else 
+    colnames(denm)<-c("de",names(x)[listm$single])
+  if(!is.null(listm$multi))
+    colnames(ie)<-c("all",names(x)[listm$single],paste("j",1:listm$multi[[1]],sep=""))
+  else 
+    colnames(ie)<-c("all",names(x)[listm$single])
+  
+  a<-list(denm=denm,ie=ie,te=te,model=list(MART=nonlinear,model=full.model,best.iter=best.iter1))
+  class(a)<-"med"
+  return(a)
+}
+
+if (is.null(c(binm,contm,catm)))
+  stop("Error: no potential mediator is specified")
+
+xnames<-colnames(x)
+if(is.character(dirx))
+  pred<-grep(dirx,xnames)
+if(is.character(contm))
+  contm<-unlist(sapply(contm,grep,xnames))
+if(is.character(binm))
+  binm<-unlist(sapply(binm,grep,xnames))
+if(!is.null(catm))
+  for (i in 2:length(catm))
+    if(is.character(catm[[i]]))
+      catm[[i]]<-unlist(sapply(catm[[i]],grep,xnames))
+if(!is.null(jointm))
+  for (i in 2:length(jointm))
+    if(is.character(jointm[[i]]))
+      jointm[[i]]<-unlist(sapply(jointm[[i]],grep,xnames))
+
+if(is.null(catm))
+{multi=jointm
+name1<-NULL                       #added in the new program
+if (!is.null(multi))              #added in the new program, in case that multi is NULL
+  name1<-paste("j",1:multi[[1]],sep="")}
+else if(is.null(jointm))
+{multi=catm
+name1<-NULL
+for (i in 2:(catm[[1]]+1))
+  name1<-c(name1,names(x)[multi[[i]][1]])}
+else {temp1<-catm
+temp2<-jointm
+temp1[[1]]=catm[[1]]+jointm[[1]]
+temp2[[1]]<-NULL
+multi=append(temp1,temp2)
+name1<-NULL
+for (i in 2:(catm[[1]]+1))
+  name1<-c(name1,names(x)[multi[[i]][1]])
+name1<-c(name1,paste("j",1:jointm[[1]],sep=""))} 
+listm=list(single=c(contm,binm),multi=multi)
+
+te<-rep(0,n2+1)
+de<-rep(0,n2+1)
+mul<-ifelse(is.null(multi),0,multi[[1]])        #added in the new program, in case multi is null
+ie<-matrix(0,n2+1,1+length(listm$single)+mul)   #added in the new program
+if(!is.null(listm$multi))
+  dimnames(ie)[[2]]<-c("all",names(x)[listm$single],name1)
+else 
+  dimnames(ie)[[2]]<-c("all",names(x)[listm$single])
+
+temp<-med.contx(data=F,x=x,y=y,dirx=dirx,binm=binm,contm=contm,catm=catm,jointm=jointm, 
+                margin=margin,n=n,seed=seed,nonlinear=nonlinear,df=df,nu=nu,D=D,distn=distn,family1=family1,biny=biny,
+                refy=refy,x.new=x.new)
+te[1]<-mean(temp$te,na.rm=T)
+de[1]<-mean(temp$denm[,1],na.rm=T) 
+ie[1,]<-apply(temp$ie,2,mean,na.rm=T)  #first row is the estimated value
+te1<-NULL                      #to store the mediation effects on predictor
+de1<-NULL
+ie1<-NULL
+model<-temp$model
+for (l in 1:n2)
+{boots<-sample(1:length(y),replace=T, prob=weight)
+x1<-x[boots,]
+y1<-y[boots]
+temp<-med.contx(data=F,x1,y1,dirx,binm,contm,catm,jointm, margin,n,seed+l,nonlinear,df,nu,D,distn,family1,biny,refy,x.new) #added to the new codel, change the seed to make different results
+te[1+l]<-mean(temp$te,na.rm=T)
+de[1+l]<-mean(temp$denm[,1],na.rm=T)
+ie[1+l,]<-apply(temp$ie,2,mean,na.rm=T)  #first row is the estimated value
+te1<-cbind(te1,temp$te)
+de1<-cbind(de1,temp$denm[,1])
+ie1<-rbind(ie1,temp$ie)
+}
+a<-list(estimation=list(ie=ie[1,],te=te[1],de=de[1]),bootsresults=list(ie=ie[-1,],te=te[-1],de=de[-1]),model=model,
+        data=list(x=x,y=y,dirx=dirx,binm=binm,contm=contm,catm=catm, jointm=jointm, binpred=F),
+        boot.detail=list(x.new=x.new[,dirx],te1=te1,de1=de1,ie1=ie1))
+class(a)<-"mma"
+return(a)
+}
+
+if(is.character(y) | is.factor(y) | nlevels(as.factor(y))==2)
+{biny=T
+if(is.null(family1))
+  family1 = binomial("logit")
+if(is.null(distn))
+  distn = "bernoulli"
+if(!is.null(refy))
+  y<-ifelse(y==refy,0,1)
+else
+  y<-ifelse(as.factor(y)==levels(as.factor(y))[1],0,1)
+}
+else
+{biny=F
+if(is.null(family1))
+  family1 = gaussian(link = "identity")
+if(is.null(distn))
+  distn = "gaussian"
+}
+
+if(binpred)
+  a<-boot.med.binx(data=data,x=x, y=y,dirx=dirx,contm=contm,catm=catm,
+                             jointm=jointm,n=n,seed=seed,n2=n2,nonlinear=nonlinear,nu=nu,
+                             D=D,distn=distn,family1=family1,
+                             weight=weight,biny=biny,refy=0)
+else
+  a<-boot.med.contx(data=data,x=x,y=y,dirx=dirx,binm=binm,contm=contm,
+                    catm=catm, jointm=jointm, margin = margin, n = n, seed = seed, 
+                    nonlinear = nonlinear, df = df, nu = nu, D = D, distn = distn, 
+                    family1 = family1, n2 = n2,weight=weight,
+                    biny=biny,refy=0,x.new=x.new)
+
+return(a)
+}
+
+    
+  
+
+
+mma<-function(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=rep(1,length(binmed)),
+              catmed=NULL,catref=rep(1,length(catmed)),jointm=NULL,refy=NULL,
+              predref=NULL,alpha=0.1,alpha2=0.1, margin=1, n=20,seed=sample(1:1000,1),
+              nonlinear=F,df=1,nu=0.001,D=3,distn=NULL,family1=NULL,n2=50,weight=rep(1,length(y)),x.new=NULL)
+{boot.med.binx<-function(data,x=data$x, y=data$y,dirx=data$dirx,contm=data$contm,catm=data$catm,
+                         jointm=data$jointm,n=20,seed=sample(1:1000,1),n2=50,nonlinear=F,nu=0.001,
+                         D=3,distn="bernoulli",family1=binomial("logit"),
+                         weight=rep(1,length(y)),biny=F,refy=0)
+  #n2 is the time of bootstrap
+{
+  med.binx<-function(data, x=data$x, y=data$y, dirx=data$dirx, contm = data$contm, 
+                     catm = data$catm, jointm = data$jointm, 
+                     allm = c(contm, catm), n=20,seed=sample(1:1000,1),nonlinear=F,nu=0.001,
+                     D=3,distn="bernoulli",family1=binomial("logit"),
+                     biny=F,refy=0)
+  {if (is.null(allm))
+    stop("Error: no potential mediator is specified")
+    
+    xnames<-colnames(x)
+    if(is.character(dirx))
+      pred<-grep(dirx,xnames)
+    if(is.character(contm))
+      contm<-unlist(sapply(contm,grep,xnames))
+    if(is.character(catm))
+      catm<-unlist(sapply(catm,grep,xnames))
+    if(!is.null(jointm))
+      for (i in 2:length(jointm))
+        if(is.character(jointm[[i]]))
+          jointm[[i]]<-unlist(sapply(jointm[[i]],grep,xnames))
+    
+    allm=c(contm,catm)
+    
+    if(biny)                     #recode y if y is binary
+      y<-ifelse(y==refy,0,1)
+    
+    x<-x[!is.na(y),]             #delete nas in y for mart
+    y<-y[!is.na(y)]
+    
+    te.binx<-function(full.model,x,y,dirx,best.iter1=NULL)       
+    {x1<-x[x[,dirx]==1,]
+    x0<-x[x[,dirx]==0,]
+    n3<-dim(x)[1]
+    new1<-x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),]
+    new0<-x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),]
+    te<-mean(predict(full.model,new1,best.iter1),na.rm=T)- mean(predict(full.model,new0,best.iter1),na.rm=T)
+    te
+    }
+    
+    med.binx.contm<-function(full.model,x,y,med,dirx,best.iter1=NULL)  
+    {x1<-x[x[,dirx]==1,]                               
+    x0<-x[x[,dirx]==0,]
+    n3<-dim(x)[1]
+    marg.m<-c(x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),med],x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),med])
+    marg.m<-marg.m[sample(2*floor(n3/2))]
+    nom1<-x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),]
+    nom0<-x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),]
+    new1<-nom1
+    new1[,med]<-marg.m[1:floor(n3/2)]
+    new0<-nom0
+    new0[,med]<-marg.m[(floor(n3/2)+1):(2*floor(n3/2))]
+    dir.nom<-mean(predict(full.model,new1,best.iter1),na.rm=T)- mean(predict(full.model,new0,best.iter1),na.rm=T)
+    dir.nom
+    }
+    
+    med.binx.jointm<-function(full.model,x,y,med,dirx,best.iter1=NULL)  
+    {x1<-x[x[,dirx]==1,]                               
+    x0<-x[x[,dirx]==0,]
+    n3<-dim(x)[1]
+    if (length(med)==1)                       #added for the new program, when there is only one mediator
+    {sample.temp<-sample(c(sample(which(x[,dirx]==1),floor(n3/2),replace=T),
+                           sample(which(x[,dirx]==0),floor(n3/2),replace=T)))
+    marg.m<-x[sample.temp,med]}        #added for the new program
+    else                                         #added for the new program
+    {marg.m<-rbind(x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),med],x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),med])
+    marg.m<-marg.m[sample(2*floor(n3/2)),]  }     
+    nom1<-x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),]
+    nom0<-x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),]
+    new1<-nom1
+    new0<-nom0
+    if(length(med)==1)                                       #added for the new program, when there is only one mediator
+    {new1[,med]<-marg.m[1:floor(n3/2)]                     #added for the new program 
+    new0[,med]<-marg.m[(floor(n3/2)+1):(2*floor(n3/2))]}  #added for the new program
+    else                                                     #added for the new program
+    {new1[,med]<-marg.m[1:floor(n3/2),]
+    new0[,med]<-marg.m[(floor(n3/2)+1):(2*floor(n3/2)),]}
+    dir.nom<-mean(predict(full.model,new1,best.iter1),na.rm=T)- mean(predict(full.model,new0,best.iter1),na.rm=T)
+    dir.nom
+    }
+    
+    med.binx.catm<-function(full.model,x,y,med,dirx,best.iter1=NULL)  
+    {x1<-x[x[,dirx]==1,]                               
+    x0<-x[x[,dirx]==0,]
+    n3<-dim(x)[1]
+    marg.m1<-x1[sample(dim(x1)[1],floor(n3/2),replace=T),med]
+    marg.m2<-x0[sample(dim(x0)[1],floor(n3/2),replace=T),med]
+    nom1<-x1[sample(1:dim(x1)[1],floor(n3/2),replace=T),]
+    nom0<-x0[sample(1:dim(x0)[1],floor(n3/2),replace=T),]
+    dir.nom<-0
+    for (i in levels(x[,med]))
+    {new1<-nom1
+    new1[1:dim(new1)[1],med]<-i
+    new0<-nom0
+    new0[1:dim(new0)[1],med]<-i
+    p<-0.5*mean(marg.m1==i,na.rm=T)+ 0.5*mean(marg.m2==i,na.rm=T)
+    dir.nom<-dir.nom+p*(mean(predict(full.model,new1,best.iter1),na.rm=T)- mean(predict(full.model,new0,best.iter1),na.rm=T))
+    }
+    dir.nom
+    }
+    
+    #1.fit the model
+    if (nonlinear)
+    {full.model<-suppressWarnings(gbm.fit(x,y, n.trees=200, interaction.depth=D, shrinkage=nu,
+                                          distribution=distn,train.fraction=1.0, bag.fraction=0.5, verbose=FALSE))
+    best.iter1<-suppressWarnings(gbm.perf(full.model,plot.it=FALSE,method="OOB"))
+    while(full.model$n.trees-best.iter1<30){
+      full.model<-gbm.more(full.model, 50)           # do another 50 iterations
+      best.iter1<-suppressWarnings(gbm.perf(full.model,plot.it=FALSE,method="OOB"))}}
+    else
+    {full.model<-glm(y~., data=x, family=family1)
+    best.iter1=NULL}
+    #2. prepare for the store of results
+    set.seed(seed)
+    te<-rep(0,n)
+    if(!is.null(jointm))
+    {denm<-matrix(0,n,1+length(c(contm,catm))+jointm[[1]])
+    dimnames(denm)[[2]]<-c("de",names(x)[c(contm,catm)],paste("j",1:jointm[[1]],sep=""))}
+    else
+    {denm<-matrix(0,n,1+length(c(contm,catm)))
+    dimnames(denm)[[2]]<-c("de",names(x)[c(contm,catm)])}
+    ie<-denm
+    #3. repeat to get the mediation effect
+    for (k in 1:n)
+    {#3.1 get the te         full.model,x,y,dirx,best.iter1=NULL
+      te[k]<-te.binx(full.model,x,y,dirx,best.iter1)
+      denm[k,1]<-med.binx.jointm(full.model,x,y,allm,dirx,best.iter1)
+      j<-2
+      #3.2 mediation effect from the continuous mediator
+      if (!is.null(contm))
+        for (i in contm)          #full.model,x,y,med,dirx,best.iter1=NULL
+        {denm[k,j]<-med.binx.contm(full.model,x,y,i,dirx,best.iter1)
+        j<-j+1}
+      #3.3.mediation effect from the categorical mediator
+      if (!is.null(catm))
+        for (i in catm)           #full.model,x,y,med,dirx,best.iter1=NULL
+        {denm[k,j]<-med.binx.catm(full.model,x,y,i,dirx,best.iter1)
+        j<-j+1}
+      #3.4 mediation effect from the joint mediators
+      if (!is.null(jointm))
+        for (i in 1:jointm[[1]])          #full.model,x,y,med,dirx,best.iter1=NULL
+        {denm[k,j]<-med.binx.jointm(full.model,x,y,jointm[[i+1]],dirx,best.iter1)
+        j<-j+1}
+      
+      #3.5 get the indirect effects
+      ie[k,]<-te[k]-denm[k,]
+      if(!is.null(jointm))
+        dimnames(ie)[[2]]<-c("all",names(x)[c(contm,catm)],paste("j",1:jointm[[1]],sep=""))
+      else
+        dimnames(ie)[[2]]<-c("all",names(x)[c(contm,catm)])
+    }
+    a<-list(denm=denm,ie=ie,te=te,model=full.model,best.iter=best.iter1)
+    class(a)<-"med"
+    return(a)
+  }  
+  
+  if (is.null(c(contm,catm)))
+    stop("Error: no potential mediator is specified")
+  
+  xnames<-colnames(x)
+  if(is.character(dirx))
+    pred<-grep(dirx,xnames)
+  if(is.character(contm))
+    contm<-unlist(sapply(contm,grep,xnames))
+  if(is.character(catm))
+    catm<-unlist(sapply(catm,grep,xnames))
+  if(!is.null(jointm))
+    for (i in 2:length(jointm))
+      if(is.character(jointm[[i]]))
+        jointm[[i]]<-unlist(sapply(jointm[[i]],grep,xnames))
+  
+  allm=c(contm,catm)
+  te<-rep(0,n2+1)
+  de<-rep(0,n2+1)
+  if(is.null(jointm))
+  {ie<-matrix(0,n2+1,1+length(c(contm,catm)))
+  dimnames(ie)[[2]]<-c("all",names(x)[c(contm,catm)])}
+  else
+  {ie<-matrix(0,n2+1,1+length(c(contm,catm))+jointm[[1]])
+  dimnames(ie)[[2]]<-c("all",names(x)[c(contm,catm)],paste("j",1:jointm[[1]],sep=""))}
+  temp<-med.binx(data=F,x,y,dirx,contm,catm,jointm,allm,n,seed,nonlinear,nu,D,distn,family1,biny,refy)
+  te[1]<-mean(temp$te)
+  de[1]<-mean(temp$denm[,1])
+  ie[1,]<-apply(temp$ie,2,mean)  #first row is the estimated value
+  model<-temp$model
+  best.iter<-temp$best.iter
+  for (i in 1:n2)
+  {boots<-sample(1:length(y),replace=T,prob=weight)
   x1<-x[boots,]
   y1<-y[boots]
-  temp<-med.contx(x1,y1,dirx,binm,contm,catm,jointm, margin,n,seed+l,mart,nu,D,distn,family1) #added to the new codel, change the seed to make different results
-  te[1+l]<-mean(temp$te)
-  de[1+l]<-mean(temp$denm[,1])
-  ie[1+l,]<-apply(temp$ie,2,mean)  #first row is the estimated value
- }
- a<-list(estimation=list(ie=ie[1,],te=te[1],de=de[1]),bootsresults=list(ie=ie[-1,],te=te[-1],de=de[-1]),model=model,
-         data=list(x=x,y=y,dirx=dirx,binm=binm,contm=contm,catm=catm, jointm=jointm, binpred=F))
- class(a)<-"mma"
- return(a)
+  temp<-med.binx(data=F,x1,y1,dirx,contm,catm,jointm,allm,n,seed+i,nonlinear,nu,D,distn,family1,biny,refy)
+  te[1+i]<-mean(temp$te)
+  de[1+i]<-mean(temp$denm[,1])
+  ie[1+i,]<-apply(temp$ie,2,mean)  #first row is the estimated value
+  }
+  a<-list(estimation=list(ie=ie[1,],te=te[1],de=de[1]),bootsresults=list(ie=ie[-1,],te=te[-1],de=de[-1]),model=list(MART=nonlinear,model=model,best.iter=best.iter), 
+          data=list(x=x,y=y,dirx=dirx,contm=contm,catm=catm,jointm=jointm,binpred=T))
+  class(a)<-"mma"
+  return(a)
+}
+
+boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,binm=data$binm,contm=data$contm,
+                         catm=data$catm, jointm=data$jointm, margin=1, n=20,seed=sample(1:1000,1),
+                         nonlinear=F,df=1,nu=0.001,D=3,distn="gaussian",
+                         family1=gaussian(link="identity"),n2=50,
+                         weight=rep(1,length(y)),biny=F,refy=0,x.new=x)
+{med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,binm=data$binm,contm=data$contm,
+                     catm=data$catm, jointm=data$jointm, margin=1, n=20,seed=sample(1:1000,1),
+                     nonlinear=F,df=1,nu=0.001,D=3,distn="gaussian",family1=gaussian(link="identity"),
+                     biny=F,refy=0,x.new=x)
+{if (is.null(c(binm,contm,catm)))
+  stop("Error: no potential mediator is specified")
+  
+  xnames<-colnames(x)
+  if(is.character(dirx))
+    pred<-grep(dirx,xnames)
+  if(is.character(contm))
+    contm<-unlist(sapply(contm,grep,xnames))
+  if(is.character(binm))
+    binm<-unlist(sapply(binm,grep,xnames))
+  if(!is.null(catm))
+    for (i in 2:length(catm))
+      if(is.character(catm[[i]]))
+        catm[[i]]<-unlist(sapply(catm[[i]],grep,xnames))
+  if(!is.null(jointm))
+    for (i in 2:length(jointm))
+      if(is.character(jointm[[i]]))
+        jointm[[i]]<-unlist(sapply(jointm[[i]],grep,xnames))
+  
+  if(biny)                     #recode y if y is binary
+    y<-ifelse(y==refy,0,1)
+  
+  x<-x[!is.na(y),]             #delete nas in y for mart
+  y<-y[!is.na(y)]
+  
+  anymissing<-function(vec)
+  {if(sum(is.na(vec))>0)
+    return(F)
+    else return(T)
+  }
+  
+  col_mean<-function(col,n.row)
+  {temp<-matrix(col,n.row)
+  apply(temp,1,mean,na.rm=T)}
+  
+  
+  dist.m.given.x<-function(x,dirx,binm=NULL,contm=NULL,catm=NULL,nonlinear,df)
+  {models<-NULL
+  res<-NULL
+  if(!is.null(catm))
+  {for (i in 2:(catm$n+1))
+    binm<-c(binm,catm[[i]])}
+  
+  z<-x[,dirx]
+  j<-1
+  if(!is.null(binm))
+  {for(i in binm)
+  {if(nonlinear)
+    models[[j]]<-glm(x[,i]~ns(z,df=df),family=binomial(link = "logit"))
+  else
+    models[[j]]<-glm(x[,i]~z,family=binomial(link = "logit"))
+  res<-cbind(res,x[,i]-predict(models[[j]],type = "response",newdata=data.frame(z=z)))
+  j<-j+1}
+  }
+  for (i in contm)
+  {if(nonlinear)
+    models[[j]]<-glm(x[,i]~ns(z,df=df),family=gaussian(link="identity"))
+  else
+    models[[j]]<-glm(x[,i]~z,family=gaussian(link="identity"))
+  res<-cbind(res,models[[j]]$res)
+  j<-j+1
+  }
+  list(models=models,varmat=var(res))
+  }
+  
+  
+  sim.xm<-function(distmgivenx,x1,dirx,binm,contm,catm)
+  {mult.norm<-function(mu,vari,n) 
+  {  if (nrow(vari)!=ncol(vari)) 
+  {result<-c("Error: Variance matrix is not square")}  
+    else if (length(mu)!=nrow(vari)) 
+    {result<-c("Error: length mu is not right!")}  
+    else {   p<-length(mu)
+    tmp1<-eigen(vari)$values
+    tmp2<-eigen(vari)$vectors   
+    result<-matrix(0,n,p)   
+    for (i in 1:p)
+    {result[,i]<-rnorm(n,mean=0,sd=sqrt(tmp1[i]))}   
+    for (i in 1:n)
+    {result[i,]<-tmp2%*%result[i,]+mu}
+    }  
+    result
+  }
+  
+  match.margin<-function(vec)   
+  {range1<-vec[1:2]
+  vec1<-vec[-(1:2)]
+  range2<-range(vec1,na.rm=T)
+  vec1<-range1[1]+diff(range1)/diff(range2)*(vec1-range2[1])
+  vec1
+  }
+  
+  gen.mult<-function(vec)
+  {l<-1-sum(vec)
+  l<-ifelse(l<0,0,l)
+  rmultinom(1,size=1,prob=c(l,vec))[-1]
+  }
+  
+  means<-NULL
+  z<-x1[,dirx]
+  binm1<-binm
+  if(!is.null(catm))
+  {for (i in 2:(catm$n+1))
+    binm1<-c(binm1,catm[[i]])}
+  
+  if(!is.null(binm1))
+    for (i in 1:length(binm1))
+      means<-cbind(means,predict(distmgivenx$models[[i]],type = "response",newdata=data.frame(z=z)))
+  
+  if(!is.null(contm))
+    for (i in (length(binm1)+1):length(c(binm1,contm)))
+      means<-cbind(means,predict(distmgivenx$models[[i]],newdata=data.frame(z=z)))
+  
+  if(dim(means)[2]==1)                                                   #added in the new program, in case there is only one mediator
+  {sim.m<-rnorm(length(means),mean=means,sd=sqrt(distmgivenx$varmat))     #added in the new program
+  sim.m2<-match.margin(c(range(means,na.rm=T),sim.m))}                          #added in the new program   
+  else{
+    sim.m<-t(apply(means,1,mult.norm,vari=distmgivenx$varmat,n=1))
+    
+    range.means<-apply(means,2,range,na.rm=T)
+    
+    sim.m2<-apply(rbind(range.means,sim.m),2,match.margin)    #to make the simulate fit the means' ranges
+  }
+  n<-dim(sim.m2)[1]
+  if(!is.null(binm))
+    for (i in 1:length(binm))
+      sim.m2[,i]<-rbinom(n,size=1,prob=sim.m2[,i])
+  
+  if(!is.null(catm))
+  {j<-length(binm)+1
+  for (i in 2:(catm$n+1))
+  {a<-sim.m2[,j:(j+length(catm[[i]])-1)]
+  sim.m2[,j:(j+length(catm[[i]])-1)]<-t(apply(a,1,gen.mult))
+  j<-j+length(catm[[i]])}
+  }
+  
+  x1[,c(binm1,contm)]<-sim.m2
+  
+  x1
+  }
+  
+  
+  if(is.null(catm))
+    multi=jointm
+  else if(is.null(jointm))
+    multi=catm
+  else {temp1<-catm
+  temp2<-jointm
+  temp1[[1]]=catm[[1]]+jointm[[1]]
+  temp2[[1]]<-NULL
+  multi=append(temp1,temp2)} 
+  listm=list(single=c(contm,binm),multi=multi)
+  
+  nonmissing<-apply(cbind(y,x[,c(dirx,listm$single)]),1,anymissing)
+  x<-x[nonmissing,]
+  y<-y[nonmissing]
+  
+  #1.fit the model
+  if(nonlinear)
+  {full.model<-suppressWarnings(gbm.fit(x,y, n.trees=200, interaction.depth=D, shrinkage=nu,
+                                        distribution=distn,train.fraction=1.0, bag.fraction=0.5, verbose=FALSE))
+  best.iter1<-suppressWarnings(gbm.perf(full.model,plot.it=FALSE,method="OOB"))         
+  while(full.model$n.trees-best.iter1<30){
+    full.model<-gbm.more(full.model, 50)           # do another 50 iterations
+    best.iter1<-suppressWarnings(gbm.perf(full.model,plot.it=FALSE,method="OOB"))}
+  }
+  else
+  {full.model<-glm(y~., data=x, family=family1)
+  best.iter1=NULL}
+  
+  #2. prepare for the store of results
+  set.seed(seed)
+  n.new<-nrow(x.new)
+  te<-rep(0,n.new)
+  
+  #3. get the joint distribution of m given x
+  distmgivenx<-dist.m.given.x(x,dirx,binm,contm,catm,nonlinear,df)
+  te1<-NULL
+  #x1<-x.new
+  #x1[,dirx]<-x[,dirx]+margin
+  #ybar0<-mean(predict(full.model,x,best.iter1),na.rm=T)
+  
+  n1<-dim(x)[1]
+  denm1<-NULL
+  
+  #4. repeat to get the mediation effect
+  for (k in 1:n)
+  {new0<-sim.xm(distmgivenx,x.new,dirx,binm,contm,catm) #draw ms conditional on x.new
+  x1<-new0
+  x1[,dirx]<-new0[,dirx]+margin #assume can change x without changing others
+  ybar0<-predict(full.model,new0,best.iter1)
+  denm2<-(predict(full.model,x1,best.iter1)-ybar0)/margin
+  new1<-sim.xm(distmgivenx,x1,dirx,binm,contm,catm)  #draw from the conditional distribution of m given x
+  #4.1 get the te
+  te1<-cbind(te1, (predict(full.model,new1,best.iter1)-ybar0)/margin)
+  
+  #4.2 mediation effect from the single mediator
+  if (!is.null(listm$single))
+    for (i in 1:length(listm$single))
+    {new1.nm<-new1
+    new1.nm[,listm$single[i]]<-new0[,listm$single[i]]    #draw m from its original distribution
+    denm2<-cbind(denm2,(predict(full.model,new1.nm,best.iter1)-ybar0)/margin)
+    }
+  
+  #4.3.mediation effect from the joint mediator
+  if (!is.null(listm$multi))
+    for (i in 2:(listm$multi[[1]]+1))
+    {new1.nm<-new1
+    new1.nm[,listm$multi[[i]]]<-new0[,listm$multi[[i]]]    #draw joint m from its original distribution
+    denm2<-cbind(denm2,(predict(full.model,new1.nm,best.iter1)-ybar0)/margin)
+    }
+  denm1<-rbind(denm1,denm2)
+  } 
+  
+  #4.4 get the indirect effects
+  denm<-apply(denm1,2,col_mean,n.new)
+  te<-apply(te1,1,mean)
+  ie<-te-denm
+  if(!is.null(listm$multi))
+    colnames(denm)<-c("de",names(x)[listm$single],paste("j",1:listm$multi[[1]],sep=""))
+  else 
+    colnames(denm)<-c("de",names(x)[listm$single])
+  if(!is.null(listm$multi))
+    colnames(ie)<-c("all",names(x)[listm$single],paste("j",1:listm$multi[[1]],sep=""))
+  else 
+    colnames(ie)<-c("all",names(x)[listm$single])
+  
+  a<-list(denm=denm,ie=ie,te=te,model=list(MART=nonlinear,model=full.model,best.iter=best.iter1))
+  class(a)<-"med"
+  return(a)
+}
+
+if (is.null(c(binm,contm,catm)))
+  stop("Error: no potential mediator is specified")
+
+xnames<-colnames(x)
+if(is.character(dirx))
+  pred<-grep(dirx,xnames)
+if(is.character(contm))
+  contm<-unlist(sapply(contm,grep,xnames))
+if(is.character(binm))
+  binm<-unlist(sapply(binm,grep,xnames))
+if(!is.null(catm))
+  for (i in 2:length(catm))
+    if(is.character(catm[[i]]))
+      catm[[i]]<-unlist(sapply(catm[[i]],grep,xnames))
+if(!is.null(jointm))
+  for (i in 2:length(jointm))
+    if(is.character(jointm[[i]]))
+      jointm[[i]]<-unlist(sapply(jointm[[i]],grep,xnames))
+
+if(is.null(catm))
+{multi=jointm
+name1<-NULL                       #added in the new program
+if (!is.null(multi))              #added in the new program, in case that multi is NULL
+  name1<-paste("j",1:multi[[1]],sep="")}
+else if(is.null(jointm))
+{multi=catm
+name1<-NULL
+for (i in 2:(catm[[1]]+1))
+  name1<-c(name1,names(x)[multi[[i]][1]])}
+else {temp1<-catm
+temp2<-jointm
+temp1[[1]]=catm[[1]]+jointm[[1]]
+temp2[[1]]<-NULL
+multi=append(temp1,temp2)
+name1<-NULL
+for (i in 2:(catm[[1]]+1))
+  name1<-c(name1,names(x)[multi[[i]][1]])
+name1<-c(name1,paste("j",1:jointm[[1]],sep=""))} 
+listm=list(single=c(contm,binm),multi=multi)
+
+te<-rep(0,n2+1)
+de<-rep(0,n2+1)
+mul<-ifelse(is.null(multi),0,multi[[1]])        #added in the new program, in case multi is null
+ie<-matrix(0,n2+1,1+length(listm$single)+mul)   #added in the new program
+if(!is.null(listm$multi))
+  dimnames(ie)[[2]]<-c("all",names(x)[listm$single],name1)
+else 
+  dimnames(ie)[[2]]<-c("all",names(x)[listm$single])
+
+temp<-med.contx(data=F,x=x,y=y,dirx=dirx,binm=binm,contm=contm,catm=catm,jointm=jointm, 
+                margin=margin,n=n,seed=seed,nonlinear=nonlinear,df=df,nu=nu,D=D,distn=distn,family1=family1,biny=biny,
+                refy=refy,x.new=x.new)
+te[1]<-mean(temp$te,na.rm=T)
+de[1]<-mean(temp$denm[,1],na.rm=T) 
+ie[1,]<-apply(temp$ie,2,mean,na.rm=T)  #first row is the estimated value
+te1<-NULL                      #to store the mediation effects on predictor
+de1<-NULL
+ie1<-NULL
+model<-temp$model
+for (l in 1:n2)
+{boots<-sample(1:length(y),replace=T, prob=weight)
+x1<-x[boots,]
+y1<-y[boots]
+temp<-med.contx(data=F,x1,y1,dirx,binm,contm,catm,jointm, margin,n,seed+l,nonlinear,df,nu,D,distn,family1,biny,refy,x.new) #added to the new codel, change the seed to make different results
+te[1+l]<-mean(temp$te,na.rm=T)
+de[1+l]<-mean(temp$denm[,1],na.rm=T)
+ie[1+l,]<-apply(temp$ie,2,mean,na.rm=T)  #first row is the estimated value
+te1<-cbind(te1,temp$te)
+de1<-cbind(de1,temp$denm[,1])
+ie1<-rbind(ie1,temp$ie)
+}
+a<-list(estimation=list(ie=ie[1,],te=te[1],de=de[1]),bootsresults=list(ie=ie[-1,],te=te[-1],de=de[-1]),model=model,
+        data=list(x=x,y=y,dirx=dirx,binm=binm,contm=contm,catm=catm, jointm=jointm, binpred=F),
+        boot.detail=list(x.new=x.new[,dirx],te1=te1,de1=de1,ie1=ie1))
+class(a)<-"mma"
+return(a)
+}
+
+if(is.character(y) | is.factor(y) | nlevels(as.factor(y))==2)
+{biny=T
+if(is.null(family1))
+  family1 = binomial("logit")
+if(is.null(distn))
+  distn = "bernoulli"
+if(!is.null(refy))
+  y<-ifelse(y==refy,0,1)
+else
+  y<-ifelse(as.factor(y)==levels(as.factor(y))[1],0,1)
+}
+else
+{biny=F
+if(is.null(family1))
+  family1 = gaussian(link = "identity")
+if(is.null(distn))
+  distn = "gaussian"
 }
 
 
-mma<-function(x,y,pred,contmed=NULL,binmed=NULL,binref=rep(1,length(binmed)),catmed=NULL,catref=rep(1,length(catmed)),jointm=NULL,biny=T,
-              binpred=T,predref=1,alpha=0.1,alpha2=0.1, margin=1, n=20,seed=sample(1:1000,1),
-              mart=F,nu=0.001,D=3,distn="bernoulli",family1=binomial(link = "logit"),n2=50,weight=rep(1,length(y)))
-{if(binpred) 
-  {data.bin<-data.org(x,y,pred,contmed,binmed,binref,catmed,catref,jointm,biny,family1,binpred=T,predref,alpha,alpha2)
-   result<-boot.med.binx(x=data.bin$x,y,dirx=data.bin$dirx,contm=data.bin$contm,catm=data.bin$catm,jointm=data.bin$jointm,n,seed,n2,mart,nu,D,distn,family1,weight)
+data<-data.org(x,y,pred,mediator,contmed,binmed,binref,catmed,catref,jointm,refy,family1,predref,alpha,alpha2)
+binpred<-data$binpred
+
+if(binpred) 
+  {result<-boot.med.binx(data=data,n=n,seed=seed,n2=n2,nonlinear=nonlinear,nu=nu,D=D,distn=distn,family1=family1,weight=weight,biny=biny,refy=0)
   }
  else
-  {data.cont<-data.org(x,y,pred,contmed,binmed,binref,catmed,catref,jointm,biny,family1,binpred=F,predref=NULL,alpha,alpha2)
-   result<-boot.med.contx(x=data.cont$x,y,dirx=data.cont$dirx,binm=data.cont$binm,contm=data.cont$contm,catm=data.cont$catm,jointm=data.cont$jointm,margin, n,seed,
-                        mart,nu,D,distn,family1,n2,weight)
+  {if(is.null(x.new))
+    result<-boot.med.contx(data=data,margin=margin, n=n,seed=seed, nonlinear=nonlinear,df=df, nu=nu,
+                           D=D,distn=distn,family1=family1,n2=n2,weight=weight,biny=biny,refy=0)
+   else
+    result<-boot.med.contx(data=data,margin=margin, n=n,seed=seed, nonlinear=nonlinear,df=df, nu=nu,
+                           D=D,distn=distn,family1=family1,n2=n2,weight=weight,biny=biny,refy=0, x.new=x.new)
+   
   }
  result
 }
@@ -769,10 +1983,17 @@ print.mma<-function(x,...)
 }
 
 
-summary.mma<-function(object,...,alpha=0.05,plot=TRUE)
+summary.mma<-function(object,...,alpha=0.05,plot=TRUE,RE=FALSE,quant=T)
 {x<-object
  temp1<-x$boots
  temp2<-x$est
+ temp3<-x$boots   #calculate the RE
+ temp3$ie<-temp3$ie/temp3$te
+ temp3$de<-temp3$de/temp3$te
+ temp4<-x$est
+ temp4$ie<-temp4$ie/temp4$te
+ temp4$de<-temp4$de/temp4$te
+ 
  a1<-alpha/2
  a2<-1-a1
  b1<-qnorm(a1)
@@ -787,7 +2008,14 @@ summary.mma<-function(object,...,alpha=0.05,plot=TRUE)
                     direct.effect=c(est=temp2$de,mean=mean(temp1$de),sd=sd(temp1$de),
                                     upbd=mean(temp1$de)+b2*sd(temp1$de),lwbd=mean(temp1$de)+b1*sd(temp1$de),
                                     upbd=quantile(temp1$de,a2),lwbd=quantile(temp1$de,a1)))
- result<-list(results=temp1.result,alpha=alpha,plot=plot,obj=x)
+ temp2.result<-list(indirect.effect=rbind(est=temp4$ie,mean=apply(temp3$ie,2,mean),sd=apply(temp3$ie,2,sd),
+                                          upbd=apply(temp3$ie,2,mean)+b2*apply(temp3$ie,2,sd),
+                                          lwbd=apply(temp3$ie,2,mean)+b1*apply(temp3$ie,2,sd),
+                                          upbd_q=apply(temp3$ie,2,quantile,a2), lwbd_q=apply(temp3$ie,2,quantile,a1)),
+                    direct.effect=c(est=temp4$de,mean=mean(temp3$de),sd=sd(temp3$de),
+                                    upbd=mean(temp3$de)+b2*sd(temp3$de),lwbd=mean(temp3$de)+b1*sd(temp3$de),
+                                    upbd=quantile(temp3$de,a2),lwbd=quantile(temp3$de,a1)))
+ result<-list(results=temp1.result,re=temp2.result,alpha=alpha,plot=plot,obj=x,RE=RE,quant=quant)
  class(result)<-"summary.mma"
  result
  }
@@ -797,19 +2025,29 @@ print.summary.mma<-function(x,...)
  if (x$obj$model$MART)
   cat ("MART\n")
  else cat("GLM\n")
-print(lapply(x$results,round,3))
-
+ print(lapply(x$results,round,3))
+ if(x$RE)
+ {cat("The relative effects:\n")
+  print(lapply(x$re,round,3))}
 if(x$plot)
-{re<-c(x$results$indirect.effec[1,],x$results$dir[1])/x$results$tot[1]
+{re<-c(x$re$indirect.effect[2,-1],x$re$dir[2])
+ if(x$quant)
+ {upper<-c(x$re$indirect.effect[6,-1],x$re$dir[6])
+  lower<-c(x$re$indirect.effect[7,-1],x$re$dir[7])}
+ else
+ {upper<-c(x$re$indirect.effect[4,-1],x$re$dir[4])
+  lower<-c(x$re$indirect.effect[5,-1],x$re$dir[5])}
  d<-order(re)
- name1<-c(names(x$results$indirect.effec[1,]),"de")[d]
- barplot(re[d],horiz=T,xlab="Relative Effects",names=name1,
-        cex.names=0.9,beside=F,cex.axis=0.9,las=1,xlim=range(re),
-        col = rainbow(length(d), start = 3/6, end = 4/6))}
+ name1<-c(colnames(x$re$indirect.effect)[-1],"de")[d]
+ bp <- barplot2(re[d], horiz = TRUE, main="Relative Effects", 
+                names.arg=name1[d],plot.ci = TRUE, ci.u = upper[d], ci.l = lower[d],
+                cex.names=0.9,beside=FALSE,cex.axis=0.9,las=1,xlim=range(c(upper,lower)),
+                col = rainbow(length(d), start = 3/6, end = 4/6))
+}
 }
 
 
-plot.mma<-function(x,...,vari,xlim=range(data$x[,vari],na.rm=T))
+plot.mma<-function(x,...,vari,xlim=range(x$data$x[,vari],na.rm=T),alpha=0.95,quantile=F)
 {marg.den<-function(x,y)
 {y<-y[!is.na(x)]
  x<-x[!is.na(x)]
@@ -820,6 +2058,38 @@ plot.mma<-function(x,...,vari,xlim=range(data$x[,vari],na.rm=T))
  z3<-order(z1)
  cbind(z1[z3],z2[z3])
 }
+boot.ci<-function(x,mat,alpha,quantile=F) #the mat is the booted results with row be different x, and columns diff boot
+  #cri_val is the critical value
+{x.uniq<-sort(unique(x,na.rm=T))
+mn<-NULL
+upbd<-NULL
+lwbd<-NULL
+alpha<-(1-alpha)/2
+for (i in x.uniq)
+{sd_dev<-sd(as.vector(mat[x==i,]),na.rm=T)
+mn1<-mean(as.vector(mat[x==i,]),na.rm=T)
+if(quantile)
+{upbd<-c(upbd,quantile(as.vector(mat[x==i,]),1-alpha,na.rm=T))
+lwbd<-c(lwbd,quantile(as.vector(mat[x==i,]),alpha,na.rm=T))
+}
+else
+{cri_val<-qnorm(1-alpha)
+upbd<-c(upbd,mn1+cri_val*sd_dev)
+lwbd<-c(lwbd,mn1-cri_val*sd_dev)}
+mn<-c(mn,mn1)}
+x.uniq<-x.uniq[!is.na(lwbd)&!is.na(upbd)]
+tt<-(!is.na(lwbd)) & (!is.na(upbd))
+mn<-mn[tt]
+lwbd<-lwbd[tt]
+upbd<-upbd[tt]
+return(data.frame(x=x.uniq,F=mn,L=lwbd,U=upbd))
+}
+plot_ci<-function(df,xlab="x",ylab="IE")
+{plot(df$x, df$F, ylim = range(c(df$L,df$U)), type = "l",xlab=xlab,ylab=ylab)
+  polygon(c(df$x,rev(df$x)),c(df$L,rev(df$U)),col = "grey75", border = FALSE)
+  lines(df$x, df$F, lwd = 2)
+  lines(df$x, df$U, col="red",lty=2)
+  lines(df$x, df$L, col="red",lty=2)}
 op <- par(no.readonly = TRUE) # the whole list of settable par's.
  if (x$model[1]==T) 
  {full.model=x$model$model
@@ -834,16 +2104,25 @@ op <- par(no.readonly = TRUE) # the whole list of settable par's.
     else
       suppressWarnings(plot.gbm(full.model, i.var=vari,best.iter,xlim=xlim,type="response"))
     for (j in unique(data$x[,data$dirx]))
-    hist(data$x[data$x[,data$dirx]==j,vari],xlab="",xlim=xlim, freq=F,main=paste(names(data$x)[data$dirx],j,sep="="))}
-   else{par(mfrow=c(2,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
+    hist(data$x[data$x[,data$dirx]==j,vari],xlab="",ylab="Relative Freq",xlim=xlim, freq=F,main=paste(names(data$x)[data$dirx],j,sep="="))}
+   else{par(mfrow=c(3,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
         if(full.model$distribution=="gaussian")
           suppressWarnings(plot.gbm(full.model, i.var=vari,best.iter))
         else
           suppressWarnings(plot.gbm(full.model, i.var=vari,best.iter,type="response"))
-     plot(data$x[,vari]~data$x[,data$dirx],ylab=mname,xlab=names(data$x)[data$dirx])}
+     #plot(data$x[,vari]~data$x[,data$dirx],ylab=mname,xlab=names(data$x)[data$dirx])}
+     temp1<-NULL
+     for (j in unique(data$x[,data$dirx]))
+       temp1<-c(temp1,prop.table(table(data$x[data$x[,data$dirx]==j,vari])))
+     for (j in unique(data$x[,data$dirx]))
+       barplot(prop.table(table(data$x[data$x[,data$dirx]==j,vari])),ylim=c(0,max(temp1)),
+               ylab="Prop",sub=paste(names(data$x)[data$dirx],j,sep="="))}
   }
   else
-  {par(mfrow=c(2,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
+  {par(mfrow=c(3,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
+    ie1<-boot.ci(x$boot.detail$x.new,matrix(x$boot.detail$ie1[,vari],nrow=length(x$boot.detail$x.new)),alpha,quantile)
+    plot_ci(ie1,xlab=names(data$x)[data$dirx])
+    
     if(!is.factor(data$x[,vari]))
    {if(full.model$distribution=="gaussian")
       suppressWarnings(plot.gbm(full.model, i.var=vari,best.iter,xlim=xlim))
@@ -851,9 +2130,10 @@ op <- par(no.readonly = TRUE) # the whole list of settable par's.
       suppressWarnings(plot.gbm(full.model, i.var=vari,best.iter,xlim=xlim,type="response"))
     axis(1,at=data$x[,vari],labels=F)
     a<-marg.den(data$x[,data$dirx],data$x[,vari])
-    plot(a[,2:1],ylab=names(data$x)[data$dirx],xlim=xlim,xlab="")
-    lo <- loess(a[,2]~a[,1])
-    lines(lo$fitted[order(lo$x)], lo$x[order(lo$x)],lwd=1)
+    #plot(a,xlab=names(data$x)[data$dirx],ylim=xlim,ylab="Mean.m")
+    #lo <- loess(a[,1]~a[,2])
+    #lines(lo$fitted[order(lo$x)], lo$x[order(lo$x)],lwd=1)
+    scatter.smooth(a[,1],a[,2],xlab=names(data$x)[data$dirx],ylim=xlim,ylab=paste("Mean",mname,sep="."))
     }
     
     #lo <- loess(data$x[,data$dirx]~data$x[,vari])
@@ -871,6 +2151,7 @@ else
 {full.model=x$model$model
  data=x$data
  mname<-ifelse(is.character(vari),vari,names(data$x)[vari])
+ coef<-full.model$coefficients[names(full.model$coefficients)==vari] #plot the straight line instead of the loess line
  if(data$binpred)
  {if(!is.factor(data$x[,vari]))
  {par(mfrow=c(3,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
@@ -878,46 +2159,57 @@ else
     data1<-full.model$data[,vari]
   else
     data1<-full.model$data[-full.model$na.action,vari]
-  b<-marg.den(data1,full.model$fitted)
+  b<-marg.den(data1,full.model$family$linkfun(full.model$fitted.values))
   plot(b,xlab=mname,ylab=paste("f(",mname,")",sep=""),xlim=xlim)
-  lo1 <- loess(b[,2]~b[,1])
-  lines(lo1$x[order(lo1$x)], lo1$fitted[order(lo1$x)], lwd=1)
+  abline(a=mean(b[,2])-coef*mean(b[,1]),b=coef)
+  #lo1 <- loess(b[,2]~b[,1])
+  #lines(lo1$x[order(lo1$x)], lo1$fitted[order(lo1$x)], lwd=1)
   if(is.null(full.model$na.action))
     axis(1,at=full.model$data[,vari],labels=F)
   else
     axis(1,at=full.model$data[-full.model$na.action,vari],labels=F)
   for (j in unique(data$x[,data$dirx]))
-    hist(data$x[data$x[,data$dirx]==j,vari],xlab="",xlim=xlim, freq=F,main=paste(names(data$x)[data$dirx],j,sep="="))}
- else{par(mfrow=c(2,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
+    hist(data$x[data$x[,data$dirx]==j,vari],ylab="Relative Freq",xlab="",xlim=xlim, freq=F,main=paste(names(data$x)[data$dirx],j,sep="="))}
+ else{par(mfrow=c(3,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
       if(is.null(full.model$na.action))
-        plot(full.model$y~full.model$data[,vari],ylab=paste("f(",mname,")",sep=""),xlab=mname)
+        plot(full.model$fitted.values~full.model$data[,vari],ylab=paste("f(",mname,")",sep=""),xlab=mname)
       else
-        plot(full.model$y~full.model$data[-full.model$na.action,vari],ylab=paste("f(",mname,")",sep=""),xlab=mname)
-      plot(data$x[,vari]~data$x[,data$dirx],ylab=mname,xlab=names(data$x)[data$dirx])}
+        plot(full.model$fitted.values~full.model$data[-full.model$na.action,vari],ylab=paste("f(",mname,")",sep=""),xlab=mname)
+      #plot(data$x[,vari]~data$x[,data$dirx],ylab=mname,xlab=names(data$x)[data$dirx]) }
+   temp1<-NULL
+   for (j in unique(data$x[,data$dirx]))
+     temp1<-c(temp1,prop.table(table(data$x[data$x[,data$dirx]==j,vari])))
+   for (j in unique(data$x[,data$dirx]))
+     barplot(prop.table(table(data$x[data$x[,data$dirx]==j,vari])),ylim=c(0,max(temp1)),
+             ylab="Prop",sub=paste(names(data$x)[data$dirx],j,sep="="))}
  }
  else
- {par(mfrow=c(2,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
-  if(!is.factor(data$x[,vari]))
+ {par(mfrow=c(3,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
+   ie1<-boot.ci(x$boot.detail$x.new,matrix(x$boot.detail$ie1[,vari],nrow=length(x$boot.detail$x.new)),alpha,quantile)
+   plot_ci(ie1,xlab=names(data$x)[data$dirx])
+   if(!is.factor(data$x[,vari]))
   {if(is.null(full.model$na.action))
-    b<-marg.den(full.model$data[,vari],full.model$fitted)
+    b<-marg.den(full.model$data[,vari],full.model$family$linkfun(full.model$fitted.values))
    else
-    b<-marg.den(full.model$data[-full.model$na.action,vari],full.model$fitted)
+    b<-marg.den(full.model$data[-full.model$na.action,vari],full.model$family$linkfun(full.model$fitted.values))
    plot(b,xlab=mname,ylab=paste("f(",mname,")",sep=""),xlim=xlim)
-   lo1 <- loess(b[,2]~b[,1])
-   lines(lo1$x[order(lo1$x)], lo1$fitted[order(lo1$x)], lwd=1)
+  # lo1 <- loess(b[,2]~b[,1])
+  # lines(lo1$x[order(lo1$x)], lo1$fitted[order(lo1$x)], lwd=1)
+   abline(a=mean(b[,2])-coef*mean(b[,1]),b=coef)
    if(is.null(full.model$na.action))
      axis(1,at=full.model$data[,vari],labels=F)
    else
      axis(1,at=full.model$data[-full.model$na.action,vari],labels=F)
    a<-marg.den(data$x[,data$dirx],data$x[,vari])
-   plot(a[,2:1],ylab=names(data$x)[data$dirx],xlim=xlim,xlab="")
-   lo <- loess(a[,2]~a[,1])
-   lines(lo$fitted[order(lo$x)], lo$x[order(lo$x)],lwd=1)}
+   #plot(a,xlab=names(data$x)[data$dirx],ylim=xlim,ylab=paste("Mean",mname,sep="."))
+   scatter.smooth(a[,1],a[,2],xlab=names(data$x)[data$dirx],ylim=xlim,ylab=paste("Mean",mname,sep="."))}
+   #lo <- loess(a[,1]~a[,2])
+   #lines(lo$fitted[order(lo$x)], lo$x[order(lo$x)],lwd=1)}
   else
   {if(is.null(full.model$na.action))
-     plot(full.model$y~full.model$data[,vari],ylab=paste("f(",mname,")",sep=""),xlab=mname)
+     plot(full.model$fitted.values~full.model$data[,vari],ylab=paste("f(",mname,")",sep=""),xlab=mname)
    else
-     plot(full.model$y~full.model$data[-full.model$na.action,vari],ylab=paste("f(",mname,")",sep=""),xlab=mname)
+     plot(full.model$fitted.values~full.model$data[-full.model$na.action,vari],ylab=paste("f(",mname,")",sep=""),xlab=mname)
     plot(data$x[,vari],data$x[,data$dirx],ylab=names(data$x)[data$dirx],xlab="")}
  }
 }
