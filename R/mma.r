@@ -143,13 +143,13 @@ else
 
 if(!is.null(binmed))
 {j<-1
- for (i in binmed)
-   x[,i]<-as.factor(ifelse(x[,i]==binref[j],0,1))
+for (i in binmed)
+{x[,i]<-ifelse(x[,i]==binref[j],0,1)
  j<-j+1}
+}
 
 if(!is.null(catmed))
-{x[,catmed]<-as.factor(x[,catmed])
- tempx<-cattobin(x,catmed,catref)
+{tempx<-cattobin(x,catmed,catref)
  newx<-tempx$x
  catnewx<-tempx$catm}
 else newx<-x
@@ -407,7 +407,7 @@ print.summary.med_iden<-function(x,...)  #version 6: changed typos in the functi
      #rownames(x$tests)[grep(z,temp)]<-paste(temp[grep(z,temp)],"-")
  dimnames(x$tests)[[2]]<-c("P-Value 1", "P-Value 2")
  print(round(x$tests,3))
- cat("----\n *:mediator,-:joint mediator\n P-Value 1:Type-3 tests in the full model\n P-Value 2:Tests of relation with the Predictor")
+ cat("----\n *:mediator,-:joint mediator\n P-Value 1:Type-3 tests in the full model\n P-Value 2:Tests of relationship with the Predictor")
 }
 
 med<-function(data, x=data$x, y=data$y, dirx=data$dirx, binm=data$binm,contm = data$contm, 
@@ -667,9 +667,12 @@ med<-function(data, x=data$x, y=data$y, dirx=data$dirx, binm=data$binm,contm = d
   }
   
   gen.mult<-function(vec)
-  {l<-1-sum(vec)
-  l<-ifelse(l<0,0,l)
-  rmultinom(1,size=1,prob=c(l,vec))[-1]
+  {if(sum(is.na(vec))>0)
+    return(rep(NA,length(vec)))
+    else{ 
+      l<-1-sum(vec)
+      l<-ifelse(l<0,0,l)
+      return(rmultinom(1,size=1,prob=c(l,vec))[-1])}
   }
   
   means<-NULL
@@ -833,11 +836,11 @@ med<-function(data, x=data$x, y=data$y, dirx=data$dirx, binm=data$binm,contm = d
 }
   
 
-print.med<-function(x,...)
+print.med<-function(x,...,digit=4)
 {cat("The estimated total effect:")
-  print(mean(x$te,na.rm=T))
+  print(round(mean(x$te,na.rm=T),digit))
  cat("\nThe estimated indirect effect:\n")
-  print(apply(x$ie,2,mean,na.rm=T))
+  print(round(apply(x$ie,2,mean,na.rm=T),digit))
 }
 
 boot.med<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,contm=data$contm,catm=data$catm,
@@ -1042,6 +1045,7 @@ boot.med<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,contm=d
   te[1+i]<-mean(temp$te)
   de[1+i]<-mean(temp$denm[,1])
   ie[1+i,]<-apply(temp$ie,2,mean)  #first row is the estimated value
+  print(i)
   }
   a<-list(estimation=list(ie=ie[1,],te=te[1],de=de[1]),bootsresults=list(ie=ie[-1,],te=te[-1],de=de[-1]),model=list(MART=nonlinear,model=model,best.iter=best.iter), 
           data=list(x=x,y=y,dirx=dirx,contm=contm,catm=catm,jointm=jointm,binpred=T))
@@ -1109,7 +1113,8 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,binm=data$binm,co
     models[[j]]<-glm(x[,i]~ns(z,df=df),family=binomial(link = "logit"))
   else
     models[[j]]<-glm(x[,i]~z,family=binomial(link = "logit"))
-  res<-cbind(res,x[,i]-predict(models[[j]],type = "response",newdata=data.frame(z=z)))
+#  x[,i]-predict(models[[j]],type = "response",newdata=data.frame(z=z))
+  res<-cbind(res,models[[j]]$residuals)
   j<-j+1}
   }
   for (i in contm)
@@ -1151,11 +1156,14 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,binm=data$binm,co
   }
   
   gen.mult<-function(vec)
-  {l<-1-sum(vec)
-  l<-ifelse(l<0,0,l)
-  rmultinom(1,size=1,prob=c(l,vec))[-1]
+  {if(sum(is.na(vec))>0)
+    return(rep(NA,length(vec)))
+   else{ 
+    l<-1-sum(vec)
+    l<-ifelse(l<0,0,l)
+    return(rmultinom(1,size=1,prob=c(l,vec))[-1])}
   }
-  
+
   means<-NULL
   z<-x1[,dirx]
   binm1<-binm
@@ -1242,7 +1250,6 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,binm=data$binm,co
   
   n1<-dim(x)[1]
   denm1<-NULL
-  
   #4. repeat to get the mediation effect
   for (k in 1:n)
   {new0<-sim.xm(distmgivenx,x.new,dirx,binm,contm,catm) #draw ms conditional on x.new
@@ -1360,6 +1367,7 @@ ie[1+l,]<-apply(temp$ie,2,mean,na.rm=T)  #first row is the estimated value
 te1<-cbind(te1,temp$te)
 de1<-cbind(de1,temp$denm[,1])
 ie1<-rbind(ie1,temp$ie)
+print(l)
 }
 a<-list(estimation=list(ie=ie[1,],te=te[1],de=de[1]),bootsresults=list(ie=ie[-1,],te=te[-1],de=de[-1]),model=model,
         data=list(x=x,y=y,dirx=dirx,binm=binm,contm=contm,catm=catm, jointm=jointm, binpred=F),
@@ -1608,6 +1616,7 @@ mma<-function(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=rep(1,leng
   te[1+i]<-mean(temp$te)
   de[1+i]<-mean(temp$denm[,1])
   ie[1+i,]<-apply(temp$ie,2,mean)  #first row is the estimated value
+  print(i)
   }
   a<-list(estimation=list(ie=ie[1,],te=te[1],de=de[1]),bootsresults=list(ie=ie[-1,],te=te[-1],de=de[-1]),model=list(MART=nonlinear,model=model,best.iter=best.iter), 
           data=list(x=x,y=y,dirx=dirx,contm=contm,catm=catm,jointm=jointm,binpred=T))
@@ -1717,9 +1726,12 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,binm=data$binm,co
   }
   
   gen.mult<-function(vec)
-  {l<-1-sum(vec)
-  l<-ifelse(l<0,0,l)
-  rmultinom(1,size=1,prob=c(l,vec))[-1]
+  {if(sum(is.na(vec))>0)
+    return(rep(NA,length(vec)))
+    else{ 
+      l<-1-sum(vec)
+      l<-ifelse(l<0,0,l)
+      return(rmultinom(1,size=1,prob=c(l,vec))[-1])}
   }
   
   means<-NULL
@@ -1926,6 +1938,7 @@ ie[1+l,]<-apply(temp$ie,2,mean,na.rm=T)  #first row is the estimated value
 te1<-cbind(te1,temp$te)
 de1<-cbind(de1,temp$denm[,1])
 ie1<-rbind(ie1,temp$ie)
+print(l)
 }
 a<-list(estimation=list(ie=ie[1,],te=te[1],de=de[1]),bootsresults=list(ie=ie[-1,],te=te[-1],de=de[-1]),model=model,
         data=list(x=x,y=y,dirx=dirx,binm=binm,contm=contm,catm=catm, jointm=jointm, binpred=F),
@@ -2038,7 +2051,7 @@ if(x$plot)
  {upper<-c(x$re$indirect.effect[4,-1],x$re$dir[4])
   lower<-c(x$re$indirect.effect[5,-1],x$re$dir[5])}
  d<-order(re)
- name1<-c(colnames(x$re$indirect.effect)[-1],"de")[d]
+ name1<-c(colnames(x$re$indirect.effect)[-1],"de")
  bp <- barplot2(re[d], horiz = TRUE, main="Relative Effects", 
                 names.arg=name1[d],plot.ci = TRUE, ci.u = upper[d], ci.l = lower[d],
                 cex.names=0.9,beside=FALSE,cex.axis=0.9,las=1,xlim=range(c(upper,lower)),

@@ -8,7 +8,7 @@ Print an med object
 Print the estimation of mediation effects from an med object: from functions med.
 }
 \usage{
-\method{print}{med}(x,...)
+\method{print}{med}(x,...,digit=4)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -17,6 +17,9 @@ a med object created initially call to med.
 }
   \item{\dots}{
 other arguments passed to the print function.
+}
+  \item{digit}{
+the number of digits to keep at printing.
 }
 }
 \references{
