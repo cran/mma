@@ -11,8 +11,8 @@ This package is used to identify mediators and for general mediation analysis. M
 \tabular{ll}{
 Package: \tab mma\cr
 Type: \tab Package\cr
-Version: \tab 3.1\cr
-Date: \tab 2016-08-08\cr
+Version: \tab 4.0\cr
+Date: \tab 2016-08-18\cr
 License: \tab GPL (>= 2)\cr
 }
 \code{"\link[=data.org]{data.org}"} is used to identify potential mediators. \code{"\link[=med]{med}"} , and \code{"\link[=boot.med]{boot.med}"} are used for statistical inferences on the mediation effects when the predictor is binary or continuous. \code{"\link[=mma]{mma}"} is a combined function that automatically identify potential mediators, based on which to make statistical inference on the mediation effects.
@@ -23,13 +23,13 @@ Qingzhao Yu  \email{qyu@lsuhsc.edu}
 Maintainer: Qingzhao Yu  \email{qyu@lsuhsc.edu}
 }
 \references{
-Baron, R.M., and Kenny, D.A. (1986) <doi: 10.1037/0022-3514.51.6.1173>. "The moderator-mediator variable distinction in social psychological research: conceptual, strategic, and statistical considerations," J. Pers Soc Psychol, 51(6), 1173-1182.
+Baron, R.M., and Kenny, D.A. (1986) <doi:10.1037/0022-3514.51.6.1173>. "The moderator-mediator variable distinction in social psychological research: conceptual, strategic, and statistical considerations," J. Pers Soc Psychol, 51(6), 1173-1182.
 
-J.H. Friedman, T. Hastie, R. Tibshirani (2000) <doi: 10.1214/aos/1016120463>. "Additive Logistic Regression: a Statistical View of Boosting," Annals of Statistics 28(2):337-374.
+J.H. Friedman, T. Hastie, R. Tibshirani (2000) <doi:10.1214/aos/1016120463>. "Additive Logistic Regression: a Statistical View of Boosting," Annals of Statistics 28(2):337-374.
 
 J.H. Friedman (2001) <doi: 10.1214/aos/1013203451>. "Greedy Function Approximation: A Gradient Boosting Machine," Annals of Statistics 29(5):1189-1232.
 
-Yu, Q., Fan, Y., and Wu, X. (2014) <doi: 10.4172/2155-6180.1000189>. "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189. 
+Yu, Q., Fan, Y., and Wu, X. (2014) <doi:10.4172/2155-6180.1000189>. "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189. 
 }
 \keyword{ Package }
 \examples{

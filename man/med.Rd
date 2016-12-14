@@ -7,10 +7,11 @@ Mediation Analysis with Binary or Continuous Predictor
 To estimate the mediation effects when the predictor is binary or continuous.
 }
 \usage{
-med(data, x=data$x, y=data$y, dirx=data$dirx, binm=data$binm,contm = data$contm, 
-              catm = data$catm, jointm = data$jointm, allm = c(contm, catm), margin=1,
-              n=20,seed=sample(1:1000,1), nonlinear=F, df=1, nu=0.001,D=3,
-              distn=NULL,family1=NULL,refy=0,binpred=data$binpred,x.new=x)
+med(data, x=data$x, y=data$y, dirx=data$dirx, binm=data$binm, 
+    contm = data$contm,catm = data$catm, jointm = data$jointm, 
+    allm = c(contm, catm), margin=1,n=20,seed=sample(1:1000,1), 
+    nonlinear=F, df=1, nu=0.001,D=3,distn=NULL,family1=NULL,
+    refy=0,binpred=data$binpred,x.new=x,type=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -69,6 +70,9 @@ if TRUE, the predict variable is binary.
   \item{x.new}{
 of the same format as x, with a new set of predictor and corresponding covariates on which to calculate the mediation effects. For continuous predictor only.
 }
+  \item{type}{
+the type of prediction when y is class Surv. By default, type is "risk".
+}
 }
 \details{
 The mediators are not tested in this function.  data.org should be used first for the tests and data organizing, and then the resulting list from data.org can be used directly to define the arguments in this function. med considers all variables in x as mediators or covariates in the final model and all variables identified by contm, binm, catm, or jointm as mediators.
@@ -77,14 +81,14 @@ The mediators are not tested in this function.  data.org should be used first fo
   \item{denm }{a matrix where each column gives the estimated direct effect not from the corresponding mediator (identified by the column name), see Yu et al. (2014) for the definition, and each row corresponding to the results from one resampling for binary predictor or the results on a row of x.new for continuous predictor.}
   \item{ie }{a matrix where each column gives the estimated indirect effect from the corresponding mediator (identified by the column name) and each row corresponding to the results from one resampling for binary predictor or the results on a row of x.new for continuous predictor.} 
   \item{te }{a vector of the estimated total effect on x.new.}
-  \item{model }{a list, where the first item, MART, is TRUE if a mart is fitted as the final model; the second item, full.model, is the fitted final full model where y is the outcome and all predictor, covariates, and mediators are the explanatory variables; and the third item, best.iter,  is the number of best iterations if MART is used to fit the final model, is NULL if the final model is a generalized linear model.}
+  \item{model }{a list, where the first item, MART, is TRUE if a mart is fitted as the final model; the second item, Survial is T if a survival model is fit; the third item, type, is the type of prediction when a survival model is fitted; the fourth item, full.model, is the fitted final full model where y is the outcome and all predictor, covariates, and mediators are the explanatory variables; and the fifth item, best.iter,  is the number of best iterations if MART is used to fit the final model, is NULL if the final model is a generalized linear model.}
 }
 \references{
-J.H. Friedman, T. Hastie, R. Tibshirani (2000) <doi: 10.1214/aos/1016120463>. "Additive Logistic Regression: a Statistical View of Boosting," Annals of Statistics 28(2):337-374.
+J.H. Friedman, T. Hastie, R. Tibshirani (2000) <doi:10.1214/aos/1016120463>. "Additive Logistic Regression: a Statistical View of Boosting," Annals of Statistics 28(2):337-374.
 
-J.H. Friedman (2001) <doi: 10.1214/aos/1013203451>. "Greedy Function Approximation: A Gradient Boosting Machine," Annals of Statistics 29(5):1189-1232.
+J.H. Friedman (2001) <doi:10.1214/aos/1013203451>. "Greedy Function Approximation: A Gradient Boosting Machine," Annals of Statistics 29(5):1189-1232.
 
-Yu, Q., Fan, Y., and Wu, X. (2014) <doi: 10.4172/2155-6180.1000189>. "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189. 
+Yu, Q., Fan, Y., and Wu, X. (2014) <doi:10.4172/2155-6180.1000189>. "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189. 
 }
 \author{
 Qingzhao Yu \email{qyu@lsuhsc.edu}
@@ -100,7 +104,7 @@ data("weight_behavior")
 x=weight_behavior[,2:14]
 y=weight_behavior[,15]
 data.bin<-data.org(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
-                   binref=c(1,1),catmed=6,catref=1,predref="M",alpha=0.4,alpha2=0.4)
+  binref=c(1,1),catmed=6,catref=1,predref="M",alpha=0.4,alpha2=0.4)
 temp1<-med(data=data.bin,n=2,seed=1)
 temp2<-med(data=data.bin,n=2,seed=1,nonlinear=TRUE)
 
@@ -127,8 +131,34 @@ y=weight_behavior[,1]
 data.contx<-data.org(x,y,pred=1,contmed=c(12:13),binmed=c(7,11),
                      binref=c(1,1),catmed=6,catref=1,
                      alpha=0.4,alpha2=0.4)
+\donttest{
 temp7<-med(data=data.contx,seed=1,n=2) 
 temp8<-med(data=data.contx,seed=1,n=2,nonlinear=TRUE,nu=0.05) 
+}
+##Surv class outcome (survival analysis)
+data(cgd0)       #a dataset in the survival package
+cgd1<-cgd0
+x=cgd1[,c(4:12)]
+status<-ifelse(is.na(cgd1$etime1),0,1)
+y=Surv(cgd1$futime,status)          
+#for continuous predictor
+data.surv.contx<-data.org(x,y,pred=3,mediator=(1:ncol(x))[-3],      
+                          alpha=0.5,alpha2=0.5)
+temp9.contx<-med(data=data.surv.contx,seed=1,n=2,type="lp") 
+#close to mart results when use type="lp"
+temp9.contx
+temp10.contx<-med(data=data.surv.contx,n=2,seed=1,nonlinear=TRUE)  
+#results in the linear part unit
+temp10.contx
+
+#for binary predictor
+\donttest{
+data.surv.binx<-data.org(x,y,pred=1,mediator=(1:ncol(x))[-1],   
+                    alpha=0.4,alpha2=0.4)
+temp9.binx<-med(data=data.surv.binx,seed=1,n=2,type="lp") 
+temp9.binx
+temp10.binx<-med(data=data.surv.binx,n=2,seed=1,nonlinear=TRUE)  
+temp10.binx}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
