@@ -1,18 +1,18 @@
-\name{mma}
-\alias{mma}
+\name{mma.par}
+\alias{mma.par}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Multiple Mediation Analysis
+Multiple Mediation Analysis Using Parallel Computing
 }
 \description{
-Test for mediators and do statistical inferences on the identified mediation effects.
+Test for mediators and do statistical inferences on the identified mediation effects using parallel computing (multiple cores).
 }
 \usage{
-mma(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
-    catmed=NULL,catref=NULL,jointm=NULL,refy=NULL,predref=NULL,
-    alpha=0.1,alpha2=0.1, margin=1, n=20,seed=sample(1:1000,1),
-    nonlinear=F,df=1,nu=0.001,D=3,distn=NULL,family1=NULL,n2=50,
-    weight=rep(1,nrow(x)),x.new=NULL,type=NULL)
+mma.par(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
+                  catmed=NULL,catref=NULL,jointm=NULL,refy=NULL,predref=NULL,
+                  alpha=0.1,alpha2=0.1, margin=1, n=20,seed=sample(1:1000,1),
+                  nonlinear=F,df=1,nu=0.001,D=3,distn=NULL,family1=NULL,n2=50,
+                  weight=rep(1,nrow(x)),x.new=NULL,type=NULL,ncore=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -97,9 +97,12 @@ for continuous predictor only. of the same format as x (after data.org), with a 
   \item{type}{
 the type of prediction when y is class Surv. Is "risk" if not specified.
 }
+  \item{ncore}{
+the number of threads to be used for parallel computing.
+}
 }
 \details{
-mma first tests if the potential mediators defined by binm, contm, and catm should be treated as mediators or covariates (if none, the variable will be deleted from further analysis). All variables identified by jointm are treated as mediators. All other variables in x that are not tested are treated as covariates. Then mma does the mediation effects estimation and inference on the selected variables.  
+mma.par is the same as mma, but it uses multiple cores for parallel computing to save the computing time.  
 }
 \value{
 Returns an mma object.
@@ -116,61 +119,12 @@ J.H. Friedman, T. Hastie, R. Tibshirani (2000) <doi:10.1214/aos/1016120463>. "Ad
 J.H. Friedman (2001) <doi:10.1214/aos/1013203451>. "Greedy Function Approximation: A Gradient Boosting Machine," Annals of Statistics 29(5):1189-1232.
 
 Yu, Q., Fan, Y., and Wu, X. (2014) <doi:10.4172/2155-6180.1000189>. "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189. 
-
-Yu, Q., Scribner, R.A., Leonardi, C., Zhang, L., Park, C., Chen, L., and Simonsen, N.R. (2017) <doi:10.1016/j.sste.2017.02.001>. "Exploring racial disparity in obesity: a mediation analysis considering geo-coded environmental factors," Spatial and Spatio-temporal Epidemiology, 21, 13-23. 
 }
 \author{
-Qingzhao Yu  \email{qyu@lsuhsc.edu}
+Qingzhao Yu \email{qyu@lsuhsc.edu} and Bin Li \email{bli@lsu.edu}.
 }
 \seealso{
 \code{"\link[=data.org]{data.org}"} is for mediator tests, and \code{"\link[=med]{med}"} , and \code{"\link[=boot.med]{boot.med}"} for mediation analysis and inferences.
-}
-\examples{
-data("weight_behavior")
- #binary x
- #binary y
- x=weight_behavior[,2:14]
- y=weight_behavior[,15]
- temp.b.b.glm<-mma(x,y,pred=2,mediator=6:13,predref="M",alpha=0.4,
-                   alpha2=0.4,n=2,n2=2)
- \donttest{
- temp.b.b.mart<-mma(x,y,pred=2,mediator=6:13,predref="M",alpha=0.4,
-                    alpha2=0.4,nonlinear=TRUE,n=2,n2=5)
- #continuous y
- x=weight_behavior[,2:14]
- y=weight_behavior[,1]
- temp.b.c.glm<-mma(x,y,pred=2,mediator=c(8:10,12:13,7,11,6),
-   jointm=list(n=1,j1=8:10), seed=1, n=2, predref="M",alpha=0.4,
-   alpha2=0.4,n2=20)
- temp.b.c.mart<-mma(x,y,pred=2,mediator=6:13,jointm=list(n=1,j1=8:10, 
-                    j2=12:13), predref="M",alpha=0.4,alpha2=0.4,
-                    n=2,seed=1,nonlinear=TRUE,n2=20)}
-
-##Surv class outcome (survival analysis)
-data(cgd0)       #a dataset in the survival package
-cgd1<-cgd0
-x=cgd1[,c(4:12)]
-status<-ifelse(is.na(cgd1$etime1),0,1)
-y=Surv(cgd1$futime,status)          
-#for continuous predictor
-temp.cox.contx<-mma(x,y,pred=3,mediator=(1:ncol(x))[-3],      
-              alpha=0.5,alpha2=0.5,seed=1,n=1,n2=2,type="lp") 
-summary(temp.cox.contx)
-temp.surv.mart.contx<-mma(x,y,pred=3,mediator=(1:ncol(x))[-3], n=1,     
-                    alpha=0.5,alpha2=0.5,nonlinear=TRUE,seed=1,n2=2) 
-summary(temp.surv.mart.contx)
-plot(temp.surv.mart.contx,vari="steroids")
-plot(temp.cox.contx,vari="steroids")
-
-#for binary predictor
-temp.cox.binx<-mma(x,y,pred=1,mediator=(1:ncol(x))[-1],   
-                   alpha=0.4,alpha2=0.4,seed=1,n=1,n2=2,type="lp") 
-summary(temp.cox.binx)
-temp.surv.mart.binx<-mma(x,y,pred=1,mediator=(1:ncol(x))[-1], seed=1,  
-                         alpha=0.4,alpha2=0.4,nonlinear=TRUE,n=1,n2=2) 
-summary(temp.surv.mart.binx)
-plot(temp.surv.mart.binx,vari="hos.cat")
-plot(temp.cox.binx,vari="hos.cat")
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
