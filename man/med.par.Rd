@@ -79,7 +79,7 @@ the number of threads to be used for parallel computing.
 }
 }
 \details{
-The med.par function is the med function using paralle computing.
+The med.par function is the med function using paralle computing. Need to call the package "doParallel" for this function. 
 }
 \value{The result is an med object with:
   \item{denm }{a matrix where each column gives the estimated direct effect not from the corresponding mediator (identified by the column name), see Yu et al. (2014) for the definition, and each row corresponding to the results from one resampling for binary predictor or the results on a row of x.new for continuous predictor.}

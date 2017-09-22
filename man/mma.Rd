@@ -12,7 +12,7 @@ mma(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
     catmed=NULL,catref=NULL,jointm=NULL,refy=NULL,predref=NULL,
     alpha=0.1,alpha2=0.1, margin=1, n=20,seed=sample(1:1000,1),
     nonlinear=F,df=1,nu=0.001,D=3,distn=NULL,family1=NULL,n2=50,
-    weight=rep(1,nrow(x)),x.new=NULL,type=NULL)
+    weight=rep(1,nrow(x)),x.new=NULL,type=NULL,w.new=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -97,6 +97,9 @@ for continuous predictor only. of the same format as x (after data.org), with a 
   \item{type}{
 the type of prediction when y is class Surv. Is "risk" if not specified.
 }
+  \item{w.new}{
+the weights for new.x.
+}
 }
 \details{
 mma first tests if the potential mediators defined by binm, contm, and catm should be treated as mediators or covariates (if none, the variable will be deleted from further analysis). All variables identified by jointm are treated as mediators. All other variables in x that are not tested are treated as covariates. Then mma does the mediation effects estimation and inference on the selected variables.  
@@ -151,10 +154,11 @@ data(cgd0)       #a dataset in the survival package
 cgd1<-cgd0
 x=cgd1[,c(4:12)]
 status<-ifelse(is.na(cgd1$etime1),0,1)
+names(x)[5]<-"weights" #there is an argument called weight in mma function
 y=Surv(cgd1$futime,status)          
 #for continuous predictor
 temp.cox.contx<-mma(x,y,pred=3,mediator=(1:ncol(x))[-3],      
-              alpha=0.5,alpha2=0.5,seed=1,n=1,n2=2,type="lp") 
+              alpha=0.8,alpha2=0.8,seed=1,n=1,n2=2,type="lp") 
 summary(temp.cox.contx)
 temp.surv.mart.contx<-mma(x,y,pred=3,mediator=(1:ncol(x))[-3], n=1,     
                     alpha=0.5,alpha2=0.5,nonlinear=TRUE,seed=1,n2=2) 

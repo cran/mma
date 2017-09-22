@@ -10,7 +10,7 @@ Compute the estimations, standard deviations and confidence intervals of the med
 }
 \usage{
 \method{summary}{mma}(object,..., alpha=0.05, plot=TRUE, RE=FALSE,quant=T) 
-\method{print}{summary.mma}(x,...) 
+\method{print}{summary.mma}(x,...,digit=3) 
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -31,6 +31,9 @@ default is TRUE, if ture, draw a barplot of the relative mediation effects with 
 default is FALSE, if ture, show the inferences on relative mediation effects.}
   \item{quant}{
 default is TRUE, if ture, draw the confidence intervals of relative effects using quantile.}
+  \item{digit}{
+the number of decimal digits to keep.
+}
 }
 \details{
 summary.mma gives a list of the estimations and summary statistics based on the bootstrap results. If plot=T, draw a barplot of the relative effects of the direct effect of the predictor and indirect effects of the mediators. Relative effects is defined as the (in)direct effect divided by the total effect. The plot is arranged in order from the largest to the smallest relative effect.

@@ -12,7 +12,7 @@ mma.par(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
                   catmed=NULL,catref=NULL,jointm=NULL,refy=NULL,predref=NULL,
                   alpha=0.1,alpha2=0.1, margin=1, n=20,seed=sample(1:1000,1),
                   nonlinear=F,df=1,nu=0.001,D=3,distn=NULL,family1=NULL,n2=50,
-                  weight=rep(1,nrow(x)),x.new=NULL,type=NULL,ncore=NULL)
+                  weight=rep(1,nrow(x)),x.new=NULL,type=NULL,w.new=NULL,ncore=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -97,12 +97,15 @@ for continuous predictor only. of the same format as x (after data.org), with a 
   \item{type}{
 the type of prediction when y is class Surv. Is "risk" if not specified.
 }
+  \item{w.new}{
+the weights for new.x.
+}
   \item{ncore}{
 the number of threads to be used for parallel computing.
 }
 }
 \details{
-mma.par is the same as mma, but it uses multiple cores for parallel computing to save the computing time.  
+mma.par is the same as mma, but it uses multiple cores for parallel computing to save the computing time. Need to call the package "doParallel" for this function. 
 }
 \value{
 Returns an mma object.

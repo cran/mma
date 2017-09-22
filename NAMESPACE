@@ -8,6 +8,7 @@ importFrom("stats", "binomial", "chisq.test", "cor.test", "gaussian",
            "rmultinom", "rnorm", "sd", "var")
 importFrom("graphics", "abline", "polygon")
 importFrom("stats", "scatter.smooth")
+importFrom("stats", "weighted.mean")
 S3method(summary,med_iden)
 S3method(plot,med)
 S3method(print,summary.med_iden)

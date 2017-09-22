@@ -9,7 +9,7 @@ Do a preliminary data analysis to identify potential mediators and covariates. E
 \usage{
 data.org(x,y,pred,mediator=NULL,contmed=NULL,binmed=NULL,binref=NULL,catmed=NULL,
                    catref=NULL,jointm=NULL,refy=NULL, family1=NULL,
-                   predref=NULL,alpha=0.1,alpha2=0.1,testtype=1)
+                   predref=NULL,alpha=0.1,alpha2=0.1,testtype=1, weight=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -59,6 +59,8 @@ the significance level at which to test if the potential mediators (identified b
 the significant level at which to test if a potential mediator is related with the predictor. The default value is alpha2=0.1.
 }  
   \item{testtype}{if the testtype is 1 (by default), covariates/mediators are identified using full model; if the testtype is 2, covariates/mediators are tested one by one in models with the predictor only.
+}
+  \item{weight}{the weight for data analysis, by default is rep(1,length(y)).
 }
 }
 

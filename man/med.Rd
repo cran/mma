@@ -11,7 +11,7 @@ med(data, x=data$x, y=data$y, dirx=data$dirx, binm=data$binm,
     contm = data$contm,catm = data$catm, jointm = data$jointm, 
     allm = c(contm, catm), margin=1,n=20,seed=sample(1:1000,1), 
     nonlinear=F, df=1, nu=0.001,D=3,distn=NULL,family1=NULL,
-    refy=0,binpred=data$binpred,x.new=x,type=NULL)
+    refy=0,binpred=data$binpred,x.new=x,type=NULL,w=NULL,w.new=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -72,6 +72,12 @@ of the same format as x, with a new set of predictor and corresponding covariate
 }
   \item{type}{
 the type of prediction when y is class Surv. By default, type is "risk".
+}
+  \item{w}{
+the weight for each case in x.
+}
+  \item{w.new}{
+the weight for each case in x.new.
 }
 }
 \details{

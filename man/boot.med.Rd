@@ -12,7 +12,7 @@ boot.med(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,
          contm=data$contm,catm=data$catm,jointm=data$jointm,margin=1,
          n=20,seed=sample(1:1000,1),nonlinear=F,df=1,nu=0.001,D=3,
          distn=NULL,family1=NULL,n2=50,weight=rep(1,nrow(x)),
-         refy=NULL,x.new=x,binpred=data$binpred,type=NULL)
+         refy=NULL,x.new=x,binpred=data$binpred,type=NULL,w.new=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -76,6 +76,9 @@ if TRUE, the predictor is binary.
 }
   \item{type}{
 the type of prediction when y is class Surv. Is "risk" if not specified.
+}
+  \item{w.new}{
+the weights for new.x.
 }
 }
 \details{

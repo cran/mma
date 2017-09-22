@@ -8,7 +8,7 @@ Print a mma object
 Print the estimation of mediation effects from an mma object.
 }
 \usage{
-\method{print}{mma}(x,...)
+\method{print}{mma}(x,...,digit=3)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -17,6 +17,9 @@ a mma object created initially call to mma, boot.med.binx, or boot.med.contx.
 }
   \item{\dots}{
 other arguments passed to the print function.
+}
+  \item{digit}{
+the number of decimal digits to keep.
 }
 }
 \value{
