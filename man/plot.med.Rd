@@ -44,11 +44,13 @@ Qingzhao Yu \email{qyu@lsuhsc.edu}
 \code{"\link[=med]{med}"}
 }
 \examples{
-data(weight_behavior)
-x=weight_behavior[,2:14]
-y=weight_behavior[,15]
-data.bin<-data.org(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
-  binref=c(1,1),catmed=6,catref=1,predref="M",alpha=0.4,alpha2=0.4)
+#library(plotrix)
+data("weight_behavior")
+ x=weight_behavior[,c(2,4:14)]
+ pred=weight_behavior[,3]
+ y=weight_behavior[,15]
+ data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),
+  binref=c(1,1),catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
 temp1<-med(data=data.bin,n=2,seed=1)
 temp2<-med(data=data.bin,n=2,seed=1,nonlinear=TRUE)
 plot(temp1,data.bin,vari="exercises",xlim=c(0,50))

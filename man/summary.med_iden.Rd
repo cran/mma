@@ -46,12 +46,12 @@ Qingzhao Yu \email{qyu@lsuhsc.edu}
 }
 \examples{
 data("weight_behavior")
-x=weight_behavior[,2:14]
-y=weight_behavior[,15]
-data.b.b.2<-data.org(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
-   binref=c(1,1),catmed=6,catref=1,jointm=list(n=1,j1=c(6,8,10)),
-   predref="M",alpha=0.4,alpha2=0.4)
-summary(data.b.b.2)
+ x=weight_behavior[,c(2,4:14)]
+ pred=weight_behavior[,3]
+ y=weight_behavior[,15]
+ data.b.b.2<-data.org(x,y,mediator=5:12,jointm=list(n=1,j1=c(5,7,9)),
+                        pred=pred,predref="M", alpha=0.4,alpha2=0.4)
+ summary(data.b.b.2)
 }
 
 %\keyword{ Summary }

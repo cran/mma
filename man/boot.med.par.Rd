@@ -11,8 +11,9 @@ To make inferences on the mediation effects when the predictor is continuous or 
 boot.med.par(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,
              contm=data$contm,catm=data$catm,jointm=data$jointm,margin=1,
              n=20,seed=sample(1:1000,1),nonlinear=F,df=1,nu=0.001,
-             D=3,distn=NULL,family1=NULL,n2=50,weight=rep(1,nrow(x)),
-             refy=NULL,x.new=x,binpred=data$binpred,type=NULL,w.new=NULL,ncore=NULL)
+             D=3,distn=NULL,family1=data$family1,n2=50,w=rep(1,nrow(x)),
+             refy=NULL,x.new=x,pred.new=dirx,binpred=data$binpred,
+             type=NULL,w.new=NULL,ncore=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -20,12 +21,12 @@ boot.med.par(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,
 the list of result from data.org that organize the covariates, mediators, predictor and outcome. If data is FALSE, then need to set x, y, dirx, contm, catm, and jointm.
 }
    \item{x}{
-a data frame contains the predictor, all mediators and covariates.  Need to set up only when data is FALSE.
+a data frame contains all mediators and covariates.  Need to set up only when data is FALSE.
 }
   \item{y}{
 the vector of outcome variable.  Need to set up only when data is FALSE.
 }
-  \item{dirx }{the predictor name or the column number of x that locates the predictor. Need to set up only when data is FALSE.}
+  \item{dirx }{the vector/matrix of predictor(s). Need to set up only when data is FALSE.}
   \item{binm}{
 the variable names or the column number of x that locates the binary mediators. Need to set up only when data is FALSE.
 }
@@ -62,20 +63,23 @@ define the conditional distribution of y given x, and the linkage function that 
   \item{n2}{
 the number of times of bootstrap resampling.  The default value is n2=50.
 }
-  \item{weight}{
+  \item{w}{
 the weight for observations.
 }
   \item{refy}{
 if y is binary, the reference group of y.
-}
-  \item{x.new}{
-of the same format as x, with a new set of predictor and corresponding covariates on which to calculate the mediation effects.
 }
   \item{binpred}{
 if TRUE, the predictor is binary.
 }
   \item{type}{
 the type of prediction when y is class Surv. Is "risk" if not specified.
+}
+  \item{x.new}{
+of the same format as x, with a new set of covariates and mediators on which to calculate the mediation effects.
+}
+  \item{pred.new}{
+a new set of predictor(s).
 }
   \item{w.new}{
 the weights for new.x.
@@ -102,6 +106,20 @@ Qingzhao Yu \email{qyu@lsuhsc.edu} and Bin Li \email{bli@lsu.edu}.}
 
 \seealso{
 \code{"\link[=med]{med}"} just estimate the mediation effects.
+}
+\examples{
+\donttest{
+library(doParallel)
+data("weight_behavior")
+##binary x
+#binary y
+ x=weight_behavior[,c(2,4:14)]
+ pred=weight_behavior[,3]
+ y=weight_behavior[,15]
+ data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,1),
+                    catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
+ temp1<-boot.med.par(data=data.bin,n=2,n2=4,seed=1)
+ temp2<-boot.med.par(data=data.bin,n=2,n2=4,nu=0.05,seed=1,nonlinear=TRUE)}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

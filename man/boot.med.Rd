@@ -11,8 +11,8 @@ To make inferences on the mediation effects when the predictor is continuous or 
 boot.med(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,
          contm=data$contm,catm=data$catm,jointm=data$jointm,margin=1,
          n=20,seed=sample(1:1000,1),nonlinear=F,df=1,nu=0.001,D=3,
-         distn=NULL,family1=NULL,n2=50,weight=rep(1,nrow(x)),
-         refy=NULL,x.new=x,binpred=data$binpred,type=NULL,w.new=NULL)
+         distn=NULL,family1=data$family1,n2=50,w=rep(1,nrow(x)),
+         refy=NULL,x.new=x,pred.new=dirx,binpred=data$binpred,type=NULL,w.new=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -20,12 +20,12 @@ boot.med(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,
 the list of result from data.org that organize the covariates, mediators, predictor and outcome. If data is FALSE, then need to set x, y, dirx, contm, catm, and jointm.
 }
    \item{x}{
-a data frame contains the predictor, all mediators and covariates.  Need to set up only when data is FALSE.
+a data frame contains all mediators and covariates.  Need to set up only when data is FALSE.
 }
   \item{y}{
 the vector of outcome variable.  Need to set up only when data is FALSE.
 }
-  \item{dirx }{the predictor name or the column number of x that locates the predictor. Need to set up only when data is FALSE.}
+  \item{dirx }{the vector/matrix of predictor(s). Need to set up only when data is FALSE.}
   \item{binm}{
 the variable names or the column number of x that locates the binary mediators. Need to set up only when data is FALSE.
 }
@@ -62,14 +62,17 @@ define the conditional distribution of y given x, and the linkage function that 
   \item{n2}{
 the number of times of bootstrap resampling.  The default value is n2=50.
 }
-  \item{weight}{
+  \item{w}{
 the weight for observations.
 }
   \item{refy}{
 if y is binary, the reference group of y.
 }
   \item{x.new}{
-of the same format as x, with a new set of predictor and corresponding covariates on which to calculate the mediation effects.
+of the same format as x, with a new set of covariates and mediators on which to calculate the mediation effects.
+}
+  \item{pred.new}{
+a new set of predictor(s).
 }
   \item{binpred}{
 if TRUE, the predictor is binary.
@@ -104,66 +107,88 @@ Qingzhao Yu \email{qyu@lsuhsc.edu}}
 data("weight_behavior")
 ##binary x
 #binary y
-x=weight_behavior[,2:14]
-y=weight_behavior[,15]
-data.bin<-data.org(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
-         binref=c(1,1),catmed=6,catref=1,predref="M",alpha=0.4,alpha2=0.4)
-temp1<-boot.med(data=data.bin,n=2,n2=4,seed=1)
-temp2<-boot.med(data=data.bin,n=2,n2=4,nu=0.05,seed=1,nonlinear=TRUE)
+ x=weight_behavior[,c(2,4:14)]
+ pred=weight_behavior[,3]
+ y=weight_behavior[,15]
+ data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,1),
+                    catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
+ temp1<-boot.med(data=data.bin,n=2,n2=4,seed=1)
+ temp2<-boot.med(data=data.bin,n=2,n2=4,nu=0.05,seed=1,nonlinear=TRUE)
+
+\donttest{
+ #multivariate predictor
+ x=weight_behavior[,c(2:3,5:14)]
+ pred=weight_behavior[,4]
+ y=weight_behavior[,15]
+ data.b.b.2.3<-data.org(x,y,mediator=5:12,jointm=list(n=1,j1=c(5,7,9)),
+                        pred=pred,predref="OTHER", alpha=0.4,alpha2=0.4)
+ temp1.2<-boot.med(data.b.b.2.3,n=2,n2=4,seed=1)
+ temp2.2<-boot.med(data.b.b.2.3,n=2,n2=4,nu=0.05,seed=1,nonlinear=TRUE)
+
+ #multivariate responses
+ x=weight_behavior[,c(2:3,5:14)]
+ pred=weight_behavior[,4]
+ y=weight_behavior[,c(1,15)]
+ data.b.b.2.4<-data.org(x,y,mediator=5:12,jointm=list(n=1,j1=c(5,7,9)),
+                        pred=pred,predref="OTHER", alpha=0.4,alpha2=0.4)
+ temp1.3<-boot.med(data.b.b.2.4,n=2,n2=4,seed=1)
+ temp2.3<-boot.med(data.b.b.2.4,n=2,n2=4,seed=1,nonlinear=TRUE)
 
 #continuous y
-x=weight_behavior[,2:14]
-y=weight_behavior[,1]
-data.cont<-data.org(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
-                    binref=c(1,1),catmed=6,catref=1, predref="M",
-                    family1=gaussian(link="identity"),alpha=0.4,alpha2=0.4)
-\donttest{
-temp3<-boot.med(data=data.cont,n=2,n2=4,seed=1) 
-temp4<-boot.med(data=data.cont,n=2,n2=4,nu=0.05,seed=1, nonlinear=TRUE)} 
+ x=weight_behavior[,c(2,4:14)]
+ pred=weight_behavior[,3]
+ y=weight_behavior[,1]
+ data.cont<-data.org(x,y,pred=pred,mediator=5:12,jointm=list(n=1,j1=7:9), 
+                     predref="M",alpha=0.4,alpha2=0.4)
+ temp3<-boot.med(data=data.cont,n=2,n2=4,seed=1) 
+ temp4<-boot.med(data=data.cont,n=2,n2=4,nu=0.05,seed=1, nonlinear=TRUE)
 
 ##continuous x
 #binary y
-x=weight_behavior[,2:14]
-y=weight_behavior[,15]
-data.contx<-data.org(x,y,pred=1,contmed=c(8:10,12:13),binmed=c(7,11),
-                     binref=c(1,1),catmed=6,catref=1,alpha=0.4,alpha2=0.4)
-\donttest{
-temp5<-boot.med(data=data.contx,seed=1,n=1,n2=2)
-plot(temp5,vari="exercises",xlim=c(0,30))
-temp6<-boot.med(data=data.contx,seed=1,n=1,refy=0,nonlinear=T,n2=2)}
+ x=weight_behavior[,3:14]
+ pred=weight_behavior[,2]
+ y=weight_behavior[,15]
+ data.contx<-data.org(x,y,pred=pred,mediator=4:10,alpha=0.4,alpha2=0.4)
+ temp5<-boot.med(data=data.contx,seed=1,n=1,n2=2)
+ #plot(temp5,vari="exercises",xlim=c(0,30))
+ temp6<-boot.med(data=data.contx,seed=1,n=1,refy=0,nonlinear=T,n2=2)
 
 #continuous y
-x=weight_behavior[,2:14]
-y=weight_behavior[,1]
-data.contx<-data.org(x,y,pred=1,contmed=c(8:10,12:13),binmed=c(7,11),
-                     binref=c(1,1),catmed=6,catref=1,alpha=0.4,alpha2=0.4)
-\donttest{
-temp7<-boot.med(data=data.contx,seed=1,n=1,n2=2) 
-temp8<-boot.med(data=data.contx,nonlinear=T,seed=1,n=1,n2=2) }
+ x=weight_behavior[,3:14]
+ y=weight_behavior[,1]
+ pred=weight_behavior[,2]
+ data.contx<-data.org(x,y,pred=pred,contmed=c(11:12),binmed=c(6,10),
+                     binref=c(1,1),catmed=5,catref=1,
+                     alpha=0.4,alpha2=0.4)
+ temp7<-boot.med(data=data.contx,seed=1,n=1,n2=2) 
+ temp8<-boot.med(data=data.contx,nonlinear=T,seed=1,n=1,n2=2)}
 
 ##Surv class outcome (survival analysis)
+\donttest{
 data(cgd0)       #a dataset in the survival package
-cgd1<-cgd0
-x=cgd1[,c(4:12)]
+x=cgd1[,c(4:5,7:12)]
+pred=cgd1[,6]
 status<-ifelse(is.na(cgd1$etime1),0,1)
 y=Surv(cgd1$futime,status)          
 #for continuous predictor
-data.surv.contx<-data.org(x,y,pred=3,mediator=(1:ncol(x))[-3],      
+data.surv.contx<-data.org(x,y,pred=pred,mediator=1:ncol(x),      
                           alpha=0.5,alpha2=0.5)
 temp9.contx<-boot.med(data=data.surv.contx,seed=1,n=1,n2=2, type="lp") 
-summary(temp9.contx)
-\donttest{
+#summary(temp9.contx)
 temp10.contx<-boot.med(data=data.surv.contx,nonlinear=TRUE,seed=1,n=1,n2=2) 
-summary(temp10.contx)}
+#summary(temp10.contx)}
 
 #for binary predictor
-data.surv.binx<-data.org(x,y,pred=1,mediator=(1:ncol(x))[-1],   
+\donttest{
+x=cgd1[,c(5:12)]
+pred=cgd1[,4]
+data.surv.binx<-data.org(x,y,pred=pred,mediator=1:ncol(x),   
                     alpha=0.4,alpha2=0.4)
 temp9.binx<-boot.med(data=data.surv.binx,seed=1,n=1,n2=2, type="lp") 
 summary(temp9.binx)
-\donttest{
 temp10.binx<-boot.med(data=data.surv.binx,nonlinear=TRUE,seed=1,n=1,n2=2) 
-summary(temp10.binx)}
+#summary(temp10.binx)
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

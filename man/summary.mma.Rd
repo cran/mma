@@ -57,12 +57,11 @@ Qingzhao Yu \email{qyu@lsuhsc.edu}
 }
 \examples{
 data("weight_behavior")
- x=weight_behavior[,2:14]
+ x=weight_behavior[,c(2,4:14)]
+ pred=weight_behavior[,3]
  y=weight_behavior[,15]
- temp.b.b.glm<-mma(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
-   binref=c(1,1),catmed=6,catref=1,predref="M",alpha=0.4,alpha2=0.4, 
-   jointm=NULL,margin=1, n=2,seed=sample(1:1000,1),nonlinear=FALSE,
-   nu=0.001,D=3,n2=2)
+  temp.b.b.glm<-mma(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,1),
+                    catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4,n=2,n2=2)
  summary(temp.b.b.glm)
 }
 

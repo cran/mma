@@ -8,11 +8,14 @@ Multiple Mediation Analysis Using Parallel Computing
 Test for mediators and do statistical inferences on the identified mediation effects using parallel computing (multiple cores).
 }
 \usage{
-mma.par(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
-                  catmed=NULL,catref=NULL,jointm=NULL,refy=NULL,predref=NULL,
-                  alpha=0.1,alpha2=0.1, margin=1, n=20,seed=sample(1:1000,1),
-                  nonlinear=F,df=1,nu=0.001,D=3,distn=NULL,family1=NULL,n2=50,
-                  weight=rep(1,nrow(x)),x.new=NULL,type=NULL,w.new=NULL,ncore=NULL)
+mma.par(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,
+        binref=NULL,catmed=NULL,catref=NULL,jointm=NULL,
+        refy=rep(NA,ncol(data.frame(y))), predref=NULL,alpha=0.1,
+        alpha2=0.1, margin=1, n=20,seed=sample(1:1000,1),
+        nonlinear=F,df=1,nu=0.001,D=3,distn=NULL,
+        family1=as.list(rep(NA,ncol(data.frame(y)))),
+        n2=50,w=rep(1,nrow(x)), testtype=1, x.new=NULL, 
+        pred.new=NULL, type=NULL,w.new=NULL, ncore=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -23,7 +26,7 @@ a data frame contains the predictor, all potential mediators and covariates.
 the vector of outcome variable.
 }
   \item{pred}{
-the column number that locates the predictor in x.
+the vector/matrix of the predictor(s).
 }
   \item{mediator}{
 the list of mediators (column numbers in x or by variable names). The mediators to be checked can be identified by "contmed", "binmed" and "catmed", or by this argument, "mediator", where binary and categorical mediators in x are identified by factors, the reference group is the first level of the factor.  
@@ -88,11 +91,16 @@ define the conditional distribution of y given x, and the linkage function that 
   \item{n2}{
 the number of times of bootstrap resampling.  The default value is n2=50.
 }
-  \item{weight}{
+  \item{w}{
 the weight for each observation.
 }
+  \item{testtype}{if the testtype is 1 (by default), covariates/mediators are identified using full model; if the testtype is 2, covariates/mediators are tested one by one in models with the predictor only.
+}
   \item{x.new}{
-for continuous predictor only. of the same format as x (after data.org), with a new set of predictor and corresponding covariates on which to calculate the mediation effects. If is NULL, the mediation effects will be calculated based on the original data set.
+A new set of predictor and corresponding covariates, of the same format as x (after data.org),  on which to calculate the mediation effects. For continuous predictor only. If is NULL, the mediation effects will be calculated based on the original data set.
+}
+  \item{pred.new}{
+A new set of predictor(s), of the same format as x (after data.org), on which to calculate the mediation effects. For continuous predictor only.
 }
   \item{type}{
 the type of prediction when y is class Surv. Is "risk" if not specified.
@@ -128,6 +136,30 @@ Qingzhao Yu \email{qyu@lsuhsc.edu} and Bin Li \email{bli@lsu.edu}.
 }
 \seealso{
 \code{"\link[=data.org]{data.org}"} is for mediator tests, and \code{"\link[=med]{med}"} , and \code{"\link[=boot.med]{boot.med}"} for mediation analysis and inferences.
+}
+\examples{
+ \donttest{
+ library(doParallel)
+data("weight_behavior")
+#binary predictor
+ #binary y
+ x=weight_behavior[,c(2,4:14)]
+ pred=weight_behavior[,3]
+ y=weight_behavior[,15]
+ temp.b.b.glm<-mma.par(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,1),
+                    catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4,n=2,n2=2)
+
+ temp.b.b.mart<-mma.par(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,1),
+                    catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4,nonlinear=TRUE,n=2,n2=5)
+ #continuous y
+ x=weight_behavior[,c(2,4:14)]
+ pred=weight_behavior[,3]
+ y=weight_behavior[,1]
+ temp.b.c.glm<-mma.par(x,y,pred=pred,mediator=5:12,jointm=list(n=1,j1=7:9), 
+                     predref="M",alpha=0.4,alpha2=0.4,n2=20)
+ temp.b.c.mart<-mma.par(x,y,pred=pred,mediator=5:12,jointm=list(n=1,j1=7:9), 
+                     predref="M",alpha=0.4,alpha2=0.4,
+                     n=2,seed=1,nonlinear=TRUE,n2=20)}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

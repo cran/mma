@@ -9,10 +9,10 @@ Test for mediators and do statistical inferences on the identified mediation eff
 }
 \usage{
 mma(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
-    catmed=NULL,catref=NULL,jointm=NULL,refy=NULL,predref=NULL,
-    alpha=0.1,alpha2=0.1, margin=1, n=20,seed=sample(1:1000,1),
-    nonlinear=F,df=1,nu=0.001,D=3,distn=NULL,family1=NULL,n2=50,
-    weight=rep(1,nrow(x)),x.new=NULL,type=NULL,w.new=NULL)
+    catmed=NULL,catref=NULL,jointm=NULL,refy=rep(NA,ncol(data.frame(y))),
+    predref=NULL,alpha=0.1,alpha2=0.1, margin=1, n=20,seed=sample(1:1000,1),
+    nonlinear=F,df=1,nu=0.001,D=3,distn=NULL,family1=as.list(rep(NA,ncol(data.frame(y)))),
+    n2=50,w=rep(1,nrow(x)), testtype=1, x.new=NULL, pred.new=NULL, type=NULL,w.new=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -23,7 +23,7 @@ a data frame contains the predictor, all potential mediators and covariates.
 the vector of outcome variable.
 }
   \item{pred}{
-the column number that locates the predictor in x.
+the vector/matrix of the predictor(s).
 }
   \item{mediator}{
 the list of mediators (column numbers in x or by variable names). The mediators to be checked can be identified by "contmed", "binmed" and "catmed", or by this argument, "mediator", where binary and categorical mediators in x are identified by factors, the reference group is the first level of the factor.  
@@ -88,11 +88,16 @@ define the conditional distribution of y given x, and the linkage function that 
   \item{n2}{
 the number of times of bootstrap resampling.  The default value is n2=50.
 }
-  \item{weight}{
+  \item{w}{
 the weight for each observation.
 }
+  \item{testtype}{if the testtype is 1 (by default), covariates/mediators are identified using full model; if the testtype is 2, covariates/mediators are tested one by one in models with the predictor only.
+}
   \item{x.new}{
-for continuous predictor only. of the same format as x (after data.org), with a new set of predictor and corresponding covariates on which to calculate the mediation effects. If is NULL, the mediation effects will be calculated based on the original data set.
+A new set of predictor and corresponding covariates, of the same format as x (after data.org),  on which to calculate the mediation effects. For continuous predictor only. If is NULL, the mediation effects will be calculated based on the original data set.
+}
+  \item{pred.new}{
+A new set of predictor(s), of the same format as x (after data.org), on which to calculate the mediation effects. For continuous predictor only.
 }
   \item{type}{
 the type of prediction when y is class Surv. Is "risk" if not specified.
@@ -109,7 +114,7 @@ Returns an mma object.
   \item{estimation }{list the estimation of ie (indirect effect), te  (total effect), and de (direct effect from the predictor) separately.}  \item{bootsresults }{a list where the first item, ie, is a matrix of n2 rows where each column gives the estimated indirect effect from the corresponding mediator (identified by the column name) from the n2 bootstrap samples; the second item, te, is a vector of estimated total effects from the bootstrap sample; and the 3rd item, de, is a vector of estimated direct effect of the predictor from the bootstrap sample.} 
   \item{model }{a list where the first item, MART, is T if mart is fitted for the final model; the second item, Survival, is T if a survival model is fitted; the third item, type, is the type of prediction when a survival model is fitted; the fourth item, model, is the fitted final full model where y is the outcome and all predictor, covariates, and mediators are the explanatory variables; and the fourth item, best.iter is the number of best iterations if MART is used to fit the final model.}
   \item{data }{a list that contains all the used data: x=x, y=y, dirx=dirx, binm=binm, contm=contm, catm=catm, jointm=jointm, binpred=F.}
-  \item{boot.detail }{for continuous predictor only: a list that contains the mediation effects on each row of new.x: new.x=new.x, te1, de1, ie1.}
+  \item{boot.detail }{for continuous predictor only: a list that contains the mediation effects on each row of new.pred: new.pred=new.pred, te1, de1, ie1.}
 }
 \references{
 Baron, R.M., and Kenny, D.A. (1986) <doi:10.1037/0022-3514.51.6.1173>. "The moderator-mediator variable distinction in social psychological research: conceptual, strategic, and statistical considerations," J. Pers Soc Psychol, 51(6), 1173-1182.
@@ -130,51 +135,54 @@ Qingzhao Yu  \email{qyu@lsuhsc.edu}
 }
 \examples{
 data("weight_behavior")
- #binary x
+#binary predictor
  #binary y
- x=weight_behavior[,2:14]
+ x=weight_behavior[,c(2,4:14)]
+ pred=weight_behavior[,3]
  y=weight_behavior[,15]
- temp.b.b.glm<-mma(x,y,pred=2,mediator=6:13,predref="M",alpha=0.4,
-                   alpha2=0.4,n=2,n2=2)
+ temp.b.b.glm<-mma(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,1),
+                    catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4,n=2,n2=2)
  \donttest{
- temp.b.b.mart<-mma(x,y,pred=2,mediator=6:13,predref="M",alpha=0.4,
-                    alpha2=0.4,nonlinear=TRUE,n=2,n2=5)
+ temp.b.b.mart<-mma(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,1),
+                    catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4,nonlinear=TRUE,n=2,n2=5)
  #continuous y
- x=weight_behavior[,2:14]
+ x=weight_behavior[,c(2,4:14)]
+ pred=weight_behavior[,3]
  y=weight_behavior[,1]
- temp.b.c.glm<-mma(x,y,pred=2,mediator=c(8:10,12:13,7,11,6),
-   jointm=list(n=1,j1=8:10), seed=1, n=2, predref="M",alpha=0.4,
-   alpha2=0.4,n2=20)
- temp.b.c.mart<-mma(x,y,pred=2,mediator=6:13,jointm=list(n=1,j1=8:10, 
-                    j2=12:13), predref="M",alpha=0.4,alpha2=0.4,
-                    n=2,seed=1,nonlinear=TRUE,n2=20)}
+ temp.b.c.glm<-mma(x,y,pred=pred,mediator=5:12,jointm=list(n=1,j1=7:9), 
+                     predref="M",alpha=0.4,alpha2=0.4,n2=20)
+ temp.b.c.mart<-mma(x,y,pred=pred,mediator=5:12,jointm=list(n=1,j1=7:9), 
+                     predref="M",alpha=0.4,alpha2=0.4,
+                     n=2,seed=1,nonlinear=TRUE,n2=20)}
 
+\donttest{
 ##Surv class outcome (survival analysis)
 data(cgd0)       #a dataset in the survival package
-cgd1<-cgd0
-x=cgd1[,c(4:12)]
+x=cgd1[,c(4:5,7:12)]
+pred=cgd1[,6]
 status<-ifelse(is.na(cgd1$etime1),0,1)
-names(x)[5]<-"weights" #there is an argument called weight in mma function
 y=Surv(cgd1$futime,status)          
 #for continuous predictor
-temp.cox.contx<-mma(x,y,pred=3,mediator=(1:ncol(x))[-3],      
-              alpha=0.8,alpha2=0.8,seed=1,n=1,n2=2,type="lp") 
+temp.cox.contx<-mma(x,y,pred=pred,mediator=1:ncol(x),      
+                    alpha=0.5,alpha2=0.5,seed=1,n=1,n2=2,type="lp") 
 summary(temp.cox.contx)
-temp.surv.mart.contx<-mma(x,y,pred=3,mediator=(1:ncol(x))[-3], n=1,     
+temp.surv.mart.contx<-mma(x,y,pred=pred,mediator=1:ncol(x),      
                     alpha=0.5,alpha2=0.5,nonlinear=TRUE,seed=1,n2=2) 
 summary(temp.surv.mart.contx)
 plot(temp.surv.mart.contx,vari="steroids")
 plot(temp.cox.contx,vari="steroids")
 
 #for binary predictor
-temp.cox.binx<-mma(x,y,pred=1,mediator=(1:ncol(x))[-1],   
-                   alpha=0.4,alpha2=0.4,seed=1,n=1,n2=2,type="lp") 
+x=cgd1[,c(5:12)]
+pred=cgd1[,4]
+temp.cox.binx<-mma(x,y,pred=pred,mediator=1:ncol(x),   
+                    alpha=0.4,alpha2=0.4,seed=1,n=1,n2=2,type="lp") 
 summary(temp.cox.binx)
-temp.surv.mart.binx<-mma(x,y,pred=1,mediator=(1:ncol(x))[-1], seed=1,  
-                         alpha=0.4,alpha2=0.4,nonlinear=TRUE,n=1,n2=2) 
+temp.surv.mart.binx<-mma(x,y,pred=pred,mediator=1:ncol(x),   
+                    alpha=0.4,alpha2=0.4,nonlinear=TRUE,n=1,n2=2) 
 summary(temp.surv.mart.binx)
 plot(temp.surv.mart.binx,vari="hos.cat")
-plot(temp.cox.binx,vari="hos.cat")
+plot(temp.cox.binx,vari="hos.cat")}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

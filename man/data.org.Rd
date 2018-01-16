@@ -8,8 +8,9 @@ Do a preliminary data analysis to identify potential mediators and covariates. E
 }
 \usage{
 data.org(x,y,pred,mediator=NULL,contmed=NULL,binmed=NULL,binref=NULL,catmed=NULL,
-                   catref=NULL,jointm=NULL,refy=NULL, family1=NULL,
-                   predref=NULL,alpha=0.1,alpha2=0.1,testtype=1, weight=NULL)
+                   catref=NULL,jointm=NULL,refy=rep(NA,ncol(data.frame(y))), 
+                   family1=as.list(rep(NA,ncol(data.frame(y)))),
+                   predref=NULL,alpha=0.1,alpha2=0.1,testtype=1, w=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -20,7 +21,7 @@ a data frame contains the predictor, all potential mediators and covariates
 the vector of outcome variable.The outcome can be binary, continuous, or of "Surv" class (see survival package for help).
 }
   \item{pred}{
-the column number that locates the predictor in x or the predictor name.
+the column or matrix of predictor(s): the predictor is the exposure variable, it can be a binary or multi-categorical factor or one/a few contiuous variable(s).
 }
   \item{mediator}{
 the list of mediators (column numbers in x or by variable names). The mediators to be checked can be identified by "contmed", "binmed" and "catmed", or by this argument, "mediator", where binary and categorical mediators in x are identified as factors or characters, the reference group is the first level of the factor or factorized character. if a mediator has only two unique values, the mediator is identified as binary. If the reference groups need to be changed, the binary or categorical mediators can be listed in binmed or catmed, and the corresponding reference group in binref or catref.
@@ -60,23 +61,23 @@ the significant level at which to test if a potential mediator is related with t
 }  
   \item{testtype}{if the testtype is 1 (by default), covariates/mediators are identified using full model; if the testtype is 2, covariates/mediators are tested one by one in models with the predictor only.
 }
-  \item{weight}{the weight for data analysis, by default is rep(1,length(y)).
+  \item{w}{the weight for data analysis, by default is rep(1,length(y)).
 }
 }
 
 \value{
 data.org returns a list with the organized data and identifiers of the potential mediators in the organized data set.
   \item{x }{the organized data frame that include all potential mediators and covariates that should be used to estimate the outcome.}
-  \item{dirx }{the column number of x that locates the predictor.}
+  \item{dirx }{the vector/matrix of predictor(s)/exposure variable(s).}
   \item{contm }{the column numbers of x that locate the potential continuous mediators.}
   \item{binm }{when the predictor is continuous, binm gives the column numbers of x that locate the potential binary mediators.}
   \item{catm }{when the predictor is binary, catm gives the column numbers of x that locate the potential binary or categorical mediators; when the predictor is continuous, catm gives a list where the first item is the number of potential categorical mediators, and the following items give the column numbers of each binarized categorical mediator in x.}
   \item{jointm }{a list where the first item is the number of groups of joint mediators, and each of the following items identifies the column numbers of the mediators in the newly organized x for each group of joint mediators.}
-  \item{y }{the vector of outcome.}
-  \item{fullmodel}{the full linear model fitted with all potential mediators and covariates.}
-  \item{rela}{p-values of tests on the realtionship between the predictor and each potiential mediator.}
-  \item{surv}{True if y is of class Surv.}
-  \item{P1}{If testtype=2, P1 gives the p-value of the corresponding variables in predicting the outcome when only the variable and predictor are covariates in the model.}
+  \item{y }{the vector/matrix of outcome(s).}
+  \item{y_type }{the variable type of outcome(s): 1 is continuous, 2 is binary, 3 is reserved for multi-categorical (no 3 would show in y_type, since all categorical responses are binarized), and 4 is survival.}
+  \item{fullmodel}{a list with each item the full linear model fitted with all potential mediators and covariates for each response.}
+  \item{rela}{p-values of tests on the realtionship between the predictor(s) and each potiential mediator.}
+  \item{P1}{If testtype=2, P1 gives the p-value of the corresponding variables in predicting the outcome(s) when only the variable and predictor are covariates in the model.}
 }
 \references{
 Baron, R.M., and Kenny, D.A. (1986) <doi:10.1037/0022-3514.51.6.1173>. The moderator-mediator variable distinction in social psychological research: conceptual, strategic, and statistical considerations. J. Pers Soc Psychol, 51(6), 1173-1182.
@@ -95,12 +96,13 @@ All other variables in x but not identified by mediator, contmed, binmed, or cat
 }
 \examples{
 data("weight_behavior")
-#binary x
+#binary predictor
  #binary y
- x=weight_behavior[,2:14]
+ x=weight_behavior[,c(2,4:14)]
+ pred=weight_behavior[,3]
  y=weight_behavior[,15]
- data.b.b.2.1<-data.org(x,y,mediator=6:13,jointm=list(n=1,j1=c(6,8,10)),
-                        pred=2,predref="M", alpha=0.4,alpha2=0.4)
+ data.b.b.2.1<-data.org(x,y,mediator=5:12,jointm=list(n=1,j1=c(5,7,9)),
+                        pred=pred,predref="M", alpha=0.4,alpha2=0.4)
  summary(data.b.b.2.1)
  #Or you can specify the potential mediators and change the reference 
  #group for binary or categorical mediators. In the following code,
@@ -108,49 +110,96 @@ data("weight_behavior")
  #binary mediators are columns 7 and 11, and categorical mediator is
  #column 6 of x with 1 to be the reference group for all categorical
  #and binary mediators. 
-  data.b.b.2<-data.org(x,y,pred=2,contmed=c(8:10,12:13),binmed=c(7,11),
-   binref=c(1,1),catmed=6,catref=1,jointm=list(n=1,j1=c(6,8,10)),
+  data.b.b.2<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),
+   binref=c(1,1),catmed=5,catref=1,jointm=list(n=1,j1=c(5,7,9)),
    predref="M",alpha=0.4,alpha2=0.4) 
   summary(data.b.b.2)
  #use the mediator argument instead of contmet, binmed and catmed
  
+ #multivariate predictor
+\donttest{
+ x=weight_behavior[,c(2:3,5:14)]
+ pred=weight_behavior[,4]
+ y=weight_behavior[,15]
+ data.b.b.2.3<-data.org(x,y,mediator=5:12,jointm=list(n=1,j1=c(5,7,9)),
+                        pred=pred,predref="OTHER", alpha=0.4,alpha2=0.4)
+ summary(data.b.b.2.3)
+
+ #multivariate responses
+ x=weight_behavior[,c(2:3,5:14)]
+ pred=weight_behavior[,4]
+ y=weight_behavior[,c(1,15)]
+ data.b.b.2.4<-data.org(x,y,mediator=5:12,jointm=list(n=1,j1=c(5,7,9)),
+                        pred=pred,predref="OTHER", alpha=0.4,alpha2=0.4)
+ summary(data.b.b.2.4)}
+
  #continuous y
- x=weight_behavior[,2:14]
+ x=weight_behavior[,c(2,4:14)]
+ pred=weight_behavior[,3]
  y=weight_behavior[,1]
- data.b.c.2<-data.org(x,y,pred=2,mediator=6:13,jointm=list(n=1,j1=8:10), 
+ data.b.c.2<-data.org(x,y,pred=pred,mediator=5:12,jointm=list(n=1,j1=7:9), 
    predref="M",alpha=0.4,alpha2=0.4)
  summary(data.b.c.2)
  
-#continuous x
+#continuous predictor
  #binary y
- x=weight_behavior[,2:14]
+ x=weight_behavior[,3:14]
+ pred=weight_behavior[,2]
  y=weight_behavior[,15]
- data.c.b.2<-data.org(x,y,pred=1,mediator=6:13,catref=1,
-          jointm=list(n=2,j1=8:10,j2=c(6,8)),alpha=0.4,alpha2=0.4)
+ data.c.b.2<-data.org(x,y,pred=pred,mediator=5:12,catref=1,
+          jointm=list(n=2,j1=7:9,j2=c(5,7)),alpha=0.4,alpha2=0.4)
  summary(data.c.b.2)
+
+#multivariate predictors 
+ x=weight_behavior[,c(3:12,14)]
+ pred=weight_behavior[,c(2,13)]
+ y=weight_behavior[,15]
+ data.c.b.2.2<-data.org(x,y,pred=pred,mediator=5:11,catref=1,
+          jointm=list(n=2,j1=7:9,j2=c(5,7)),alpha=0.4,alpha2=0.4)
+ summary(data.c.b.2.2)
  
  #continuous y
- x=weight_behavior[,2:14]
+ x=weight_behavior[,3:14]
+ pred=weight_behavior[,2]
  y=weight_behavior[,1]
- data.c.c.2<-data.org(x,y,pred=1,contmed=c(8:10,12:13),binmed=c(7,11),
-   binref=c(1,1),catmed=6,catref=1,jointm=list(n=2,j1=8:10,j2=c(6,8)),
+ data.c.c.2<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),
+   binref=c(1,1),catmed=5,catref=1,jointm=list(n=2,j1=7:9,j2=c(5,7)),
    alpha=0.4,alpha2=0.4)
  summary(data.c.c.2)
+
+ #multivariate responses
+ x=weight_behavior[,c(2:3,5:14)]
+ pred=weight_behavior[,4]
+ y=weight_behavior[,c(1,15)]
+ data.b.c.2.4<-data.org(x,y,mediator=5:12,jointm=list(n=1,j1=c(5,7,9)),
+                        pred=pred,predref="OTHER", alpha=0.4,alpha2=0.4)
+ summary(data.b.c.2.4)
+
+# 
+ x=weight_behavior[,c(3:12,14)]
+ pred=weight_behavior[,c(2,13)]
+ y=weight_behavior[,c(1,15)]
+ data.c.c.2.2<-data.org(x,y,pred=pred,mediator=5:11,catref=1,
+          jointm=list(n=2,j1=7:9,j2=c(5,7)),alpha=0.4,alpha2=0.4)
+ summary(data.c.c.2.2)
  
 #Surv class outcome (survival analysis)
-data(cgd0)       #a dataset in the survival package
+#data(cgd0)       #a dataset in the survival package
 cgd1<-cgd0
-x=cgd1[,c(4:12)]
+x=cgd1[,c(4:5,7:12)]
+pred=cgd1[,6]
 status<-ifelse(is.na(cgd1$etime1),0,1)
 y=Surv(cgd1$futime,status)          
  #for continuous predictor
  #all other variables are considered as potential mediator
- data.surv.contx<-data.org(x,y,pred=3,mediator=(1:ncol(x))[-3],      
+ data.surv.contx<-data.org(x,y,pred=pred,mediator=(1:ncol(x)),      
                     alpha=0.5,alpha2=0.5) 
  summary(data.surv.contx)
 
  #for binary predictor
- data.surv.binx<-data.org(x,y,pred=1,mediator=(1:ncol(x))[-1],   
+x=cgd1[,c(5:12)]
+pred=cgd1[,4]
+ data.surv.binx<-data.org(x,y,pred=pred,mediator=(1:ncol(x)),   
                     alpha=0.4,alpha2=0.4)
  summary(data.surv.binx)
 }
