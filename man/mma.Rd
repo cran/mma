@@ -168,7 +168,7 @@ temp.cox.contx<-mma(x,y,pred=pred,mediator=1:ncol(x),
 summary(temp.cox.contx)
 temp.surv.mart.contx<-mma(x,y,pred=pred,mediator=1:ncol(x),      
                     alpha=0.5,alpha2=0.5,nonlinear=TRUE,seed=1,n2=2) 
-summary(temp.surv.mart.contx)
+summary(temp.surv.mart.contx,ball.use=F)
 plot(temp.surv.mart.contx,vari="steroids")
 plot(temp.cox.contx,vari="steroids")
 
@@ -180,7 +180,7 @@ temp.cox.binx<-mma(x,y,pred=pred,mediator=1:ncol(x),
 summary(temp.cox.binx)
 temp.surv.mart.binx<-mma(x,y,pred=pred,mediator=1:ncol(x),   
                     alpha=0.4,alpha2=0.4,nonlinear=TRUE,n=1,n2=2) 
-summary(temp.surv.mart.binx)
+summary(temp.surv.mart.binx, RE=T,ball.use=F)
 plot(temp.surv.mart.binx,vari="hos.cat")
 plot(temp.cox.binx,vari="hos.cat")}
 }

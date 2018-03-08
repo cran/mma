@@ -44,7 +44,6 @@ Qingzhao Yu \email{qyu@lsuhsc.edu}
 \code{"\link[=med]{med}"}
 }
 \examples{
-#library(plotrix)
 data("weight_behavior")
  x=weight_behavior[,c(2,4:14)]
  pred=weight_behavior[,3]

@@ -634,7 +634,7 @@ med<-function(data, x=data$x, y=data$y, dirx=data$dirx, binm=data$binm,contm = d
   
   med.binx.catm<-function(full.model,nom1,nom0,med,best.iter1=NULL,surv,type)  
   {n3<-nrow(nom1)+nrow(nom0)
-   temp.rand<-c(nom1[,med],nom0[,med])[sample(1:n3,replace=T)]
+   temp.rand<-unlist(list(nom1[,med],nom0[,med]))[sample(1:n3,replace=T)]
    marg.m1<-temp.rand[1:nrow(nom1)]
    marg.m2<-temp.rand[(nrow(nom1)+1):n3]
    dir.nom<-rep(0,length(full.model))
@@ -666,7 +666,8 @@ med<-function(data, x=data$x, y=data$y, dirx=data$dirx, binm=data$binm,contm = d
        y[,j]<-ifelse(y[,j]==refy[j],0,1)
      x1<-x2[!is.na(y[,j]),]             #delete nas in y for mart
      y1<-y[!is.na(y[,j]),j]
-     full.model[[j]]<-suppressWarnings(gbm.fit(x1,y1, n.trees=200, interaction.depth=D, shrinkage=nu, w=w,
+     w1<-w[!is.na(y[,j])]
+     full.model[[j]]<-suppressWarnings(gbm.fit(x1,y1, n.trees=200, interaction.depth=D, shrinkage=nu, w=w1,
                                       distribution=distn[j],train.fraction=1.0, bag.fraction=0.5, verbose=FALSE))
      best.iter1[j]<-suppressWarnings(gbm.perf(full.model[[j]],plot.it=FALSE,method="OOB"))
      while(full.model[[j]]$n.trees-best.iter1[j]<30){
@@ -678,10 +679,11 @@ med<-function(data, x=data$x, y=data$y, dirx=data$dirx, binm=data$binm,contm = d
       y[,j]<-ifelse(y[,j]==refy[j],0,1)
     x1<-x2[!is.na(y[,j]),]             #delete nas in y for mart
     y1<-y[!is.na(y[,j]),j]
+    w1<-w[!is.na(y[,j])]
     if(surv[j])
-     full.model[[j]]<-coxph(y1~., data=x1, weights=w)
+     full.model[[j]]<-coxph(y1~., data=x1, weights=w1)
     else
-     full.model[[j]]<-glm(y1~., data=x1, family=family1[[j]], weights=w)
+     full.model[[j]]<-glm(y1~., data=x1, family=family1[[j]], weights=w1)
    }
 
   #2. prepare for the store of results
@@ -1243,7 +1245,7 @@ boot.med<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,contm=d
     
     med.binx.catm<-function(full.model,nom1,nom0,med,best.iter1=NULL,surv,type)  
     {n3<-nrow(nom1)+nrow(nom0)
-    temp.rand<-c(nom1[,med],nom0[,med])[sample(1:n3,replace=T)]
+    temp.rand<-unlist(list(nom1[,med],nom0[,med]))[sample(1:n3,replace=T)]
     marg.m1<-temp.rand[1:nrow(nom1)]
     marg.m2<-temp.rand[(nrow(nom1)+1):n3]
     dir.nom<-rep(0,length(full.model))
@@ -1275,7 +1277,8 @@ boot.med<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,contm=d
           y[,j]<-ifelse(y[,j]==refy[j],0,1)
         x1<-x2[!is.na(y[,j]),]             #delete nas in y for mart
         y1<-y[!is.na(y[,j]),j]
-        full.model[[j]]<-suppressWarnings(gbm.fit(x1,y1, n.trees=200, interaction.depth=D, shrinkage=nu, w=w,
+        w1<-w[!is.na(y[,j])]
+        full.model[[j]]<-suppressWarnings(gbm.fit(x1,y1, n.trees=200, interaction.depth=D, shrinkage=nu, w=w1,
                                                   distribution=distn[j],train.fraction=1.0, bag.fraction=0.5, verbose=FALSE))
         best.iter1[j]<-suppressWarnings(gbm.perf(full.model[[j]],plot.it=FALSE,method="OOB"))
         while(full.model[[j]]$n.trees-best.iter1[j]<30){
@@ -1287,10 +1290,11 @@ boot.med<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,contm=d
           y[,j]<-ifelse(y[,j]==refy[j],0,1)
         x1<-x2[!is.na(y[,j]),]             #delete nas in y for mart
         y1<-y[!is.na(y[,j]),j]
+        w1<-w[!is.na(y[,j])]
         if(surv[j])
-          full.model[[j]]<-coxph(y1~., data=x1, weights=w)
+          full.model[[j]]<-coxph(y1~., data=x1, weights=w1)
         else
-          full.model[[j]]<-glm(y1~., data=x1, family=family1[[j]], weights=w)
+          full.model[[j]]<-glm(y1~., data=x1, family=family1[[j]], weights=w1)
       }
     
     #2. prepare for the store of results
@@ -2045,7 +2049,7 @@ mma<-function(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
     
     med.binx.catm<-function(full.model,nom1,nom0,med,best.iter1=NULL,surv,type)  
     {n3<-nrow(nom1)+nrow(nom0)
-    temp.rand<-c(nom1[,med],nom0[,med])[sample(1:n3,replace=T)]
+    temp.rand<-unlist(list(nom1[,med],nom0[,med]))[sample(1:n3,replace=T)]
     marg.m1<-temp.rand[1:nrow(nom1)]
     marg.m2<-temp.rand[(nrow(nom1)+1):n3]
     dir.nom<-rep(0,length(full.model))
@@ -2077,7 +2081,8 @@ mma<-function(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
           y[,j]<-ifelse(y[,j]==refy[j],0,1)
         x1<-x2[!is.na(y[,j]),]             #delete nas in y for mart
         y1<-y[!is.na(y[,j]),j]
-        full.model[[j]]<-suppressWarnings(gbm.fit(x1,y1, n.trees=200, interaction.depth=D, shrinkage=nu, w=w,
+        w1<-w[!is.na(y[,j])]
+        full.model[[j]]<-suppressWarnings(gbm.fit(x1,y1, n.trees=200, interaction.depth=D, shrinkage=nu, w=w1,
                                                   distribution=distn[j],train.fraction=1.0, bag.fraction=0.5, verbose=FALSE))
         best.iter1[j]<-suppressWarnings(gbm.perf(full.model[[j]],plot.it=FALSE,method="OOB"))
         while(full.model[[j]]$n.trees-best.iter1[j]<30){
@@ -2089,10 +2094,11 @@ mma<-function(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
           y[,j]<-ifelse(y[,j]==refy[j],0,1)
         x1<-x2[!is.na(y[,j]),]             #delete nas in y for mart
         y1<-y[!is.na(y[,j]),j]
+        w1<-w[!is.na(y[,j])]
         if(surv[j])
-          full.model[[j]]<-coxph(y1~., data=x1, weights=w)
+          full.model[[j]]<-coxph(y1~., data=x1, weights=w1)
         else
-          full.model[[j]]<-glm(y1~., data=x1, family=family1[[j]], weights=w)
+          full.model[[j]]<-glm(y1~., data=x1, family=family1[[j]], weights=w1)
       }
     
     #2. prepare for the store of results
@@ -2730,8 +2736,24 @@ print.mma<-function(x,...,digit=3)
 }
 
 
-summary.mma<-function(object,...,alpha=0.05,plot=TRUE,RE=FALSE,quant=T)
-{x<-object
+summary.mma<-function(object,...,alpha=0.05,plot=TRUE,RE=FALSE,quant=T,ball.use=T)
+{sqr.dist<-function(vec1,vec2,w)
+ {weighted.mean((vec1-vec2)^2,w,na.rm=T)}
+
+ bound.ball<-function(mat1,mat2)
+ {upbd=rep(NA,ncol(mat1))
+  lwbd=rep(NA,ncol(mat1))
+  n1<-ncol(mat2)
+  for(i in 1:n1)
+  {temp.t<-i%%n1
+   temp.z<-(1:ncol(mat1))%%n1==temp.t
+   upbd[temp.z]<-apply(as.matrix(mat1[mat2[,i],temp.z]),2,max,na.rm=T)
+   lwbd[temp.z]<-apply(as.matrix(mat1[mat2[,i],temp.z]),2,min,na.rm=T)
+  }
+  return(cbind(upbd,lwbd)) 
+ }
+   
+ x<-object
  ny<-ncol(x$data$y)
  nx<-ncol(x$data$dirx)
  temp1<-x$boots
@@ -2753,43 +2775,74 @@ summary.mma<-function(object,...,alpha=0.05,plot=TRUE,RE=FALSE,quant=T)
  temp4$ie<-temp4$ie/temp.te1
  temp4$de<-temp4$de/temp4$te
  
+#find the confidence ball for each x and y combination
+ ball<-NULL
+ for (l in 1:nx)
+   for (m in 1:ny)
+   {temp.t<-m%%ny
+    temp.z<-(1:ncol(x$bootsresults$ie[[l]]))%%ny==temp.t
+    temp.z[1:ny]<-F
+    if(!is.null(x$data$jointm$n))
+      temp.z[(ncol(x$bootsresults$ie[[l]])-ny*x$data$jointm$n+1):ncol(x$bootsresults$ie[[l]])]<-F #delete the joint effect estimates
+    temp.est<-c(x$estimation$de[(l-1)*ny+m], x$estimation$ie[l,temp.z])
+    temp.boot<-cbind(as.matrix(x$bootsresults$de)[,(l-1)*ny+m],x$bootsresults$ie[[l]][,temp.z])
+    temp.w<-1/apply(temp.boot,2,var)
+    temp.dist<-apply(temp.boot,1,sqr.dist,temp.est,temp.w)
+#    temp.rank<-rank(temp.dist)
+    temp.ball<-temp.dist<quantile(temp.dist,1-alpha,na.rm=T) #temp.rank<=length(temp.dist)*(1-alpha)
+    ball<-cbind(ball,temp.ball)
+   }
+colnames(ball)<-paste(rep(paste("x",1:nx,sep=""),each=ny),rep(paste("y",1:ny,sep=""),nx),sep=".") 
+ 
  a1<-alpha/2
  a2<-1-a1
  b1<-qnorm(a1)
  b2<-qnorm(a2)
  ie<-NULL
  for (l in 1:nx)
-  ie[[l]]<-rbind(est=as.matrix(temp2$ie)[l,],mean=apply(temp1$ie[[l]],2,mean),sd=apply(temp1$ie[[l]],2,sd),
+  {temp.bound<-bound.ball(temp1$ie[[l]],as.matrix(ball[,((l-1)*ny+1):(l*ny)]))
+   ie[[l]]<-rbind(est=as.matrix(temp2$ie)[l,],mean=apply(temp1$ie[[l]],2,mean),sd=apply(temp1$ie[[l]],2,sd),
                  upbd=apply(temp1$ie[[l]],2,mean)+b2*apply(temp1$ie[[l]],2,sd),
                  lwbd=apply(temp1$ie[[l]],2,mean)+b1*apply(temp1$ie[[l]],2,sd),
-                 upbd_q=apply(temp1$ie[[l]],2,quantile,a2), lwbd_q=apply(temp1$ie[[l]],2,quantile,a1))
+                 upbd_q=apply(temp1$ie[[l]],2,quantile,a2), lwbd_q=apply(temp1$ie[[l]],2,quantile,a1),
+                 upbd_b=temp.bound[,1], lwbd_b=temp.bound[,2])}
  names(ie)<-names(temp1$ie)
+ 
+ temp.bound1<-bound.ball(as.matrix(temp1$te),as.matrix(ball))
+ temp.bound2<-bound.ball(as.matrix(temp1$de),as.matrix(ball))
  temp1.result<-list(indirect.effect=ie,
                     total.effect=rbind(est=temp2$te,mean=apply(as.matrix(temp1$te),2,mean),sd=apply(as.matrix(temp1$te),2,sd),
                                    upbd=apply(as.matrix(temp1$te),2,mean)+b2*apply(as.matrix(temp1$te),2,sd),
                                    lwbd=apply(as.matrix(temp1$te),2,mean)+b1*apply(as.matrix(temp1$te),2,sd),
-                                   upbd=apply(as.matrix(temp1$te),2,quantile,a2,na.rm=T),
-                                   lwbd=apply(as.matrix(temp1$te),2,quantile,a1,na.rm=T)),
+                                   upbd_q=apply(as.matrix(temp1$te),2,quantile,a2,na.rm=T),
+                                   lwbd_q=apply(as.matrix(temp1$te),2,quantile,a1,na.rm=T),
+                                   upbd_b=temp.bound1[,1],lwbd_b=temp.bound1[,2]),
                     direct.effect=rbind(est=temp2$de,mean=apply(as.matrix(temp1$de),2,mean),sd=apply(as.matrix(temp1$de),2,sd),
                                    upbd=apply(as.matrix(temp1$de),2,mean)+b2*apply(as.matrix(temp1$de),2,sd),
                                    lwbd=apply(as.matrix(temp1$de),2,mean)+b1*apply(as.matrix(temp1$de),2,sd),
-                                   upbd=apply(as.matrix(temp1$de),2,quantile,a2,na.rm=T),
-                                   lwbd=apply(as.matrix(temp1$de),2,quantile,a1,na.rm=T)))
+                                   upbd_q=apply(as.matrix(temp1$de),2,quantile,a2,na.rm=T),
+                                   lwbd_q=apply(as.matrix(temp1$de),2,quantile,a1,na.rm=T),
+                                   upbd_b=temp.bound2[,1],lwbd_b=temp.bound2[,2]))
+ 
  ie<-NULL
- for (l in 1:nx)
-   ie[[l]]<-rbind(est=as.matrix(temp4$ie)[l,],mean=apply(temp3$ie[[l]],2,mean),sd=apply(temp3$ie[[l]],2,sd),
-                  upbd=apply(temp3$ie[[l]],2,mean)+b2*apply(temp3$ie[[l]],2,sd),
-                  lwbd=apply(temp3$ie[[l]],2,mean)+b1*apply(temp3$ie[[l]],2,sd),
-                  upbd_q=apply(temp3$ie[[l]],2,quantile,a2,na.rm=T), 
-                  lwbd_q=apply(temp3$ie[[l]],2,quantile,a1,na.rm=T))
+   for (l in 1:nx)
+   {temp.bound<-bound.ball(temp3$ie[[l]],as.matrix(ball[,((l-1)*ny+1):(l*ny)]))
+    ie[[l]]<-rbind(est=as.matrix(temp4$ie)[l,],mean=apply(temp3$ie[[l]],2,mean),sd=apply(temp3$ie[[l]],2,sd),
+                   upbd=apply(temp3$ie[[l]],2,mean)+b2*apply(temp3$ie[[l]],2,sd),
+                   lwbd=apply(temp3$ie[[l]],2,mean)+b1*apply(temp3$ie[[l]],2,sd),
+                   upbd_q=apply(temp3$ie[[l]],2,quantile,a2,na.rm=T), 
+                   lwbd_q=apply(temp3$ie[[l]],2,quantile,a1,na.rm=T),
+                   upbd_b=temp.bound[,1], lwbd_b=temp.bound[,2])}
  names(ie)<-names(temp3$ie)
+ temp.bound2<-bound.ball(as.matrix(temp3$de),as.matrix(ball))
  temp2.result<-list(indirect.effect=ie,
                     direct.effect=rbind(est=temp4$de,mean=apply(as.matrix(temp3$de),2,mean),sd=apply(as.matrix(temp3$de),2,sd),
                                         upbd=apply(as.matrix(temp3$de),2,mean)+b2*apply(as.matrix(temp3$de),2,sd),
                                         lwbd=apply(as.matrix(temp3$de),2,mean)+b1*apply(as.matrix(temp3$de),2,sd),
-                                        upbd=apply(as.matrix(temp3$de),2,quantile,a2,na.rm=T),
-                                        lwbd=apply(as.matrix(temp3$de),2,quantile,a1,na.rm=T)))
- result<-list(results=temp1.result,re=temp2.result,alpha=alpha,plot=plot,obj=x,RE=RE,quant=quant,nx=nx,nie=nie,ny=ny)
+                                        upbd_q=apply(as.matrix(temp3$de),2,quantile,a2,na.rm=T),
+                                        lwbd_q=apply(as.matrix(temp3$de),2,quantile,a1,na.rm=T),
+                                        upbd_b=temp.bound2[,1],lwbd_b=temp.bound2[,2]))
+ result<-list(results=temp1.result,re=temp2.result,alpha=alpha,plot=plot,obj=x,RE=RE,quant=quant,nx=nx,nie=nie,ny=ny,ball.use=ball.use)
  class(result)<-"summary.mma"
  result
  }
@@ -2800,32 +2853,39 @@ print.summary.mma<-function(x,...,digit=3)
   cat ("MART\n")
  else cat("GLM\n")
  pred.names<-names(x$result$indirect.effect)  
- for (l in 1:x$nx)
-   {cat ("For Predictor",pred.names[l],"\n")
-    temp.res<-list(total.effect=x$result$total.effect[,(x$ny*(l-1)+1):(x$ny*(l-1)+x$ny)],
-                   direct.effect=x$result$direct.effect[,(x$ny*(l-1)+1):(x$ny*(l-1)+x$ny)],
-                   indirect.effect=x$result$indirect.effect[[l]])
-    print(lapply(temp.res,round,digit))
-   }
  if(x$RE)
  {cat("The relative effects:\n")
    for (l in 1:x$nx)
-   {cat ("For Predictor #",pred.names[l],"\n")
+   {cat ("For Predictor",pred.names[l],"\n")
      temp.res<-list(direct.effect=x$re$direct.effect[,(x$ny*(l-1)+1):(x$ny*(l-1)+x$ny)],
                     indirect.effect=x$re$indirect.effect[[l]])
      print(lapply(temp.res,round,digit))
    }
  }
+ else  
+  for (l in 1:x$nx)
+  {cat ("For Predictor",pred.names[l],"\n")
+   temp.res<-list(total.effect=x$result$total.effect[,(x$ny*(l-1)+1):(x$ny*(l-1)+x$ny)],
+                  direct.effect=x$result$direct.effect[,(x$ny*(l-1)+1):(x$ny*(l-1)+x$ny)],
+                  indirect.effect=x$result$indirect.effect[[l]])
+   print(lapply(temp.res,round,digit))
+  }
+ 
 if(x$plot)
+if(x$RE)
  for (l in 1:x$nx)
   for (m in 1:x$ny)
   {temp.t<-m%%x$ny
    temp.z<-(1:ncol(x$re$indirect.effect[[l]]))%%x$ny==temp.t
    temp.z[1:x$ny]<-F
    re<-c(x$re$indirect.effect[[l]][2,temp.z],x$re$dir[2,x$ny*(l-1)+m])
-   if(x$quant)
-    {upper<-c(x$re$indirect.effect[[l]][6,temp.z],x$re$dir[6,x$ny*(l-1)+m])
-     lower<-c(x$re$indirect.effect[[l]][7,temp.z],x$re$dir[7,x$ny*(l-1)+m])}
+   if(x$ball.use)
+   {re<-c(x$re$indirect.effect[[l]][1,temp.z],x$re$dir[1,x$ny*(l-1)+m])  # ball is more likely to centered around the est but not mean
+    upper<-c(x$re$indirect.effect[[l]][8,temp.z],x$re$dir[8,x$ny*(l-1)+m])
+    lower<-c(x$re$indirect.effect[[l]][9,temp.z],x$re$dir[9,x$ny*(l-1)+m])}
+   else if(x$quant)
+   {upper<-c(x$re$indirect.effect[[l]][6,temp.z],x$re$dir[6,x$ny*(l-1)+m])
+    lower<-c(x$re$indirect.effect[[l]][7,temp.z],x$re$dir[7,x$ny*(l-1)+m])}
    else
     {upper<-c(x$re$indirect.effect[[l]][4,temp.z],x$re$dir[4,x$ny*(l-1)+m])
      lower<-c(x$re$indirect.effect[[l]][5,temp.z],x$re$dir[5,x$ny*(l-1)+m])}
@@ -2836,7 +2896,39 @@ if(x$plot)
                 names.arg=name1[d],plot.ci = TRUE, ci.u = upper[d], ci.l = lower[d],
                 cex.names=0.9,beside=FALSE,cex.axis=0.9,las=1,xlim=range(c(upper,lower)),
                 col = rainbow(length(d), start = 3/6, end = 4/6))
-}
+  }
+else
+  for (l in 1:x$nx)
+    for (m in 1:x$ny)
+    {temp.t<-m%%x$ny
+     temp.z<-(1:ncol(x$results$indirect.effect[[l]]))%%x$ny==temp.t
+     temp.z[1:x$ny]<-F
+     results<-c(x$results$indirect.effect[[l]][2,temp.z],x$results$dir[2,x$ny*(l-1)+m])
+     temp.tot<-x$results$tot[2,x$ny*(l-1)+m]
+    if(x$ball.use)
+    {results<-c(x$results$indirect.effect[[l]][1,temp.z],x$results$dir[1,x$ny*(l-1)+m]) #ball based on est
+     upper<-c(x$results$indirect.effect[[l]][8,temp.z],x$results$dir[8,x$ny*(l-1)+m])
+     lower<-c(x$results$indirect.effect[[l]][9,temp.z],x$results$dir[9,x$ny*(l-1)+m])
+     upper.tot<-x$results$tot[8,x$ny*(l-1)+m]
+     lower.tot<-x$results$tot[9,x$ny*(l-1)+m]}
+    else if(x$quant)
+    {upper<-c(x$results$indirect.effect[[l]][6,temp.z],x$results$dir[6,x$ny*(l-1)+m])
+     lower<-c(x$results$indirect.effect[[l]][7,temp.z],x$results$dir[7,x$ny*(l-1)+m])
+     upper.tot<-x$results$tot[6,x$ny*(l-1)+m]
+     lower.tot<-x$results$tot[7,x$ny*(l-1)+m]}
+    else
+    {upper<-c(x$results$indirect.effect[[l]][4,temp.z],x$results$dir[4,x$ny*(l-1)+m])
+     lower<-c(x$results$indirect.effect[[l]][5,temp.z],x$results$dir[5,x$ny*(l-1)+m])
+     upper.tot<-x$results$tot[4,x$ny*(l-1)+m]
+     lower.tot<-x$results$tot[5,x$ny*(l-1)+m]}
+    d<-order(results)
+    name1<-c(colnames(x$results$indirect.effect[[l]])[temp.z],"de")
+    par(mfrow=c(1,1),mar=c(1,6,1,1),oma=c(3,2,2,4))
+    bp <- barplot2(c(results[d],temp.tot), horiz = TRUE, main=paste("Mediation Effects on y",m," on Predictor ",pred.names[l],sep=""), 
+                   names.arg=c(name1[d],"total"),plot.ci = TRUE, ci.u = c(upper[d],upper.tot), ci.l = c(lower[d],lower.tot),
+                   cex.names=0.9,beside=FALSE,cex.axis=0.9,las=1,xlim=range(c(upper,lower,upper.tot,lower.tot),na.rm=T),
+                   col = rainbow(length(d)+1, start = 3/6, end = 4/6))
+    }
 }
 
 
@@ -3108,9 +3200,9 @@ else
     {full.model=x$model$model[[m]]
      coef<-full.model$coefficients[names(full.model$coefficients)==vari] #plot the straight line instead of the loess line
      if(is.null(full.model$na.action))
-       data1<-data$x[,vari]
+       data1<-full.model$data[,vari]
      else
-       data1<-data$x[-full.model$na.action,vari]
+       data1<-full.model$data[-full.model$na.action,vari]
      if(data$binpred)
        {d<-rep(0,nrow(data$dirx))
         for(l in 1:nx)
@@ -3430,9 +3522,9 @@ else
   {full.model=x$model$model[[m]]
    coef<-full.model$coefficients[names(full.model$coefficients)==vari] #plot the straight line instead of the loess line
    if(is.null(full.model$na.action))
-     data1<-data$x[,vari]
+     data1<-full.model$data[,vari]
    else
-     data1<-data$x[-full.model$na.action,vari]
+     data1<-full.model$data[-full.model$na.action,vari]
    if(data$binpred)
   {d<-rep(0,nrow(data$dirx))
    for(l in 1:nx)
@@ -3608,7 +3700,7 @@ boot.med.par<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,con
     
     med.binx.catm<-function(full.model,nom1,nom0,med,best.iter1=NULL,surv,type)  
     {n3<-nrow(nom1)+nrow(nom0)
-    temp.rand<-c(nom1[,med],nom0[,med])[sample(1:n3,replace=T)]
+    temp.rand<-unlist(list(nom1[,med],nom0[,med]))[sample(1:n3,replace=T)]
     marg.m1<-temp.rand[1:nrow(nom1)]
     marg.m2<-temp.rand[(nrow(nom1)+1):n3]
     dir.nom<-rep(0,length(full.model))
@@ -3640,7 +3732,8 @@ boot.med.par<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,con
           y[,j]<-ifelse(y[,j]==refy[j],0,1)
         x1<-x2[!is.na(y[,j]),]             #delete nas in y for mart
         y1<-y[!is.na(y[,j]),j]
-        full.model[[j]]<-suppressWarnings(gbm.fit(x1,y1, n.trees=200, interaction.depth=D, shrinkage=nu, w=w,
+        w1<-w[!is.na(y[,j])]
+        full.model[[j]]<-suppressWarnings(gbm.fit(x1,y1, n.trees=200, interaction.depth=D, shrinkage=nu, w=w1,
                                                   distribution=distn[j],train.fraction=1.0, bag.fraction=0.5, verbose=FALSE))
         best.iter1[j]<-suppressWarnings(gbm.perf(full.model[[j]],plot.it=FALSE,method="OOB"))
         while(full.model[[j]]$n.trees-best.iter1[j]<30){
@@ -3652,10 +3745,11 @@ boot.med.par<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,con
           y[,j]<-ifelse(y[,j]==refy[j],0,1)
         x1<-x2[!is.na(y[,j]),]             #delete nas in y for mart
         y1<-y[!is.na(y[,j]),j]
+        w1<-w[!is.na(y[,j])]
         if(surv[j])
-          full.model[[j]]<-coxph(y1~., data=x1, weights=w)
+          full.model[[j]]<-coxph(y1~., data=x1, weights=w1)
         else
-          full.model[[j]]<-glm(y1~., data=x1, family=family1[[j]], weights=w)
+          full.model[[j]]<-glm(y1~., data=x1, family=family1[[j]], weights=w1)
       }
     
     #2. prepare for the store of results
@@ -4450,7 +4544,7 @@ mma.par<-function(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
     
     med.binx.catm<-function(full.model,nom1,nom0,med,best.iter1=NULL,surv,type)  
     {n3<-nrow(nom1)+nrow(nom0)
-    temp.rand<-c(nom1[,med],nom0[,med])[sample(1:n3,replace=T)]
+    temp.rand<-unlist(list(nom1[,med],nom0[,med]))[sample(1:n3,replace=T)]
     marg.m1<-temp.rand[1:nrow(nom1)]
     marg.m2<-temp.rand[(nrow(nom1)+1):n3]
     dir.nom<-rep(0,length(full.model))
@@ -4482,7 +4576,8 @@ mma.par<-function(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
           y[,j]<-ifelse(y[,j]==refy[j],0,1)
         x1<-x2[!is.na(y[,j]),]             #delete nas in y for mart
         y1<-y[!is.na(y[,j]),j]
-        full.model[[j]]<-suppressWarnings(gbm.fit(x1,y1, n.trees=200, interaction.depth=D, shrinkage=nu, w=w,
+        w1<-w[!is.na(y[,j])]
+        full.model[[j]]<-suppressWarnings(gbm.fit(x1,y1, n.trees=200, interaction.depth=D, shrinkage=nu, w=w1,
                                                   distribution=distn[j],train.fraction=1.0, bag.fraction=0.5, verbose=FALSE))
         best.iter1[j]<-suppressWarnings(gbm.perf(full.model[[j]],plot.it=FALSE,method="OOB"))
         while(full.model[[j]]$n.trees-best.iter1[j]<30){
@@ -4494,10 +4589,11 @@ mma.par<-function(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
           y[,j]<-ifelse(y[,j]==refy[j],0,1)
         x1<-x2[!is.na(y[,j]),]             #delete nas in y for mart
         y1<-y[!is.na(y[,j]),j]
+        w1<-w[!is.na(y[,j])]
         if(surv[j])
-          full.model[[j]]<-coxph(y1~., data=x1, weights=w)
+          full.model[[j]]<-coxph(y1~., data=x1, weights=w1)
         else
-          full.model[[j]]<-glm(y1~., data=x1, family=family1[[j]], weights=w)
+          full.model[[j]]<-glm(y1~., data=x1, family=family1[[j]], weights=w1)
       }
     
     #2. prepare for the store of results
@@ -5163,7 +5259,7 @@ else
 {if(is.null(pred.new))
   result<-boot.med.contx(data=data,margin=margin, n=n,seed=seed, nonlinear=nonlinear,df=df, nu=nu,
                          D=D,distn=distn,family1=family1,n2=n2,w=w,biny=biny,refy=rep(0,ncol(data$y)),surv=surv,type=type)
-else
+ else
   result<-boot.med.contx(data=data,margin=margin, n=n,seed=seed, nonlinear=nonlinear,df=df, nu=nu,
                          D=D,distn=distn,family1=family1,n2=n2,w=w,biny=biny,refy=0, x.new=x.new, pred.new=pred.new,surv=surv,type=type,w.new=w.new)
 }

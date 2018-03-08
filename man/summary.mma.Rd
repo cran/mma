@@ -9,7 +9,7 @@ Summary of an mma project
 Compute the estimations, standard deviations and confidence intervals of the mediation effects.
 }
 \usage{
-\method{summary}{mma}(object,..., alpha=0.05, plot=TRUE, RE=FALSE,quant=T) 
+\method{summary}{mma}(object,..., alpha=0.05, plot=TRUE, RE=FALSE,quant=T,ball.use=T) 
 \method{print}{summary.mma}(x,...,digit=3) 
 }
 %- maybe also 'usage' for other objects documented here.
@@ -26,11 +26,13 @@ other arguments passed to the print function.
   \item{alpha}{
 the alpha level for confidence interval.}
   \item{plot}{
-default is TRUE, if ture, draw a barplot of the relative mediation effects with confidence intervals.}
+default is TRUE, if ture, draw a barplot of the mediation effects with confidence intervals.}
   \item{RE}{
 default is FALSE, if ture, show the inferences on relative mediation effects.}
   \item{quant}{
-default is TRUE, if ture, draw the confidence intervals of relative effects using quantile.}
+default is TRUE, if ture and ball.use is F, draw the confidence intervals of relative effects using quantile.}
+  \item{ball.use}{
+default is TRUE, if ture, draw the confidence intervals of relative effects using the confidence ball. If both quant and ball.use are false, draw the confidence intervals based on the standard deviaitons from bootstrap estimates.}
   \item{digit}{
 the number of decimal digits to keep.
 }
@@ -40,7 +42,7 @@ summary.mma gives a list of the estimations and summary statistics based on the 
 }
 \value{
 The function summary.mma return a list. The first item, results, is the list for mediation effects, and the second item, re, is the list for relative effects. Under them, results have the items ie, te and de; re has the items ie and de. In each of the items, est is the estimation of the corresponding (relative) mediation effects based on the whole data, mean is the average estimated (relative) effects from the bootstrap samples, sd is the standard deviation of the estimates from the bootstrap sample. upbd and lwbd are the upper and lower bound of the confidence interval of the estimation using parametric method from the bootstrap sample, upbd_q and lwbd_q are the corresponding quantiles of the estimation from the bootstrap sample.
-  \item{ie }{a matrix of statistics inference on the (relative) indirect effects from the mma object.}
+  \item{ie }{a matrix of statistics inference on the (relative) indirect effects from the mma object.  est is the estimate using the full sample. mean is the estimate that average over the bootstrap estimates. sd is the standard deviation of the bootstrap estimates. upbd and lwbd are the confidence bounds based on sd. upbd_q and lwbd_q are the confidence bounds based on quantiles of the bootstrap estimates. upbd_b and lwbd_b are condidence ball bounds based on bootstap estimates.}
   \item{te }{statistics inference on the total effects from the mma object.}
   \item{de }{statistics inference on the (relative) direct effects from the mma object.}
 If plot=T, draw a barplot of the relative mediation effects.
@@ -62,7 +64,8 @@ data("weight_behavior")
  y=weight_behavior[,15]
   temp.b.b.glm<-mma(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,1),
                     catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4,n=2,n2=2)
- summary(temp.b.b.glm)
+ summary(temp.b.b.glm, RE=TRUE, ball.use=FALSE)
+ summary(temp.b.b.glm, ball.use=FALSE)
 }
 
 %\keyword{ Summary }
