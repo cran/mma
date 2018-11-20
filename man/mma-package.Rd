@@ -11,8 +11,8 @@ This package is used to identify mediators and for general mediation analysis. M
 \tabular{ll}{
 Package: \tab mma\cr
 Type: \tab Package\cr
-Version: \tab 5.0\cr
-Date: \tab 2017-03-28\cr
+Version: \tab 6.1\cr
+Date: \tab 2018-03-08\cr
 License: \tab GPL (>= 2)\cr
 }
 \code{"\link[=data.org]{data.org}"} is used to identify potential mediators. \code{"\link[=med]{med}"} , and \code{"\link[=boot.med]{boot.med}"} are used for statistical inferences on the mediation effects when the predictor is binary or continuous. \code{"\link[=mma]{mma}"} is a combined function that automatically identify potential mediators, based on which to make statistical inference on the mediation effects.
@@ -32,6 +32,8 @@ J.H. Friedman (2001) <doi:10.1214/aos/1013203451>. "Greedy Function Approximatio
 Yu, Q., Fan, Y., and Wu, X. (2014) <doi:10.4172/2155-6180.1000189>. "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189. 
 
 Yu, Q., Scribner, R.A., Leonardi, C., Zhang, L., Park, C., Chen, L., and Simonsen, N.R. (2017) <doi:10.1016/j.sste.2017.02.001>. "Exploring racial disparity in obesity: a mediation analysis considering geo-coded environmental factors," Spatial and Spatio-temporal Epidemiology, 21, 13-23. 
+
+Yu, Q., and Li, B. (2017) <doi:10.5334/hors.160>. "mma: An r package for multiple mediation analysis," Journal of Open Research Software, 5(1), 11. 
 }
 \keyword{ Package }
 \examples{

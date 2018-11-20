@@ -8,12 +8,12 @@ Plot the mediation effect on the fitted med object
 Plot the marginal effect of the selected variable on the outcome, and the marginal effect of the predictor on the selected variable.
 }
 \usage{
-\method{plot}{med}(x,data,...,vari,xlim=range(data$x[,vari],na.rm=T))
+\method{plot}{med}(x,data,...,vari,xlim=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{
-a med_iden object created initially call to med.
+a med object created initially call to med.
 }
   \item{x}{
 a med object created initially call to med, med.binx, or med.contx.

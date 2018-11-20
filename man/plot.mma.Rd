@@ -8,7 +8,7 @@ Relative effects plot of the fitted mma object
 Plot the marginal effect of the selected variable on the outcome, and the marginal effect of the predictor on the selected variable.
 }
 \usage{
-\method{plot}{mma}(x,...,vari,xlim=range(x$data$x[,vari],na.rm=T),alpha=0.95,
+\method{plot}{mma}(x,...,vari,xlim=NULL,alpha=0.95,
 quantile=F)
 }
 %- maybe also 'usage' for other objects documented here.

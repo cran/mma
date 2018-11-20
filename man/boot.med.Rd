@@ -9,8 +9,8 @@ To make inferences on the mediation effects when the predictor is continuous or 
 }
 \usage{
 boot.med(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,
-         contm=data$contm,catm=data$catm,jointm=data$jointm,margin=1,
-         n=20,seed=sample(1:1000,1),nonlinear=F,df=1,nu=0.001,D=3,
+         contm=data$contm,catm=data$catm,jointm=data$jointm, cova=data$cova,
+         margin=1,n=20,seed=sample(1:1000,1),nonlinear=F,df=1,nu=0.001,D=3,
          distn=NULL,family1=data$family1,n2=50,w=rep(1,nrow(x)),
          refy=NULL,x.new=x,pred.new=dirx,binpred=data$binpred,type=NULL,w.new=NULL)
 }
@@ -20,7 +20,7 @@ boot.med(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,
 the list of result from data.org that organize the covariates, mediators, predictor and outcome. If data is FALSE, then need to set x, y, dirx, contm, catm, and jointm.
 }
    \item{x}{
-a data frame contains all mediators and covariates.  Need to set up only when data is FALSE.
+a data frame contains all mediators and covariates.  Need to set up only when data is FALSE.  All varaibles in x that are not identified as potential mediators (by mediator, contmed, binmed, catmed, or jointm) are forced in mediation analysis as covariates.
 }
   \item{y}{
 the vector of outcome variable.  Need to set up only when data is FALSE.
@@ -32,6 +32,8 @@ the variable names or the column number of x that locates the binary mediators. 
   \item{contm }{the variable names or the column numbers of x that locate the potential continuous mediators. Need to set up only when data is FALSE.}
   \item{catm }{categorical mediators should be binarized and be presented as a list, where the first item is the number of categorical variables and the following items are the names or the column numbers of each binarized categorical variable in x. data.org organizes the categorical mediators in this format after they pass the mediator tests. Need to set up only when data is FALSE.}
   \item{jointm }{a list where the first item is the number of groups of joint mediators to be considered, and each of the following items identifies the names or the column numbers of the mediators in x for each group of joint mediators. Need to set up only when data is FALSE.}
+  \item{cova}{the covariate names in x for predicting the mediators. The cova cannot be potential mediators, so cova are the covariates for the response automatically. If the covariates are for all potential mediators, cova is a vector of covaraite names. If the covariates are for some specific potential mediators, cova is a list with the first item be the names of potential mediators that use the covariates, and the second item be the names of covariates. Works mainly for continuous predictors (pred), also the specified covariates should have no missing if only some mediators uses the covariates.
+}
   \item{margin}{
 the change in predictor when calculating the mediation effects, see Yu et al. (2014).
 }

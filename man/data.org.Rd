@@ -10,12 +10,12 @@ Do a preliminary data analysis to identify potential mediators and covariates. E
 data.org(x,y,pred,mediator=NULL,contmed=NULL,binmed=NULL,binref=NULL,catmed=NULL,
                    catref=NULL,jointm=NULL,refy=rep(NA,ncol(data.frame(y))), 
                    family1=as.list(rep(NA,ncol(data.frame(y)))),
-                   predref=NULL,alpha=0.1,alpha2=0.1,testtype=1, w=NULL)
+                   predref=NULL,alpha=0.1,alpha2=0.1,testtype=1, w=NULL,cova=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{
-a data frame contains the predictor, all potential mediators and covariates
+a data frame contains the predictor, all potential mediators and covariates. Note that x has to be a data frame. All varaibles in x that are not identified as potential mediators (by mediator, contmed, binmed, catmed, or jointm) are forced in mediation analysis as covariates.
 }
   \item{y}{
 the vector of outcome variable.The outcome can be binary, continuous, or of "Surv" class (see survival package for help).
@@ -51,7 +51,7 @@ if y is binary, the reference group of y. The default is the first level of as.f
 define the conditional distribution of y given x, and the linkage function that links the mean of y with the system component in generalized linear model.  The default value of family1 is binomial(link = "logit") for binary y, and gaussian(link="identity") for continuous y.
 }
   \item{predref}{
-if the predictor is binary, identify the reference group of the binary predictor. The default is the first level of the predictor. The value of the predictor is 0 for the reference grop.
+if the predictor is categorical, identify the reference group of the predictor. The default is the first level of the predictor. The value of the predictor is 0 for the reference group.
 }
   \item{alpha}{
 the significance level at which to test if the potential mediators (identified by contmed, binmed, and catmed) can be used as a covariate or mediator in estimating y when all variables in x are included in the model.  The default value is alpha=0.1
@@ -62,6 +62,8 @@ the significant level at which to test if a potential mediator is related with t
   \item{testtype}{if the testtype is 1 (by default), covariates/mediators are identified using full model; if the testtype is 2, covariates/mediators are tested one by one in models with the predictor only.
 }
   \item{w}{the weight for data analysis, by default is rep(1,length(y)).
+}
+  \item{cova}{the covariate names in x for predicting the mediators. The cova cannot be potential mediators, so cova are the covariates for the response automatically. If the covariates are for all potential mediators, cova is a vector of covaraite names. If the covariates are for some specific potential mediators, cova is a list with the first item be the names of potential mediators that use the covariates, and the second item be the names of covariates. Works mainly for continuous predictors (pred), also the specified covariates should have no missing if only some mediators uses the covariates.
 }
 }
 
@@ -78,6 +80,8 @@ data.org returns a list with the organized data and identifiers of the potential
   \item{fullmodel}{a list with each item the full linear model fitted with all potential mediators and covariates for each response.}
   \item{rela}{p-values of tests on the realtionship between the predictor(s) and each potiential mediator.}
   \item{P1}{If testtype=2, P1 gives the p-value of the corresponding variables in predicting the outcome(s) when only the variable and predictor are covariates in the model.}
+  \item{cova}{the covariate names in x for predicting the mediators. The cova cannot be potential mediators, so cova are the covariates for the response automatically. If the covariates are for all potential mediators, cova is a vector of covaraite names. If the covariates are for some specific potential mediators, cova is a list with the first item be the names of potential mediators that use the covariates, and the second item be the names of covariates. If all the specific potential mediators are not chosen as mediators, cova will be set as NULL.
+}
 }
 \references{
 Baron, R.M., and Kenny, D.A. (1986) <doi:10.1037/0022-3514.51.6.1173>. The moderator-mediator variable distinction in social psychological research: conceptual, strategic, and statistical considerations. J. Pers Soc Psychol, 51(6), 1173-1182.

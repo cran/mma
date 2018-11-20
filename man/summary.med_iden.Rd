@@ -9,7 +9,7 @@ Summary method for class "med_iden".
 Compute the estimations, standard deviations and confidence intervals of the mediation effects.
 }
 \usage{
-\method{summary}{med_iden}(object,...) 
+\method{summary}{med_iden}(object,...,only=F) 
 \method{print}{summary.med_iden}(x,...) 
 }
 %- maybe also 'usage' for other objects documented here.
@@ -22,6 +22,9 @@ a summary.med_iden object created initially call to summary.med_iden
 }
  \item{\dots}{
 other arguments passed to the print function.
+}
+ \item{only}{
+if only=T, show test results for selected covariates and mediators only.
 }
 }
 \details{

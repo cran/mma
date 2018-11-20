@@ -9,7 +9,7 @@ Test for mediators and do statistical inferences on the identified mediation eff
 }
 \usage{
 mma(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
-    catmed=NULL,catref=NULL,jointm=NULL,refy=rep(NA,ncol(data.frame(y))),
+    catmed=NULL,catref=NULL,jointm=NULL,cova=NULL, refy=rep(NA,ncol(data.frame(y))),
     predref=NULL,alpha=0.1,alpha2=0.1, margin=1, n=20,seed=sample(1:1000,1),
     nonlinear=F,df=1,nu=0.001,D=3,distn=NULL,family1=as.list(rep(NA,ncol(data.frame(y)))),
     n2=50,w=rep(1,nrow(x)), testtype=1, x.new=NULL, pred.new=NULL, type=NULL,w.new=NULL)
@@ -17,7 +17,7 @@ mma(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{
-a data frame contains the predictor, all potential mediators and covariates.
+a data frame contains the predictor, all potential mediators and covariates. All varaibles in x that are not identified as potential mediators (by mediator, contmed, binmed, catmed, or jointm) are forced in mediation analysis as covariates.
 }
   \item{y}{
 the vector of outcome variable.
@@ -45,6 +45,8 @@ the defined reference groups of the categorical potential mediators in catmed.
 }
   \item{jointm}{
 a list that identifies the mediators that need to be considered jointly, where the first item indicates the number of groups of mediators to be considered jointly, and each of the following items identifies the column numbers of the mediators in x for each group of joint mediators.
+}
+  \item{cova}{the covariate names in x for predicting the mediators. The cova cannot be potential mediators, so cova are the covariates for the response automatically. If the covariates are for all potential mediators, cova is a vector of covaraite names. If the covariates are for some specific potential mediators, cova is a list with the first item be the names of potential mediators that use the covariates, and the second item be the names of covariates. Works mainly for continuous predictors (pred), also the specified covariates should have no missing if only some mediators uses the covariates.
 }
   \item{refy}{
 if y is binary, the reference group of y.By default, the reference group will be the first level of as.factor(y).
