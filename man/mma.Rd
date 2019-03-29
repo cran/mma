@@ -8,11 +8,13 @@ Multiple Mediation Analysis
 Test for mediators and do statistical inferences on the identified mediation effects.
 }
 \usage{
-mma(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
-    catmed=NULL,catref=NULL,jointm=NULL,cova=NULL, refy=rep(NA,ncol(data.frame(y))),
+mma(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,catmed=NULL,
+    catref=NULL,jointm=NULL,cova=NULL, refy=rep(NA,ncol(data.frame(y))),
     predref=NULL,alpha=0.1,alpha2=0.1, margin=1, n=20,seed=sample(1:1000,1),
-    nonlinear=F,df=1,nu=0.001,D=3,distn=NULL,family1=as.list(rep(NA,ncol(data.frame(y)))),
-    n2=50,w=rep(1,nrow(x)), testtype=1, x.new=NULL, pred.new=NULL, type=NULL,w.new=NULL)
+    nonlinear=F,df1=1,nu=0.001,D=3,distn=NULL,
+    family1=as.list(rep(NA,ncol(data.frame(y)))),n2=50,w=rep(1,nrow(x)),
+    testtype=1, x.new=NULL, pred.new=NULL, cova.new=NULL, type=NULL,w.new=NULL, 
+    all.model=FALSE,xmod=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -46,7 +48,7 @@ the defined reference groups of the categorical potential mediators in catmed.
   \item{jointm}{
 a list that identifies the mediators that need to be considered jointly, where the first item indicates the number of groups of mediators to be considered jointly, and each of the following items identifies the column numbers of the mediators in x for each group of joint mediators.
 }
-  \item{cova}{the covariate names in x for predicting the mediators. The cova cannot be potential mediators, so cova are the covariates for the response automatically. If the covariates are for all potential mediators, cova is a vector of covaraite names. If the covariates are for some specific potential mediators, cova is a list with the first item be the names of potential mediators that use the covariates, and the second item be the names of covariates. Works mainly for continuous predictors (pred), also the specified covariates should have no missing if only some mediators uses the covariates.
+  \item{cova}{The data frame of covariates to be used to predict the mediator(s). The covariates in cova cannot be potential mediators. If the covariates are for some specific potential mediators, cova$for.m is the vector of names of potential mediators that use the covariates. Works for continuous predictors (pred) only, also the specified covariates should have no missing if only some mediators uses the covariates. Works mainly for continuous predictors (pred), also the specified covariates should have no missing if only some mediators uses the covariates.
 }
   \item{refy}{
 if y is binary, the reference group of y.By default, the reference group will be the first level of as.factor(y).
@@ -72,7 +74,7 @@ set seed to make the calculation repeatable. The default value of seed is from s
   \item{nonlinear}{
 if TURE, Multiple Additive Regression Trees (MART) will be used to fit the final full model in estimating the outcome. The default value of nonlinear is FALSE, in which case, a generalized linear model will be used to fit the final full model.
 }
-  \item{df}{
+  \item{df1}{
 if nonlinear is TURE, natural cubic spline will be used to fit the relationship between the countinuous predictor and each mediator.  The df is the degree of freedom in the ns() function, the default is 1.
 }
   \item{nu}{
@@ -101,11 +103,20 @@ A new set of predictor and corresponding covariates, of the same format as x (af
   \item{pred.new}{
 A new set of predictor(s), of the same format as x (after data.org), on which to calculate the mediation effects. For continuous predictor only.
 }
+  \item{cova.new}{
+a new set of covaraite(s).
+}
   \item{type}{
 the type of prediction when y is class Surv. Is "risk" if not specified.
 }
   \item{w.new}{
 the weights for new.x.
+}
+  \item{all.model}{
+save all the fitted model from bootstrap samples if TRUE. This needs to be true to make inferences on moderation effects. This argument cannot be used with the function \code{"\link[=mma.par]{mma.par}"}.
+}
+  \item{xmod}{
+If there is a moderator, xmod gives the moderator's name in cova and/or x.
 }
 }
 \details{
@@ -117,6 +128,9 @@ Returns an mma object.
   \item{model }{a list where the first item, MART, is T if mart is fitted for the final model; the second item, Survival, is T if a survival model is fitted; the third item, type, is the type of prediction when a survival model is fitted; the fourth item, model, is the fitted final full model where y is the outcome and all predictor, covariates, and mediators are the explanatory variables; and the fourth item, best.iter is the number of best iterations if MART is used to fit the final model.}
   \item{data }{a list that contains all the used data: x=x, y=y, dirx=dirx, binm=binm, contm=contm, catm=catm, jointm=jointm, binpred=F.}
   \item{boot.detail }{for continuous predictor only: a list that contains the mediation effects on each row of new.pred: new.pred=new.pred, te1, de1, ie1.}
+  \item{all_model}{a list with all fitted models from bootstrap samples if all.model is TRUE.This value cannot be created with the function \code{"\link[=mma.par]{mma.par}"}.}
+  \item{all_iter}{if all.model is TRUE, a matrix with all fitted best iterations if MART is used. Each row is from one bootstrap sample.  This value cannot be created with the function \code{"\link[=boot.med.par]{boot.med.par}"}.}
+    \item{all_boot}{if all.model is TRUE, a matrix with all bootstrap samples. Each row is one bootstrap sample.  This value cannot be created with the function \code{"\link[=boot.med.par]{boot.med.par}"}.}
 }
 \references{
 Baron, R.M., and Kenny, D.A. (1986) <doi:10.1037/0022-3514.51.6.1173>. "The moderator-mediator variable distinction in social psychological research: conceptual, strategic, and statistical considerations," J. Pers Soc Psychol, 51(6), 1173-1182.
@@ -128,6 +142,12 @@ J.H. Friedman (2001) <doi:10.1214/aos/1013203451>. "Greedy Function Approximatio
 Yu, Q., Fan, Y., and Wu, X. (2014) <doi:10.4172/2155-6180.1000189>. "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189. 
 
 Yu, Q., Scribner, R.A., Leonardi, C., Zhang, L., Park, C., Chen, L., and Simonsen, N.R. (2017) <doi:10.1016/j.sste.2017.02.001>. "Exploring racial disparity in obesity: a mediation analysis considering geo-coded environmental factors," Spatial and Spatio-temporal Epidemiology, 21, 13-23. 
+
+Yu, Q., and Li, B. (2017) <doi:10.5334/hors.160>. "mma: An r package for multiple mediation analysis," Journal of Open Research Software, 5(1), 11. 
+
+Yu, Q., Wu, X., Li, B., and Scribner, R. (2018). <doi:10.1002/sim.7977>. "Multiple Mediation Analysis with Survival Outcomes – With an Application to Explore Racial Disparity in Breast Cancer Survival," Statistics in Medicine.
+
+Yu, Q., Medeiros, KL, Wu, X., and Jensen, R. (2018). <doi:10.1007/s11336-018-9612-2>. "Explore Ethnic Disparities in Anxiety and Depression Among Cancer Survivors Using Nonlinear Mediation Analysis," Psychometrika, 83(4), 991-1006. 
 }
 \author{
 Qingzhao Yu  \email{qyu@lsuhsc.edu}

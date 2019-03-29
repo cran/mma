@@ -10,10 +10,10 @@ To make inferences on the mediation effects when the predictor is continuous or 
 \usage{
 boot.med.par(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,
              contm=data$contm,catm=data$catm,jointm=data$jointm,cova=data$cova,margin=1,
-             n=20,seed=sample(1:1000,1),nonlinear=F,df=1,nu=0.001,
+             n=20,seed=sample(1:1000,1),nonlinear=F,df1=1,nu=0.001,
              D=3,distn=NULL,family1=data$family1,n2=50,w=rep(1,nrow(x)),
-             refy=NULL,x.new=x,pred.new=dirx,binpred=data$binpred,
-             type=NULL,w.new=NULL,ncore=NULL)
+             refy=NULL,x.new=x,pred.new=dirx,cova.new=NULL,binpred=data$binpred,
+             type=NULL,w.new=NULL,ncore=NULL,xmod=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -47,7 +47,7 @@ set seed to make the calculation repeatable. The default value of seed is from s
   \item{nonlinear}{
 if TURE, Multiple Additive Regression Trees (MART) will be used to fit the final full model in estimating the outcome. The default value of nonlinear is FALSE, in which case, a generalized linear model will be used to fit the final full model.
 }
-  \item{df}{
+  \item{df1}{
 if nonlinear is TURE, natural cubic spline will be used to fit the relationship between the predictor and each mediator.  The df is the degree of freedom in the ns() function, the default is 1.
 }
   \item{nu}{
@@ -83,11 +83,17 @@ of the same format as x, with a new set of covariates and mediators on which to 
   \item{pred.new}{
 a new set of predictor(s).
 }
+  \item{cova.new}{
+a new set of covaraite(s).
+}
   \item{w.new}{
 the weights for new.x.
 }
   \item{ncore}{
 the number of threads to be used for parallel computing.
+}
+  \item{xmod}{
+If there is a moderator, xmod gives the moderator's name in cova and/or x.
 }
 }
 \details{
@@ -102,6 +108,14 @@ Returns an mma object.
 }
 \references{
 Yu, Q., Fan, Y., and Wu, X. (2014) <doi:10.4172/2155-6180.1000189>. "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189. 
+
+Yu, Q., Scribner, R.A., Leonardi, C., Zhang, L., Park, C., Chen, L., and Simonsen, N.R. (2017) <doi:10.1016/j.sste.2017.02.001>. "Exploring racial disparity in obesity: a mediation analysis considering geo-coded environmental factors," Spatial and Spatio-temporal Epidemiology, 21, 13-23. 
+
+Yu, Q., and Li, B. (2017) <doi:10.5334/hors.160>. "mma: An r package for multiple mediation analysis," Journal of Open Research Software, 5(1), 11. 
+
+Yu, Q., Wu, X., Li, B., and Scribner, R. (2018). <doi:10.1002/sim.7977>. "Multiple Mediation Analysis with Survival Outcomes – With an Application to Explore Racial Disparity in Breast Cancer Survival," Statistics in Medicine.
+
+Yu, Q., Medeiros, KL, Wu, X., and Jensen, R. (2018). <doi:10.1007/s11336-018-9612-2>. "Explore Ethnic Disparities in Anxiety and Depression Among Cancer Survivors Using Nonlinear Mediation Analysis," Psychometrika, 83(4), 991-1006. 
 }
 \author{
 Qingzhao Yu \email{qyu@lsuhsc.edu} and Bin Li \email{bli@lsu.edu}.}

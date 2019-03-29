@@ -9,10 +9,12 @@ To make inferences on the mediation effects when the predictor is continuous or 
 }
 \usage{
 boot.med(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,
-         contm=data$contm,catm=data$catm,jointm=data$jointm, cova=data$cova,
-         margin=1,n=20,seed=sample(1:1000,1),nonlinear=F,df=1,nu=0.001,D=3,
-         distn=NULL,family1=data$family1,n2=50,w=rep(1,nrow(x)),
-         refy=NULL,x.new=x,pred.new=dirx,binpred=data$binpred,type=NULL,w.new=NULL)
+         contm=data$contm,catm=data$catm,jointm=data$jointm, 
+         cova=data$cova, margin=1,n=20,seed=sample(1:1000,1),
+         nonlinear=F,df1=1,nu=0.001,D=3,distn=NULL,family1=data$family1,
+         n2=50,w=rep(1,nrow(x)),refy=NULL,x.new=x,pred.new=dirx,
+         cova.new=cova,binpred=data$binpred,type=NULL,
+         w.new=NULL,all.model=FALSE,xmod=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -32,7 +34,7 @@ the variable names or the column number of x that locates the binary mediators. 
   \item{contm }{the variable names or the column numbers of x that locate the potential continuous mediators. Need to set up only when data is FALSE.}
   \item{catm }{categorical mediators should be binarized and be presented as a list, where the first item is the number of categorical variables and the following items are the names or the column numbers of each binarized categorical variable in x. data.org organizes the categorical mediators in this format after they pass the mediator tests. Need to set up only when data is FALSE.}
   \item{jointm }{a list where the first item is the number of groups of joint mediators to be considered, and each of the following items identifies the names or the column numbers of the mediators in x for each group of joint mediators. Need to set up only when data is FALSE.}
-  \item{cova}{the covariate names in x for predicting the mediators. The cova cannot be potential mediators, so cova are the covariates for the response automatically. If the covariates are for all potential mediators, cova is a vector of covaraite names. If the covariates are for some specific potential mediators, cova is a list with the first item be the names of potential mediators that use the covariates, and the second item be the names of covariates. Works mainly for continuous predictors (pred), also the specified covariates should have no missing if only some mediators uses the covariates.
+  \item{cova}{The data frame of covariates to be used to predict the mediator(s). The covariates in cova cannot be potential mediators. If the covariates are for some specific potential mediators, cova$for.m is the vector of names of potential mediators that use the covariates. Works for continuous predictors (pred) only, also the specified covariates should have no missing if only some mediators uses the covariates. Works mainly for continuous predictors (pred), also the specified covariates should have no missing if only some mediators uses the covariates.
 }
   \item{margin}{
 the change in predictor when calculating the mediation effects, see Yu et al. (2014).
@@ -46,14 +48,14 @@ set seed to make the calculation repeatable. The default value of seed is from s
   \item{nonlinear}{
 if TURE, Multiple Additive Regression Trees (MART) will be used to fit the final full model in estimating the outcome. The default value of nonlinear is FALSE, in which case, a generalized linear model will be used to fit the final full model.
 }
-  \item{df}{
+  \item{df1}{
 if nonlinear is TURE, natural cubic spline will be used to fit the relationship between the predictor and each mediator.  The df is the degree of freedom in the ns() function, the default is 1.
 }
   \item{nu}{
-set the parameter "interaction.depth" in gbm function if MART is to be used, by default, nu=0.001. See also help(gbm.fit).
+set the parameter "shrinkage" in gbm function if MART is to be used, by default, nu=0.001. See also help(gbm.fit).
 }
   \item{D}{
-set the parameter "shrinkage" in gbm function if MART is to be used, by default, D=3. See also help(gbm.fit).
+set the parameter "interaction.depth" in gbm function if MART is to be used, by default, D=3. See also help(gbm.fit).
 }
   \item{distn}{
 the assumed distribution of the outcome if MART is used for final full model. The default value of distn is "gaussian" for coninuous y, and "bernoulli" for binary y.
@@ -76,6 +78,9 @@ of the same format as x, with a new set of covariates and mediators on which to 
   \item{pred.new}{
 a new set of predictor(s).
 }
+  \item{cova.new}{
+a new set of covaraite(s).
+}
   \item{binpred}{
 if TRUE, the predictor is binary.
 }
@@ -84,6 +89,12 @@ the type of prediction when y is class Surv. Is "risk" if not specified.
 }
   \item{w.new}{
 the weights for new.x.
+}
+  \item{all.model}{
+save all the fitted model from bootstrap samples if TRUE. This needs to be true to make inferences on moderation effects. This argument cannot be used with the function \code{"\link[=boot.med.par]{boot.med.par}"}.
+}
+  \item{xmod}{
+If there is a moderator, xmod gives the moderator's name in cova and/or x.
 }
 }
 \details{
@@ -95,9 +106,20 @@ Returns an mma object.
   \item{model }{a list where the first item, MART, is T if mart is fitted for the final model; the second item, Survival, is T if a survival model is fitted; the third item, type, is the type of prediction when a survival model is fitted; the fourth item, model, is the fitted final full model where y is the outcome and all predictor, covariates, and mediators are the explanatory variables; and the fourth item, best.iter is the number of best iterations if MART is used to fit the final model.}
   \item{data }{a list that contains all the used data: x=x, y=y, dirx=dirx, binm=binm, contm=contm, catm=catm, jointm=jointm, binpred=F.}
   \item{boot.detail }{a list that contains the mediation effects on each row of new.x: new.x=new.x, te1, de1, ie1.}
+  \item{all_model}{a list with all fitted models from bootstrap samples if all.model is TRUE. This value cannot be created with the function \code{"\link[=boot.med.par]{boot.med.par}"}.}
+  \item{all_iter}{if all.model is TRUE, a matrix with all fitted best iterations if MART is used. Each row is from one bootstrap sample.  This value cannot be created with the function \code{"\link[=boot.med.par]{boot.med.par}"}.}
+  \item{all_boot}{if all.model is TRUE, a matrix with all bootstrap samples. Each row is one bootstrap sample.  This value cannot be created with the function \code{"\link[=boot.med.par]{boot.med.par}"}.}
 }
 \references{
 Yu, Q., Fan, Y., and Wu, X. (2014) <doi:10.4172/2155-6180.1000189>. "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189. 
+
+Yu, Q., Scribner, R.A., Leonardi, C., Zhang, L., Park, C., Chen, L., and Simonsen, N.R. (2017) <doi:10.1016/j.sste.2017.02.001>. "Exploring racial disparity in obesity: a mediation analysis considering geo-coded environmental factors," Spatial and Spatio-temporal Epidemiology, 21, 13-23. 
+
+Yu, Q., and Li, B. (2017) <doi:10.5334/hors.160>. "mma: An r package for multiple mediation analysis," Journal of Open Research Software, 5(1), 11. 
+
+Yu, Q., Wu, X., Li, B., and Scribner, R. (2018). <doi:10.1002/sim.7977>. "Multiple Mediation Analysis with Survival Outcomes – With an Application to Explore Racial Disparity in Breast Cancer Survival," Statistics in Medicine.
+
+Yu, Q., Medeiros, KL, Wu, X., and Jensen, R. (2018). <doi:10.1007/s11336-018-9612-2>. "Explore Ethnic Disparities in Anxiety and Depression Among Cancer Survivors Using Nonlinear Mediation Analysis," Psychometrika, 83(4), 991-1006. 
 }
 \author{
 Qingzhao Yu \email{qyu@lsuhsc.edu}}
@@ -124,8 +146,8 @@ data("weight_behavior")
  y=weight_behavior[,15]
  data.b.b.2.3<-data.org(x,y,mediator=5:12,jointm=list(n=1,j1=c(5,7,9)),
                         pred=pred,predref="OTHER", alpha=0.4,alpha2=0.4)
- temp1.2<-boot.med(data.b.b.2.3,n=2,n2=4,seed=1)
- temp2.2<-boot.med(data.b.b.2.3,n=2,n2=4,nu=0.05,seed=1,nonlinear=TRUE)
+ temp1.2<-boot.med(data.b.b.2.3,n=2,n2=4,seed=2)
+ temp2.2<-boot.med(data.b.b.2.3,n=2,n2=4,nu=0.05,seed=2,nonlinear=TRUE)
 
  #multivariate responses
  x=weight_behavior[,c(2:3,5:14)]
@@ -133,8 +155,8 @@ data("weight_behavior")
  y=weight_behavior[,c(1,15)]
  data.b.b.2.4<-data.org(x,y,mediator=5:12,jointm=list(n=1,j1=c(5,7,9)),
                         pred=pred,predref="OTHER", alpha=0.4,alpha2=0.4)
- temp1.3<-boot.med(data.b.b.2.4,n=2,n2=4,seed=1)
- temp2.3<-boot.med(data.b.b.2.4,n=2,n2=4,seed=1,nonlinear=TRUE)
+ temp1.3<-boot.med(data.b.b.2.4,n=2,n2=4,seed=2)
+ temp2.3<-boot.med(data.b.b.2.4,n=2,n2=4,seed=2,nonlinear=TRUE)
 
 #continuous y
  x=weight_behavior[,c(2,4:14)]

@@ -63,7 +63,7 @@ the significant level at which to test if a potential mediator is related with t
 }
   \item{w}{the weight for data analysis, by default is rep(1,length(y)).
 }
-  \item{cova}{the covariate names in x for predicting the mediators. The cova cannot be potential mediators, so cova are the covariates for the response automatically. If the covariates are for all potential mediators, cova is a vector of covaraite names. If the covariates are for some specific potential mediators, cova is a list with the first item be the names of potential mediators that use the covariates, and the second item be the names of covariates. Works mainly for continuous predictors (pred), also the specified covariates should have no missing if only some mediators uses the covariates.
+  \item{cova}{The data frame of covariates to be used to predict the mediator(s). The covariates in cova cannot be potential mediators. If the covariates are for some specific potential mediators, cova$for.m is the vector of names of potential mediators that use the covariates. Works for continuous predictors (pred) only, also the specified covariates should have no missing if only some mediators uses the covariates.
 }
 }
 
@@ -85,6 +85,16 @@ data.org returns a list with the organized data and identifiers of the potential
 }
 \references{
 Baron, R.M., and Kenny, D.A. (1986) <doi:10.1037/0022-3514.51.6.1173>. The moderator-mediator variable distinction in social psychological research: conceptual, strategic, and statistical considerations. J. Pers Soc Psychol, 51(6), 1173-1182.
+
+Yu, Q., Fan, Y., and Wu, X. (2014) <doi:10.4172/2155-6180.1000189>. "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189. 
+
+Yu, Q., Scribner, R.A., Leonardi, C., Zhang, L., Park, C., Chen, L., and Simonsen, N.R. (2017) <doi:10.1016/j.sste.2017.02.001>. "Exploring racial disparity in obesity: a mediation analysis considering geo-coded environmental factors," Spatial and Spatio-temporal Epidemiology, 21, 13-23. 
+
+Yu, Q., and Li, B. (2017) <doi:10.5334/hors.160>. "mma: An r package for multiple mediation analysis," Journal of Open Research Software, 5(1), 11. 
+
+Yu, Q., Wu, X., Li, B., and Scribner, R. (2018). <doi:10.1002/sim.7977>. "Multiple Mediation Analysis with Survival Outcomes – With an Application to Explore Racial Disparity in Breast Cancer Survival," Statistics in Medicine.
+
+Yu, Q., Medeiros, KL, Wu, X., and Jensen, R. (2018). <doi:10.1007/s11336-018-9612-2>. "Explore Ethnic Disparities in Anxiety and Depression Among Cancer Survivors Using Nonlinear Mediation Analysis," Psychometrika, 83(4), 991-1006. 
 }
 \author{
 Qingzhao Yu  \email{qyu@lsuhsc.edu}
@@ -135,7 +145,7 @@ data("weight_behavior")
  y=weight_behavior[,c(1,15)]
  data.b.b.2.4<-data.org(x,y,mediator=5:12,jointm=list(n=1,j1=c(5,7,9)),
                         pred=pred,predref="OTHER", alpha=0.4,alpha2=0.4)
- summary(data.b.b.2.4)}
+ summary(data.b.b.2.4)
 
  #continuous y
  x=weight_behavior[,c(2,4:14)]
@@ -205,6 +215,6 @@ x=cgd1[,c(5:12)]
 pred=cgd1[,4]
  data.surv.binx<-data.org(x,y,pred=pred,mediator=(1:ncol(x)),   
                     alpha=0.4,alpha2=0.4)
- summary(data.surv.binx)
+ summary(data.surv.binx)}
 }
 \keyword{ Mediator Tests }

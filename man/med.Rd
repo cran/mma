@@ -10,9 +10,9 @@ To estimate the mediation effects when the predictor is binary or continuous.
 med(data, x=data$x, y=data$y, dirx=data$dirx, binm=data$binm, 
     contm = data$contm,catm = data$catm, jointm = data$jointm, cova=data$cova,
     allm = c(contm, catm), margin=1,n=20,seed=sample(1:1000,1), 
-    nonlinear=F, df=1, nu=0.001,D=3,distn=NULL,family1=data$family1,
+    nonlinear=F, df1=1, nu=0.001,D=3,distn=NULL,family1=data$family1,
     refy=rep(0,ncol(y)),binpred=data$binpred,x.new=x,pred.new=dirx,
-    type=NULL,w=NULL,w.new=NULL)
+    cova.new=cova,type=NULL,w=NULL,w.new=NULL,xmod=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -32,7 +32,7 @@ the variable names or the column number of x that locates the binary mediators. 
   \item{contm }{the variable names or the column numbers of x that locate the potential continuous mediators. Need to set up only when data is FALSE.}
   \item{catm }{categorical mediators should be binarized and be presented as a list, where the first item is the number of categorical variables and the following items are the names or the column numbers of each binarized categorical variable in x. data.org organizes the categorical mediators in this format after they pass the mediator tests. Need to set up only when data is FALSE.}
   \item{jointm }{a list where the first item is the number of groups of joint mediators to be considered, and each of the following items identifies the names or the column numbers of the mediators in x for each group of joint mediators. Need to set up only when data is FALSE.}
-  \item{cova}{the covariate names in x for predicting the mediators. The cova cannot be potential mediators, so cova are the covariates for the response automatically. If the covariates are for all potential mediators, cova is a vector of covaraite names. If the covariates are for some specific potential mediators, cova is a list with the first item be the names of potential mediators that use the covariates, and the second item be the names of covariates. Need to set up only when data is FALSE.
+  \item{cova}{The data frame of covariates to be used to predict the mediator(s). The covariates in cova cannot be potential mediators. If the covariates are for some specific potential mediators, cova$for.m is the vector of names of potential mediators that use the covariates. Works for continuous predictors (pred) only, also the specified covariates should have no missing if only some mediators uses the covariates.  Need to set up only when data is FALSE.
 }
   \item{allm}{
 the column numbers of all mediators.  Need to set up only when data is FALSE. The default value of allm is c(contm,catm).
@@ -49,7 +49,7 @@ set seed to make the calculation repeatable. The default value of seed is from s
   \item{nonlinear}{
 if TURE, Multiple Additive Regression Trees (MART) will be used to fit the final full model in estimating the outcome. The default value of nonlinear is FALSE, in which case, a generalized linear model will be used to fit the final full model.
 }
-  \item{df}{
+  \item{df1}{
 if nonlinear is TURE, natural cubic spline will be used to fit the relationship between the predictor and each mediator.  The df is the degree of freedom in the ns() function, the default is 1.
 }
   \item{nu}{
@@ -76,6 +76,9 @@ A new set of predictor and corresponding covariates, of the same format as x (af
   \item{pred.new}{
 A new set of predictor(s), of the same format as x (after data.org), on which to calculate the mediation effects. For continuous predictor only.
 }
+  \item{cova.new}{
+A new set of covariate(s), of the same format as cova.
+}
   \item{type}{
 the type of prediction when y is class Surv. By default, type is "risk".
 }
@@ -84,6 +87,9 @@ the weight for each case in x.
 }
   \item{w.new}{
 the weight for each case in x.new.
+}
+  \item{xmod}{
+If there is a moderator, xmod gives the moderator's name in cova and/or x.
 }
 }
 \details{
@@ -101,6 +107,14 @@ J.H. Friedman, T. Hastie, R. Tibshirani (2000) <doi:10.1214/aos/1016120463>. "Ad
 J.H. Friedman (2001) <doi:10.1214/aos/1013203451>. "Greedy Function Approximation: A Gradient Boosting Machine," Annals of Statistics 29(5):1189-1232.
 
 Yu, Q., Fan, Y., and Wu, X. (2014) <doi:10.4172/2155-6180.1000189>. "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189. 
+
+Yu, Q., Scribner, R.A., Leonardi, C., Zhang, L., Park, C., Chen, L., and Simonsen, N.R. (2017) <doi:10.1016/j.sste.2017.02.001>. "Exploring racial disparity in obesity: a mediation analysis considering geo-coded environmental factors," Spatial and Spatio-temporal Epidemiology, 21, 13-23. 
+
+Yu, Q., and Li, B. (2017) <doi:10.5334/hors.160>. "mma: An r package for multiple mediation analysis," Journal of Open Research Software, 5(1), 11. 
+
+Yu, Q., Wu, X., Li, B., and Scribner, R. (2018). <doi:10.1002/sim.7977>. "Multiple Mediation Analysis with Survival Outcomes – With an Application to Explore Racial Disparity in Breast Cancer Survival," Statistics in Medicine.
+
+Yu, Q., Medeiros, KL, Wu, X., and Jensen, R. (2018). <doi:10.1007/s11336-018-9612-2>. "Explore Ethnic Disparities in Anxiety and Depression Among Cancer Survivors Using Nonlinear Mediation Analysis," Psychometrika, 83(4), 991-1006. 
 }
 \author{
 Qingzhao Yu \email{qyu@lsuhsc.edu}
@@ -139,7 +153,6 @@ temp2<-med(data=data.bin,n=2,seed=1,nonlinear=TRUE)
                         pred=pred,predref="OTHER", alpha=0.4,alpha2=0.4)
  temp1.3<-med(data.b.b.2.4,n=2,seed=1)
  temp2.3<-med(data.b.b.2.4,n=2,seed=1,nonlinear=TRUE)
-}
 
 #continuous y
  x=weight_behavior[,c(2,4:14)]
@@ -166,10 +179,10 @@ pred=weight_behavior[,2]
 data.contx<-data.org(x,y,pred=pred,contmed=c(11:12),binmed=c(6,10),
                      binref=c(1,1),catmed=5,catref=1,
                      alpha=0.4,alpha2=0.4)
-\donttest{
+
 temp7<-med(data=data.contx,seed=1,n=2) 
 temp8<-med(data=data.contx,seed=1,n=2,nonlinear=TRUE,nu=0.05) 
-}
+
 ##Surv class outcome (survival analysis)
 #data(cgd0)       #a dataset in the survival package
 cgd1<-cgd0
@@ -189,7 +202,6 @@ temp10.contx<-med(data=data.surv.contx,n=2,seed=1,nonlinear=TRUE)
 temp10.contx
 
 #for binary predictor
-\donttest{
 x=cgd1[,c(5:12)]
 pred=cgd1[,4]
 data.surv.binx<-data.org(x,y,pred=pred,mediator=1:ncol(x),   

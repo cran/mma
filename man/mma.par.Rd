@@ -12,10 +12,10 @@ mma.par(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,
         binref=NULL,catmed=NULL,catref=NULL,jointm=NULL,cova=NULL,
         refy=rep(NA,ncol(data.frame(y))), predref=NULL,alpha=0.1,
         alpha2=0.1, margin=1, n=20,seed=sample(1:1000,1),
-        nonlinear=F,df=1,nu=0.001,D=3,distn=NULL,
+        nonlinear=F,df1=1,nu=0.001,D=3,distn=NULL,
         family1=as.list(rep(NA,ncol(data.frame(y)))),
-        n2=50,w=rep(1,nrow(x)), testtype=1, x.new=NULL, 
-        pred.new=NULL, type=NULL,w.new=NULL, ncore=NULL)
+        n2=50,w=rep(1,nrow(x)), testtype=1,x.new=NULL,pred.new=NULL, 
+        cova.new=NULL, type=NULL,w.new=NULL, ncore=NULL,xmod=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -75,7 +75,7 @@ set seed to make the calculation repeatable. The default value of seed is from s
   \item{nonlinear}{
 if TURE, Multiple Additive Regression Trees (MART) will be used to fit the final full model in estimating the outcome. The default value of nonlinear is FALSE, in which case, a generalized linear model will be used to fit the final full model.
 }
-  \item{df}{
+  \item{df1}{
 if nonlinear is TURE, natural cubic spline will be used to fit the relationship between the countinuous predictor and each mediator.  The df is the degree of freedom in the ns() function, the default is 1.
 }
   \item{nu}{
@@ -104,6 +104,9 @@ A new set of predictor and corresponding covariates, of the same format as x (af
   \item{pred.new}{
 A new set of predictor(s), of the same format as x (after data.org), on which to calculate the mediation effects. For continuous predictor only.
 }
+  \item{cova.new}{
+a new set of covaraite(s).
+}
   \item{type}{
 the type of prediction when y is class Surv. Is "risk" if not specified.
 }
@@ -112,6 +115,9 @@ the weights for new.x.
 }
   \item{ncore}{
 the number of threads to be used for parallel computing.
+}
+  \item{xmod}{
+If there is a moderator, xmod gives the moderator's name in cova and/or x.
 }
 }
 \details{
@@ -132,6 +138,14 @@ J.H. Friedman, T. Hastie, R. Tibshirani (2000) <doi:10.1214/aos/1016120463>. "Ad
 J.H. Friedman (2001) <doi:10.1214/aos/1013203451>. "Greedy Function Approximation: A Gradient Boosting Machine," Annals of Statistics 29(5):1189-1232.
 
 Yu, Q., Fan, Y., and Wu, X. (2014) <doi:10.4172/2155-6180.1000189>. "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189. 
+
+Yu, Q., Scribner, R.A., Leonardi, C., Zhang, L., Park, C., Chen, L., and Simonsen, N.R. (2017) <doi:10.1016/j.sste.2017.02.001>. "Exploring racial disparity in obesity: a mediation analysis considering geo-coded environmental factors," Spatial and Spatio-temporal Epidemiology, 21, 13-23. 
+
+Yu, Q., and Li, B. (2017) <doi:10.5334/hors.160>. "mma: An r package for multiple mediation analysis," Journal of Open Research Software, 5(1), 11. 
+
+Yu, Q., Wu, X., Li, B., and Scribner, R. (2018). <doi:10.1002/sim.7977>. "Multiple Mediation Analysis with Survival Outcomes – With an Application to Explore Racial Disparity in Breast Cancer Survival," Statistics in Medicine.
+
+Yu, Q., Medeiros, KL, Wu, X., and Jensen, R. (2018). <doi:10.1007/s11336-018-9612-2>. "Explore Ethnic Disparities in Anxiety and Depression Among Cancer Survivors Using Nonlinear Mediation Analysis," Psychometrika, 83(4), 991-1006. 
 }
 \author{
 Qingzhao Yu \email{qyu@lsuhsc.edu} and Bin Li \email{bli@lsu.edu}.

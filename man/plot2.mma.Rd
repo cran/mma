@@ -1,26 +1,44 @@
-\name{print.med}
-\alias{print.med}
+\name{plot2.mma}
+\alias{plot2.mma}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Print an med object
+Relative effects plot of the fitted mma object with moderator
 }
 \description{
-Print the estimation of mediation effects from an med object: from functions med.
+Plot the marginal effect of the selected variable on the outcome, and the marginal effect of the predictor on the selected variable, at each level of the moderator.
 }
 \usage{
-\method{print}{med}(x,...,digit=4)
+plot2.mma(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{
-a med object created initially call to med.
+a mma object created initially call to boot.mod.
 }
+  \item{vari}{
+  an indices or the name of the variable to plot.
+  }
+  \item{xlim}{
+  the range of the variable to be plotted.
+  }
+  \item{alpha}{
+  for continuous predictor only, to draw the alpha confidence interval of the indirect effect.
+  }
+  \item{quantile}{
+  for continuous predictor only, if true to draw the alpha confidence interval of the indirect effect based on quantile, otherwise, based on the normal approximation.
+  }
   \item{\dots}{
-other arguments passed to the print function.
+other arguments passed to the plot function.
 }
-  \item{digit}{
-the number of digits to keep at printing.
+  \item{moderator}{
+the name of the moderator.
 }
+  \item{xj}{
+the moderation effect on the xjth predictor.
+}
+}
+\details{
+plot2.mma plots the marginal effect of the selected variable on the outcome, and the marginal effect of the predictor on the selected variable, at each level of the moderator. If the predictor is binary, draw a histogram or boxplot of the marginal density of the variable at each different value of the predictor.
 }
 \references{
 Yu, Q., Fan, Y., and Wu, X. (2014) <doi:10.4172/2155-6180.1000189>. "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189. 
@@ -40,22 +58,11 @@ Qingzhao Yu \email{qyu@lsuhsc.edu}
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{"\link[=med]{med}"}
+\code{"\link[=boot.mod]{boot.mod}"}
 }
 \examples{
-data("weight_behavior")
-##binary x
-#binary y
- x=weight_behavior[,c(2,4:14)]
- pred=weight_behavior[,3]
- y=weight_behavior[,15]
- data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),
-                    binref=c(1,1),catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
- temp1<-med(data=data.bin,n=2,seed=1)
- temp2<-med(data=data.bin,n=2,seed=1,nonlinear=TRUE)
- temp1
- print(temp2,digit=5)
+#see boot.mod menu.
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
-%\keyword{ Print }
+%\keyword{ Plot }

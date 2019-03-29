@@ -9,7 +9,7 @@ Summary of an mma project
 Compute the estimations, standard deviations and confidence intervals of the mediation effects.
 }
 \usage{
-\method{summary}{mma}(object,..., alpha=0.05, plot=TRUE, RE=FALSE,quant=T,ball.use=T) 
+\method{summary}{mma}(object,..., alpha=0.05, plot=TRUE, RE=FALSE,quant=F,ball.use=F,bymed=FALSE) 
 \method{print}{summary.mma}(x,...,digit=3) 
 }
 %- maybe also 'usage' for other objects documented here.
@@ -36,6 +36,9 @@ default is TRUE, if ture, draw the confidence intervals of relative effects usin
   \item{digit}{
 the number of decimal digits to keep.
 }
+  \item{bymed}{
+if true, show results by each mediator.
+}
 }
 \details{
 summary.mma gives a list of the estimations and summary statistics based on the bootstrap results. If plot=T, draw a barplot of the relative effects of the direct effect of the predictor and indirect effects of the mediators. Relative effects is defined as the (in)direct effect divided by the total effect. The plot is arranged in order from the largest to the smallest relative effect.
@@ -49,6 +52,14 @@ If plot=T, draw a barplot of the relative mediation effects.
 }
 \references{
 Yu, Q., Fan, Y., and Wu, X. (2014) <doi:10.4172/2155-6180.1000189>. "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189. 
+
+Yu, Q., Scribner, R.A., Leonardi, C., Zhang, L., Park, C., Chen, L., and Simonsen, N.R. (2017) <doi:10.1016/j.sste.2017.02.001>. "Exploring racial disparity in obesity: a mediation analysis considering geo-coded environmental factors," Spatial and Spatio-temporal Epidemiology, 21, 13-23. 
+
+Yu, Q., and Li, B. (2017) <doi:10.5334/hors.160>. "mma: An r package for multiple mediation analysis," Journal of Open Research Software, 5(1), 11. 
+
+Yu, Q., Wu, X., Li, B., and Scribner, R. (2018). <doi:10.1002/sim.7977>. "Multiple Mediation Analysis with Survival Outcomes – With an Application to Explore Racial Disparity in Breast Cancer Survival," Statistics in Medicine.
+
+Yu, Q., Medeiros, KL, Wu, X., and Jensen, R. (2018). <doi:10.1007/s11336-018-9612-2>. "Explore Ethnic Disparities in Anxiety and Depression Among Cancer Survivors Using Nonlinear Mediation Analysis," Psychometrika, 83(4), 991-1006. 
 }
 \author{
 Qingzhao Yu \email{qyu@lsuhsc.edu}

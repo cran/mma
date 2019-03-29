@@ -1,5 +1,5 @@
 exportPattern("^[^\\.]")
-import(gbm,car,gplots,splines,survival,doParallel,foreach)
+import(gbm,car,gplots,splines,survival,doParallel,foreach,lattice)
 importFrom("grDevices", "rainbow")
 importFrom("graphics", "axis", "barplot", "hist", "lines", "par",
           "plot")
@@ -9,6 +9,8 @@ importFrom("stats", "binomial", "chisq.test", "cor.test", "gaussian",
 importFrom("graphics", "abline", "polygon")
 importFrom("stats", "scatter.smooth")
 importFrom("stats", "weighted.mean")
+importFrom("graphics", "points")
+importFrom("stats", "as.formula")
 S3method(summary,med_iden)
 S3method(plot,med)
 S3method(print,summary.med_iden)
