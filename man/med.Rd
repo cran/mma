@@ -9,10 +9,10 @@ To estimate the mediation effects when the predictor is binary or continuous.
 \usage{
 med(data, x=data$x, y=data$y, dirx=data$dirx, binm=data$binm, 
     contm = data$contm,catm = data$catm, jointm = data$jointm, cova=data$cova,
-    allm = c(contm, catm), margin=1,n=20,seed=sample(1:1000,1), 
+    allm = c(contm, catm), margin=1,n=20, 
     nonlinear=F, df1=1, nu=0.001,D=3,distn=NULL,family1=data$family1,
     refy=rep(0,ncol(y)),binpred=data$binpred,x.new=x,pred.new=dirx,
-    cova.new=cova,type=NULL,w=NULL,w.new=NULL,xmod=NULL)
+    cova.new=cova,type=NULL,w=NULL,w.new=NULL,xmod=NULL,custom.function=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -43,9 +43,9 @@ the change in predictor when calculating the mediation effects, see Yu et al. (2
   \item{n}{
 the time of resampling in calculating the indirect effects, default is n=20, see Yu et al. (2014).
 }
-  \item{seed}{
-set seed to make the calculation repeatable. The default value of seed is from sample(1:1000,1).
-}
+  %\item{seed}{
+%set seed to make the calculation repeatable. The default value of seed is from sample(1:1000,1).
+%}
   \item{nonlinear}{
 if TURE, Multiple Additive Regression Trees (MART) will be used to fit the final full model in estimating the outcome. The default value of nonlinear is FALSE, in which case, a generalized linear model will be used to fit the final full model.
 }
@@ -91,6 +91,8 @@ the weight for each case in x.new.
   \item{xmod}{
 If there is a moderator, xmod gives the moderator's name in cova and/or x.
 }
+  \item{custom.function}{a string of customer defined final model for predicting the outcome(s). The response variable should be noted as "responseY", the dataset should be noted as "dataset123". The weights for observations should be noted as "weights123". The covariates should be in x or pred. Use "~." for all varaibles in x and pred is allowed. The customer defined model should be able to make prediction by using "predict(object, newdata=...)", where the object is the results of the fitted model. If a specific package needs to be called to fit the model, the user should call the package first. For example, if the gamlss package is used to fit a piecewise polynomial with "age" to be the mediator and "race" be the predictor, we can set custom.function="gamlss(responseV~b(age,df=3)+race,data=dataset123,tace=FALSE)". The length of custom.function should be the same as the dimension of y. If custom.function[j] is NA, the usual method will be used to fit y[j]. 
+}
 }
 \details{
 The mediators are not tested in this function.  data.org should be used first for the tests and data organizing, and then the resulting list from data.org can be used directly to define the arguments in this function. med considers all variables in x as mediators or covariates in the final model and all variables identified by contm, binm, catm, or jointm as mediators.
@@ -132,8 +134,12 @@ data("weight_behavior")
  y=weight_behavior[,15]
  data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),
   binref=c(1,1),catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
-temp1<-med(data=data.bin,n=2,seed=1)
-temp2<-med(data=data.bin,n=2,seed=1,nonlinear=TRUE)
+temp1<-med(data=data.bin,n=2)
+#or use self-defined final function
+temp1<-med(data=data.bin,n=2,custom.function = 
+           'glm(responseY~.,data=dataset123,family="quasibinomial",
+           weights=weights123)')
+temp2<-med(data=data.bin,n=2,nonlinear=TRUE)
 
 \donttest{
  #multivariate predictor
@@ -142,8 +148,8 @@ temp2<-med(data=data.bin,n=2,seed=1,nonlinear=TRUE)
  y=weight_behavior[,15]
  data.b.b.2.3<-data.org(x,y,mediator=5:12,jointm=list(n=1,j1=c(5,7,9)),
                         pred=pred,predref="OTHER", alpha=0.4,alpha2=0.4)
- temp1.2<-med(data.b.b.2.3,n=2,seed=1)
- temp2.2<-med(data.b.b.2.3,n=2,seed=1,nonlinear=TRUE)
+ temp1.2<-med(data.b.b.2.3,n=2)
+ temp2.2<-med(data.b.b.2.3,n=2,nonlinear=TRUE)
 
  #multivariate responses
  x=weight_behavior[,c(2:3,5:14)]
@@ -151,8 +157,13 @@ temp2<-med(data=data.bin,n=2,seed=1,nonlinear=TRUE)
  y=weight_behavior[,c(1,15)]
  data.b.b.2.4<-data.org(x,y,mediator=5:12,jointm=list(n=1,j1=c(5,7,9)),
                         pred=pred,predref="OTHER", alpha=0.4,alpha2=0.4)
- temp1.3<-med(data.b.b.2.4,n=2,seed=1)
- temp2.3<-med(data.b.b.2.4,n=2,seed=1,nonlinear=TRUE)
+ temp1.3<-med(data.b.b.2.4,n=2)
+#or use the self defined function
+ temp1.3<-med(data.b.b.2.4,n=2,custom.function =c('glm(responseY~.,
+              data=dataset123,family="gaussian",weights=weights123)', 
+              'glm(responseY~.,data=dataset123,family="quasibinomial",
+              weights=weights123)'))
+ temp2.3<-med(data.b.b.2.4,n=2,nonlinear=TRUE)
 
 #continuous y
  x=weight_behavior[,c(2,4:14)]
@@ -160,8 +171,8 @@ temp2<-med(data=data.bin,n=2,seed=1,nonlinear=TRUE)
  y=weight_behavior[,1]
  data.cont<-data.org(x,y,pred=pred,mediator=5:12,jointm=list(n=1,j1=7:9), 
                      predref="M",alpha=0.4,alpha2=0.4)
- temp3<-med(data=data.cont,n=2,seed=1) 
- temp4<-med(data=data.cont,n=2,seed=1,nonlinear=TRUE) 
+ temp3<-med(data=data.cont,n=2) 
+ temp4<-med(data=data.cont,n=2,nonlinear=TRUE) 
 
 ##continuous x
 #binary y
@@ -169,8 +180,11 @@ temp2<-med(data=data.bin,n=2,seed=1,nonlinear=TRUE)
  pred=weight_behavior[,2]
  y=weight_behavior[,15]
  data.contx<-data.org(x,y,pred=pred,mediator=4:10,alpha=0.4,alpha2=0.4)
- temp5<-med(data=data.contx,seed=1,n=2)
- temp6<-med(data=data.contx,seed=1,n=2,nonlinear=TRUE,nu=0.05)
+ temp5<-med(data=data.contx,n=2)
+#or use the self defined function
+ temp5<-med(data=data.contx,n=2,custom.function ='glm(responseY~.,
+            data=dataset123,family="quasibinomial",weights=weights123)')
+ temp6<-med(data=data.contx,n=2,nonlinear=TRUE,nu=0.05)
 
 #continuous y
 x=weight_behavior[,3:14]
@@ -180,8 +194,8 @@ data.contx<-data.org(x,y,pred=pred,contmed=c(11:12),binmed=c(6,10),
                      binref=c(1,1),catmed=5,catref=1,
                      alpha=0.4,alpha2=0.4)
 
-temp7<-med(data=data.contx,seed=1,n=2) 
-temp8<-med(data=data.contx,seed=1,n=2,nonlinear=TRUE,nu=0.05) 
+temp7<-med(data=data.contx,n=2) 
+temp8<-med(data=data.contx,n=2,nonlinear=TRUE,nu=0.05) 
 
 ##Surv class outcome (survival analysis)
 #data(cgd0)       #a dataset in the survival package
@@ -193,11 +207,11 @@ y=Surv(cgd1$futime,status)
 #for continuous predictor
 data.surv.contx<-data.org(x,y,pred=pred,mediator=1:ncol(x),      
                           alpha=0.5,alpha2=0.5)
-temp9.contx<-med(data=data.surv.contx,seed=1,n=2,type="lp")
+temp9.contx<-med(data=data.surv.contx,n=2,type="lp")
 
 #close to mart results when use type="lp"
 temp9.contx
-temp10.contx<-med(data=data.surv.contx,n=2,seed=1,nonlinear=TRUE)  
+temp10.contx<-med(data=data.surv.contx,n=2,nonlinear=TRUE)  
 #results in the linear part unit
 temp10.contx
 
@@ -206,9 +220,9 @@ x=cgd1[,c(5:12)]
 pred=cgd1[,4]
 data.surv.binx<-data.org(x,y,pred=pred,mediator=1:ncol(x),   
                     alpha=0.4,alpha2=0.4)
-temp9.binx<-med(data=data.surv.binx,seed=1,n=2,type="lp") 
+temp9.binx<-med(data=data.surv.binx,n=2,type="lp") 
 temp9.binx
-temp10.binx<-med(data=data.surv.binx,n=2,seed=1,nonlinear=TRUE)  
+temp10.binx<-med(data=data.surv.binx,n=2,nonlinear=TRUE)  
 temp10.binx}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

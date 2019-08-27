@@ -9,7 +9,7 @@ To make inferences on the mediation effects when the predictor is continuous or 
 }
 \usage{
 boot.mod(mma1,vari,continuous.resolution=10,
-         w=rep(1,nrow(mma1$data$x)),n=20,seed=sample(1:1000,1),
+         w=rep(1,nrow(mma1$data$x)),n=20,
          x.new=NULL,w.new=NULL,pred.new=NULL,cova.new=NULL,xj=1,margin=1,
          xmod=vari,df1=1)
 }
@@ -30,9 +30,9 @@ the weight for observations.
   \item{n}{
 the time of resampling in calculating the indirect effects, default is n=20, see Yu et al. (2014).
 }
-  \item{seed}{
-set seed to make the calculation repeatable. The default value of seed is from sample(1:1000,1).
-}
+%  \item{seed}{
+%set seed to make the calculation repeatable. The default value of seed is from sample(1:1000,1).
+%}
   \item{x.new}{
 of the same format as x, with a new set of covariates and mediators on which to calculate the mediation effects.
 }
@@ -94,8 +94,8 @@ y=weight_behavior[,15]
 head(x)
 data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),
                    binref=c(1,1),catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
-temp1<-boot.med(data=data.bin,n=2,n2=4,seed=1,all.model=T)
-temp1.mode=boot.mod(temp1,vari="race",continuous.resolution=100,seed=2)
+temp1<-boot.med(data=data.bin,n=2,n2=4,all.model=T)
+temp1.mode=boot.mod(temp1,vari="race",continuous.resolution=100)
 summary(temp1.mode,ball.use = F)
 plot2.mma(temp1.mode,vari="exercises",moderator="race")
 plot2.mma(temp1.mode,vari="sports",moderator="race")
@@ -106,8 +106,8 @@ pred=weight_behavior[,3]
 y=weight_behavior[,15]
 data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,1),
                     catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
-temp2<-boot.med(data=data.bin,n=2,n2=4,nu=0.05,seed=1,nonlinear=TRUE,all.model=T)
-temp2.mode=boot.mod(temp2,vari="race",continuous.resolution=100,seed=2)
+temp2<-boot.med(data=data.bin,n=2,n2=4,nu=0.05,nonlinear=TRUE,all.model=T)
+temp2.mode=boot.mod(temp2,vari="race",continuous.resolution=100)
 summary(temp2.mode,ball.use = F)
 plot2.mma(temp2.mode,vari="exercises",moderator="race")
 plot2.mma(temp2.mode,vari="sports",moderator="race")
@@ -121,8 +121,8 @@ x=cbind(x,inter)
 head(x)
 data.cont<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),
                    binref=c(1,1),catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
-temp3<-boot.med(data=data.cont,n=2,n2=4,seed=1,all.model=T) 
-temp3.mode=boot.mod(temp3,vari="age",continuous.resolution=2,seed=2)
+temp3<-boot.med(data=data.cont,n=2,n2=4,all.model=T) 
+temp3.mode=boot.mod(temp3,vari="age",continuous.resolution=2)
 summary(temp3.mode)
 
 plot2.mma(temp3.mode,vari="exercises",moderator="age")
@@ -133,8 +133,8 @@ pred=weight_behavior[,3]
 y=weight_behavior[,1]
 data.cont<-data.org(x,y,pred=pred,mediator=5:12,jointm=list(n=1,j1=7:9), 
                      predref="M",alpha=0.4,alpha2=0.4)
-temp4<-boot.med(data=data.cont,n=2,n2=4,nu=0.05,seed=1, nonlinear=TRUE,all.model=T)
-temp4.mode=boot.mod(temp4,vari="age",continuous.resolution=2,seed=2,n=20)
+temp4<-boot.med(data=data.cont,n=2,n2=4,nu=0.05, nonlinear=TRUE,all.model=T)
+temp4.mode=boot.mod(temp4,vari="age",continuous.resolution=2,n=20)
 summary(temp4.mode)
 summary(temp4.mode,bymed=T)
 
@@ -147,7 +147,7 @@ x=cbind(x,cova)
 head(x)
 y=weight_behavior[,15]
 data.contx<-data.org(x,y,pred=pred,mediator=4:10,alpha=0.4,alpha2=0.4,cova=cova)
-temp5<-boot.med(data=data.contx,seed=1,n=1,n2=2,cova=cova,all.model=T)
+temp5<-boot.med(data=data.contx,n=1,n2=2,cova=cova,all.model=T)
 temp5.mode=boot.mod(temp5,vari="race",continuous.resolution=10)
 summary(temp5.mode)
 
@@ -155,7 +155,7 @@ x=weight_behavior[,3:14]
 pred=weight_behavior[,2]
 y=weight_behavior[,15]
 data.contx<-data.org(x,y,pred=pred,mediator=4:10,alpha=0.4,alpha2=0.4,cova=cova)
-temp6<-boot.med(data=data.contx,seed=1,n=1,refy=0,nonlinear=T,n2=3,
+temp6<-boot.med(data=data.contx,n=1,refy=0,nonlinear=T,n2=3,
                 cova=data.frame(race=x$race),all.model = T)
 temp6.mode=boot.mod(temp6,vari="race",continuous.resolution=10)
 summary(temp6.mode)
@@ -171,7 +171,7 @@ x=cbind(x,inter)
 head(x)
 y=weight_behavior[,15]
 data.contx<-data.org(x,y,pred=pred,mediator=4:10,alpha=0.4,alpha2=0.4)
-temp5.1<-boot.med(data=data.contx,seed=1,n=1,n2=2,all.model=T)
+temp5.1<-boot.med(data=data.contx,n=1,n2=2,all.model=T)
 temp5.mode1=boot.mod(temp5.1,vari="numpeople",continuous.resolution=2)
 summary(temp5.mode1)
 }

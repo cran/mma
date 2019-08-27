@@ -10,10 +10,10 @@ To make inferences on the mediation effects when the predictor is continuous or 
 \usage{
 boot.med.par(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,
              contm=data$contm,catm=data$catm,jointm=data$jointm,cova=data$cova,margin=1,
-             n=20,seed=sample(1:1000,1),nonlinear=F,df1=1,nu=0.001,
+             n=20,nonlinear=F,df1=1,nu=0.001,
              D=3,distn=NULL,family1=data$family1,n2=50,w=rep(1,nrow(x)),
              refy=NULL,x.new=x,pred.new=dirx,cova.new=NULL,binpred=data$binpred,
-             type=NULL,w.new=NULL,ncore=NULL,xmod=NULL)
+             type=NULL,w.new=NULL,ncore=NULL,xmod=NULL,custom.function=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -41,9 +41,9 @@ the change in predictor when calculating the mediation effects, see Yu et al. (2
   \item{n}{
 the time of resampling in calculating the indirect effects, default is n=20, see Yu et al. (2014).
 }
-  \item{seed}{
-set seed to make the calculation repeatable. The default value of seed is from sample(1:1000,1).
-}
+%  \item{seed}{
+%set seed to make the calculation repeatable. The default value of seed is from sample(1:1000,1).
+%}
   \item{nonlinear}{
 if TURE, Multiple Additive Regression Trees (MART) will be used to fit the final full model in estimating the outcome. The default value of nonlinear is FALSE, in which case, a generalized linear model will be used to fit the final full model.
 }
@@ -95,6 +95,8 @@ the number of threads to be used for parallel computing.
   \item{xmod}{
 If there is a moderator, xmod gives the moderator's name in cova and/or x.
 }
+  \item{custom.function}{a string of customer defined final model for predicting the outcome(s). The response variable should be noted as "responseY", the dataset should be noted as "dataset123". The weights for observations should be noted as "weights123". The covariates should be in x or pred. Use "~." for all varaibles in x and pred is allowed. The customer defined model should be able to make prediction by using "predict(object, newdata=...)", where the object is the results of the fitted model. If a specific package needs to be called to fit the model, the user should call the package first. For example, if the gamlss package is used to fit a piecewise polynomial with "age" to be the mediator and "race" be the predictor, we can set custom.function="gamlss(responseV~b(age,df=3)+race,data=dataset123,tace=FALSE)". The length of custom.function should be the same as the dimension of y. If custom.function[j] is NA, the usual method will be used to fit y[j]. 
+}
 }
 \details{
 Same as boot.med, except that this function uses parallel computing. Need to call the package "doParallel" for this function. 
@@ -134,8 +136,8 @@ data("weight_behavior")
  y=weight_behavior[,15]
  data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,1),
                     catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
- temp1<-boot.med.par(data=data.bin,n=2,n2=4,seed=1)
- temp2<-boot.med.par(data=data.bin,n=2,n2=4,nu=0.05,seed=1,nonlinear=TRUE)}
+ temp1<-boot.med.par(data=data.bin,n=2,n2=4)
+ temp2<-boot.med.par(data=data.bin,n=2,n2=4,nu=0.05,nonlinear=TRUE)}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

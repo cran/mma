@@ -10,11 +10,11 @@ Test for mediators and do statistical inferences on the identified mediation eff
 \usage{
 mma(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,catmed=NULL,
     catref=NULL,jointm=NULL,cova=NULL, refy=rep(NA,ncol(data.frame(y))),
-    predref=NULL,alpha=0.1,alpha2=0.1, margin=1, n=20,seed=sample(1:1000,1),
+    predref=NULL,alpha=0.1,alpha2=0.1, margin=1, n=20,
     nonlinear=F,df1=1,nu=0.001,D=3,distn=NULL,
     family1=as.list(rep(NA,ncol(data.frame(y)))),n2=50,w=rep(1,nrow(x)),
     testtype=1, x.new=NULL, pred.new=NULL, cova.new=NULL, type=NULL,w.new=NULL, 
-    all.model=FALSE,xmod=NULL)
+    all.model=FALSE,xmod=NULL,custom.function = NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -68,9 +68,9 @@ if binpred is FALSE, define the change in predictor when calculating the mediati
   \item{n}{
 the time of resampling in calculating the indirect effects, default is n=20, see Yu et al. (2014).
 }
-  \item{seed}{
-set seed to make the calculation repeatable. The default value of seed is from sample(1:1000,1).
-}
+%  \item{seed}{
+%set seed to make the calculation repeatable. The default value of seed is from sample(1:1000,1).
+%}
   \item{nonlinear}{
 if TURE, Multiple Additive Regression Trees (MART) will be used to fit the final full model in estimating the outcome. The default value of nonlinear is FALSE, in which case, a generalized linear model will be used to fit the final full model.
 }
@@ -117,6 +117,8 @@ save all the fitted model from bootstrap samples if TRUE. This needs to be true 
 }
   \item{xmod}{
 If there is a moderator, xmod gives the moderator's name in cova and/or x.
+}
+  \item{custom.function}{a string of customer defined final model for predicting the outcome(s). The response variable should be noted as "responseY", the dataset should be noted as "dataset123". The weights for observations should be noted as "weights123". The covariates should be in x or pred. Use "~." for all varaibles in x and pred is allowed. The customer defined model should be able to make prediction by using "predict(object, newdata=...)", where the object is the results of the fitted model. If a specific package needs to be called to fit the model, the user should call the package first. For example, if the gamlss package is used to fit a piecewise polynomial with "age" to be the mediator and "race" be the predictor, we can set custom.function="gamlss(responseV~b(age,df=3)+race,data=dataset123,tace=FALSE)". The length of custom.function should be the same as the dimension of y. If custom.function[j] is NA, the usual method will be used to fit y[j]. 
 }
 }
 \details{
@@ -170,12 +172,13 @@ data("weight_behavior")
  #continuous y
  x=weight_behavior[,c(2,4:14)]
  pred=weight_behavior[,3]
- y=weight_behavior[,1]
+ y=data.frame(weight_behavior[,1])
+ colnames(y)="bmi"
  temp.b.c.glm<-mma(x,y,pred=pred,mediator=5:12,jointm=list(n=1,j1=7:9), 
                      predref="M",alpha=0.4,alpha2=0.4,n2=20)
  temp.b.c.mart<-mma(x,y,pred=pred,mediator=5:12,jointm=list(n=1,j1=7:9), 
                      predref="M",alpha=0.4,alpha2=0.4,
-                     n=2,seed=1,nonlinear=TRUE,n2=20)}
+                     n=2,nonlinear=TRUE,n2=20)}
 
 \donttest{
 ##Surv class outcome (survival analysis)
@@ -186,10 +189,10 @@ status<-ifelse(is.na(cgd1$etime1),0,1)
 y=Surv(cgd1$futime,status)          
 #for continuous predictor
 temp.cox.contx<-mma(x,y,pred=pred,mediator=1:ncol(x),      
-                    alpha=0.5,alpha2=0.5,seed=1,n=1,n2=2,type="lp") 
+                    alpha=0.5,alpha2=0.5,n=1,n2=2,type="lp") 
 summary(temp.cox.contx)
 temp.surv.mart.contx<-mma(x,y,pred=pred,mediator=1:ncol(x),      
-                    alpha=0.5,alpha2=0.5,nonlinear=TRUE,seed=1,n2=2) 
+                    alpha=0.5,alpha2=0.5,nonlinear=TRUE,n2=2) 
 summary(temp.surv.mart.contx,ball.use=F)
 plot(temp.surv.mart.contx,vari="steroids")
 plot(temp.cox.contx,vari="steroids")
@@ -198,7 +201,7 @@ plot(temp.cox.contx,vari="steroids")
 x=cgd1[,c(5:12)]
 pred=cgd1[,4]
 temp.cox.binx<-mma(x,y,pred=pred,mediator=1:ncol(x),   
-                    alpha=0.4,alpha2=0.4,seed=1,n=1,n2=2,type="lp") 
+                    alpha=0.4,alpha2=0.4,n=1,n2=2,type="lp") 
 summary(temp.cox.binx)
 temp.surv.mart.binx<-mma(x,y,pred=pred,mediator=1:ncol(x),   
                     alpha=0.4,alpha2=0.4,nonlinear=TRUE,n=1,n2=2) 

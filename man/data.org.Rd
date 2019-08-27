@@ -80,8 +80,6 @@ data.org returns a list with the organized data and identifiers of the potential
   \item{fullmodel}{a list with each item the full linear model fitted with all potential mediators and covariates for each response.}
   \item{rela}{p-values of tests on the realtionship between the predictor(s) and each potiential mediator.}
   \item{P1}{If testtype=2, P1 gives the p-value of the corresponding variables in predicting the outcome(s) when only the variable and predictor are covariates in the model.}
-  \item{cova}{the covariate names in x for predicting the mediators. The cova cannot be potential mediators, so cova are the covariates for the response automatically. If the covariates are for all potential mediators, cova is a vector of covaraite names. If the covariates are for some specific potential mediators, cova is a list with the first item be the names of potential mediators that use the covariates, and the second item be the names of covariates. If all the specific potential mediators are not chosen as mediators, cova will be set as NULL.
-}
 }
 \references{
 Baron, R.M., and Kenny, D.A. (1986) <doi:10.1037/0022-3514.51.6.1173>. The moderator-mediator variable distinction in social psychological research: conceptual, strategic, and statistical considerations. J. Pers Soc Psychol, 51(6), 1173-1182.

@@ -266,7 +266,7 @@ a
 
 #make inferences on moderation (mediated or not) effects from the mma function.
 boot.mod<-function(mma1,vari,continuous.resolution=10,
-                   w=rep(1,nrow(mma1$data$x)),n=20,seed=sample(1:1000,1),
+                   w=rep(1,nrow(mma1$data$x)),n=20,
                    x.new=NULL,w.new=NULL,pred.new=NULL,cova.new=NULL,xj=1,margin=1,xmod=vari,df1=1)
   #boots=T for bootstrap method
   #continuous.resolution: for continuous moderator, this is the number of points to be taken from 
@@ -274,10 +274,10 @@ boot.mod<-function(mma1,vari,continuous.resolution=10,
   ##all if it is not set. If there is no enough case with the 1/continuous.resolution quintile, error shows
   ##to reduce continuous.resolution.
   #kx and jy can be vectors #kx should be xj
-{boot.mod.binx<-function(mma1,vari,plot=T,continuous.resolution=100,n2=NULL,seed=2,
+{boot.mod.binx<-function(mma1,vari,plot=T,continuous.resolution=100,n2=NULL,
                          n=20,w=rep(1,nrow(mma1$data$x)),xj=1,xmod=vari)
   #n2 is the time of bootstrap if set as null. It has to be less or equal to the number of bootstrap
-{mod.binx<-function(vari,continuous.resolution,seed,n,x,y,dirx,contm,catm,
+{mod.binx<-function(vari,continuous.resolution,n,x,y,dirx,contm,catm,
                     jointm,cova,allm,full.model,best.iter1,surv,type,w=w,moder.level1=NULL,xj=1,xmod) #
 {xnames<-colnames(x)
 pred_names<-colnames(dirx)  
@@ -396,7 +396,7 @@ for (m in 1:length(full.model))
   if(surv[m] & !is.null(best.iter1[m]))
     dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=T))
   else if(surv[m])
-    dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,best.iter1[m],type=type,se.fit=TRUE)$fit,na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type,se.fit=TRUE)$fit,na.rm=T))
+    dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,type=type),na.rm=T)- mean(predict(full.model[[m]],new0,type=type),na.rm=T))
   else if(!is.null(best.iter1[m]))
     dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=T))
   else
@@ -448,7 +448,7 @@ else
 
 nmod=length(moder.level)
 #2. prepare for the store of results
-set.seed(seed)
+#set.seed(seed)
 te<-matrix(NA,n,ncol(y)*nmod)
 colnames(te)<-paste(paste("y",1:ncol(y),sep=""),rep(moder.level,each=ncol(y)),sep=".")
 if(!is.null(jointm))
@@ -475,7 +475,9 @@ for(q1 in 1:length(moder.level)){
   names(dirx1)=pred_names
   w.temp=w[temp.all]
   x2.1<-x2[temp.all,]
-  colnames(x2)<-c(xnames,pred_names)
+  x2.2=data.frame(x[temp.all,])
+  colnames(x2.2)=xnames
+  colnames(x2.1)<-c(xnames,pred_names)
  # 
   for (k in 1:n)
   {#3.1 get the te         full.model,x,y,dirx,best.iter1=NULL
@@ -511,7 +513,26 @@ for(q1 in 1:length(moder.level)){
       #browser()
       te[k,((q1-1)*ncol(y)+1):(q1*ncol(y))]<-te.binx(full.model,new1,new0,best.iter1,surv,type)  
       temp.rand<-sample(1:(nrow(x1.2)+nrow(x0)),replace=T)# no need for:prob=c(w1,w0) --redundant
-      denm[[q1]][k,1:ncol(y)]<-med.binx.jointm(full.model,new1,new0,allm,best.iter1,surv,type,temp.rand,xmod,xnames) #add temp.rand
+      #the indirect effect of all mediators
+      temp.ie<-te[k,((q1-1)*ncol(y)+1):(q1*ncol(y))]-med.binx.jointm(full.model,new1,new0,allm,best.iter1,surv,type,temp.rand,xmod,xnames) #add temp.rand
+      #new method to calculate the direct effect     
+      x.temp=rbind(x2.2[dirx1[,l]==1,],x2.2[x0.temp,])
+      new1.temp=cbind(x.temp[temp.rand[1:nrow(x1.2)],],dirx1[dirx1[,l]==1,])
+      new0.temp=cbind(x.temp[temp.rand[(nrow(x1.2)+1):(nrow(x1.2)+nrow(x0))],],dirx1[x0.temp,])
+      colnames(new1.temp)<-c(xnames,pred_names)
+      colnames(new0.temp)<-c(xnames,pred_names)
+      if(!is.null(xmod)){
+        temp.x=intersect(grep(pred_names[l],xnames),grep(xmod,xnames))
+        if(sum(temp.x)>0)
+        {m.t=1
+        m.t2=form.interaction(new0.temp,dirx[x0.temp,],inter.cov=xmod)
+        m.t3=form.interaction(new1.temp,dirx[dirx[,l]==1,],inter.cov=xmod)
+        for (m.t1 in temp.x)
+        {new0.temp[,m.t1]=m.t2[,m.t]
+        new1.temp[,m.t1]=m.t3[,m.t]
+        m.t=m.t+1}}}
+      denm[[q1]][k,1:ncol(y)]<-te.binx(full.model,new1.temp,new0.temp,best.iter1,surv,type) #add temp.rand
+      
       j<-2
       #3.2 mediation effect from the continuous mediator
       if (!is.null(contm))
@@ -529,8 +550,10 @@ for(q1 in 1:length(moder.level)){
         {temp.rand<-sample(1:(nrow(x1.2)+nrow(x0)),replace=T)# no need for:prob=c(w1,w0) --redundant
         denm[[q1]][k,(ncol(y)*(j-1)+1):(ncol(y)*j)]<-med.binx.jointm(full.model,new1,new0,jointm[[i+1]],best.iter1,surv,type,temp.rand,xmod,xnames)
         j<-j+1}
-      #3.5 get the indirect effects
+      #3.5 recalculate the total effect and get the indirect effects
       ie[[q1]][k,]<-te[k,((q1-1)*ncol(y)+1):(q1*ncol(y))]-denm[[q1]][k,]
+      ie[[q1]][k,1:ncol(y)]<-temp.ie
+      te[k,((q1-1)*ncol(y)+1):(q1*ncol(y))]<-denm[[q1]][k,1:ncol(y)]+temp.ie
       if(!is.null(jointm))
         dimnames(ie[[q1]])[[2]]<-paste(paste("y",1:ncol(y),sep=""),rep(c("all",colnames(x)[c(contm,catm)],paste("j",1:jointm[[1]],sep="")),each=ncol(y)),sep=".")#c("all",colnames(x)[c(contm,catm)],paste("j",1:jointm[[1]],sep=""))
       else
@@ -565,7 +588,7 @@ surv<-mma1$model$Survival
 type<-mma1$model$type
 
 
-temp<-mod.binx(vari,continuous.resolution,seed,n,x,y,dirx,contm,catm,
+temp<-mod.binx(vari,continuous.resolution,n,x,y,dirx,contm,catm,
                jointm,cova,allm,full.model,best.iter1,surv,type,w,moder.level1=NULL,xj,xmod)
 
 ny=ncol(y)
@@ -617,7 +640,7 @@ if(n2>0){
   colnames(y1)=ynames
   colnames(pred1)=pred_names
   
-  temp<-mod.binx(vari,continuous.resolution,seed,n,x1,y1,pred1,contm,catm,
+  temp<-mod.binx(vari,continuous.resolution,n,x1,y1,pred1,contm,catm,
                  jointm,cova,allm,full.model,best.iter1,surv,type,wz,moder.level1,xj,xmod)
   
   te[1+i,]<-apply(temp$te,2,mean,na.rm=T)
@@ -647,7 +670,7 @@ return(a)
 
 boot.mod.contx<-function(mma1,vari,continuous.resolution=10,
                          w=rep(1,nrow(mma1$data$x)),n=20,
-                         seed=sample(1:1000,1),x.new=NULL,w.new=NULL,
+                         x.new=NULL,w.new=NULL,
                          pred.new=NULL,cova.new=NULL,xj=1,df1=1,xmod=vari,margin=1)
 {mod.contx<-function(vari,continuous.resolution,x,y,dirx,binm,contm,catm,jointm,cova, n,x.new=x,
                      pred.new=dirx, cova.new=cova, w=rep(1,nrow(x)), w.new=w,full.model,best.iter1,
@@ -879,7 +902,7 @@ boot.mod.contx<-function(mma1,vari,continuous.resolution=10,
 
   
   #2. prepare for the store of results
-  set.seed(seed)
+  #set.seed(seed)
   #n.new1=sum(mod.level1$n.moder.level)-length(mod.level1$n.moder.level)
   #  te<-matrix(0,n.new,ncol(dirx)*ncol(y))
   
@@ -888,6 +911,7 @@ boot.mod.contx<-function(mma1,vari,continuous.resolution=10,
   distmgivenx<-dist.m.given.x(x,pred,binm,contm,catm,nonlinear,df1,w,cova)
   te1.0<-NULL
   denm1.0<-NULL
+  denm1.1<-NULL
   
   n1<-dim(x)[1]
   nmod=moder.level1$n.moder.level
@@ -906,6 +930,7 @@ boot.mod.contx<-function(mma1,vari,continuous.resolution=10,
     else
       cova.new1=NULL
     denm1<-NULL
+    denm1.2=NULL
     te1<-NULL
     for (k in 1:n)
     {new0<-sim.xm(distmgivenx,x.new1,pred.new1,binm,contm,catm,nonlinear,df1,cova.new1) #draw ms conditional on x.new
@@ -957,7 +982,7 @@ boot.mod.contx<-function(mma1,vari,continuous.resolution=10,
     
     sample.temp<-sample(1:n.new,2*n.new,replace = T,prob=w.new[level])   #random sample from the original data
     
-    #4.0 get the direct effect
+    #4.0.0 get the total indirect effect
     temp.new1<-new1
     temp.new1[,allm]<-x.new1[sample.temp[1:n.new],allm]
     temp.new0<-new0
@@ -967,8 +992,8 @@ boot.mod.contx<-function(mma1,vari,continuous.resolution=10,
         temp.x=intersect(grep(xnames[z],xnames),grep(xmod,xnames))
         if(sum(temp.x)>0)
         {m.t=1
-        m.t2=form.interaction(x.new1,x.new1[sample.temp[1:n.new],z],inter.cov=xmod)
-        m.t3=form.interaction(x.new1,x.new1[sample.temp[(n.new+1):(2*n.new)],z],inter.cov=xmod)
+        m.t2=form.interaction(x.new1[sample.temp[1:n.new],],x.new1[sample.temp[1:n.new],z],inter.cov=xmod)
+        m.t3=form.interaction(x.new1[sample.temp[(n.new+1):(2*n.new)],],x.new1[sample.temp[(n.new+1):(2*n.new)],z],inter.cov=xmod)
         for (m.t1 in temp.x)
         {temp.new1[,m.t1]=m.t2[,m.t]
         temp.new0[,m.t1]=m.t3[,m.t]
@@ -977,9 +1002,37 @@ boot.mod.contx<-function(mma1,vari,continuous.resolution=10,
     
     for (m in 1:ncol(y))
       if(surv[m] & !is.null(best.iter1[m]))
+        denm3<-(predict(full.model[[m]],temp.new1,best.iter1[m],type=type)-predict(full.model[[m]],temp.new0,best.iter1[m],type=type))/margin
+    else if(surv[m])
+      denm3<-(predict(full.model[[m]],temp.new1,type=type)-predict(full.model[[m]],temp.new0,type=type))/margin
+    else
+      denm3<-(predict(full.model[[m]],temp.new1,best.iter1[m])-predict(full.model[[m]],temp.new0,best.iter1[m]))/margin
+    
+    #4.0 get the direct effect
+    temp.new1<-x.new[sample.temp[1:n.new],]
+    temp.new1=cbind(temp.new1,temp.pred)
+    temp.new0<-x.new[sample.temp[(n.new+1):(2*n.new)],]
+    temp.new0=cbind(temp.new0,pred.new1)
+    colnames(temp.new1)<-c(xnames,pred_names)
+    colnames(temp.new0)<-c(xnames,pred_names)
+    
+    if(!is.null(xmod)){
+      temp.x=intersect(grep(pred_names[l],xnames),grep(xmod,xnames))
+      if(sum(temp.x)>0)
+      {m.t=1
+      m.t2=form.interaction(temp.new1,temp.pred[,l],inter.cov=xmod)
+      m.t3=form.interaction(temp.new0,pred.new1[,l],inter.cov=xmod)
+      for (m.t1 in temp.x)
+      {temp.new1[,m.t1]=m.t2[,m.t]
+      temp.new0[,m.t1]=m.t3[,m.t]
+      m.t=m.t+1}}
+    }
+    
+    for (m in 1:ncol(y))
+      if(surv[m] & !is.null(best.iter1[m]))
         denm2<-cbind(denm2,(predict(full.model[[m]],temp.new1,best.iter1[m],type=type)-predict(full.model[[m]],temp.new0,best.iter1[m],type=type))/margin)
     else if(surv[m])
-      denm2<-cbind(denm2,(predict(full.model[[m]],temp.new1,best.iter1[m],type=type,se.fit=TRUE)$fit-predict(full.model[[m]],temp.new0,best.iter1[m],type=type,se.fit=TRUE)$fit)/margin)
+      denm2<-cbind(denm2,(predict(full.model[[m]],temp.new1,type=type)-predict(full.model[[m]],temp.new0,type=type))/margin)
     else
       denm2<-cbind(denm2,(predict(full.model[[m]],temp.new1,best.iter1[m])-predict(full.model[[m]],temp.new0,best.iter1[m]))/margin)
     
@@ -989,7 +1042,7 @@ boot.mod.contx<-function(mma1,vari,continuous.resolution=10,
       if(surv[m] & !is.null(best.iter1[m]))
         te0<-c(te0, (predict(full.model[[m]],new1,best.iter1[m],type=type)-predict(full.model[[m]],new0,best.iter1[m],type=type))/margin)
     else if(surv[m])
-      te0<-c(te0, (predict(full.model[[m]],new1,best.iter1[m],type=type,se.fit=TRUE)$fit-predict(full.model[[m]],new0,best.iter1[m],type=type,se.fit=TRUE)$fit)/margin)
+      te0<-c(te0, (predict(full.model[[m]],new1,type=type)-predict(full.model[[m]],new0,type=type))/margin)
     else
       te0<-c(te0, (predict(full.model[[m]],new1,best.iter1[m])-predict(full.model[[m]],new0,best.iter1[m]))/margin)
     te1<-cbind(te1,te0)
@@ -1020,7 +1073,7 @@ boot.mod.contx<-function(mma1,vari,continuous.resolution=10,
         if(surv[m] & !is.null(best.iter1[m]))
           denm2<-cbind(denm2,(predict(full.model[[m]],new1.nm,best.iter1[m],type=type)-predict(full.model[[m]],new0.nm,best.iter1[m],type=type))/margin)
       else if(surv[m])
-        denm2<-cbind(denm2,(predict(full.model[[m]],new1.nm,best.iter1[m],type=type,se.fit=TRUE)$fit-predict(full.model[[m]],new0.nm,best.iter1[m],type=type,se.fit=TRUE)$fit)/margin)
+        denm2<-cbind(denm2,(predict(full.model[[m]],new1.nm,type=type)-predict(full.model[[m]],new0.nm,type=type))/margin)
       else
         denm2<-cbind(denm2,(predict(full.model[[m]],new1.nm,best.iter1[m])-predict(full.model[[m]],new0.nm,best.iter1[m]))/margin)
       }
@@ -1050,33 +1103,40 @@ boot.mod.contx<-function(mma1,vari,continuous.resolution=10,
         if(surv[m] & !is.null(best.iter1[m]))
           denm2<-cbind(denm2,(predict(full.model[[m]],new1.nm,best.iter1[m],type=type)-predict(full.model[[m]],new0.nm,best.iter1[m],type=type))/margin)
       else if(surv[m])
-        denm2<-cbind(denm2,(predict(full.model[[m]],new1.nm,best.iter1[m],type=type,se.fit=TRUE)$fit-predict(full.model[[m]],new0.nm,best.iter1[m],type=type,se.fit=TRUE)$fit)/margin)
+        denm2<-cbind(denm2,(predict(full.model[[m]],new1.nm,type=type)-predict(full.model[[m]],new0.nm,type=type))/margin)
       else
         denm2<-cbind(denm2,(predict(full.model[[m]],new1.nm,best.iter1[m])-predict(full.model[[m]],new0.nm,best.iter1[m]))/margin)
       }
     denm1<-rbind(denm1,denm2)
+    denm1.2=rbind(denm1.2,as.matrix(denm3))
     }
     denm1.0[[l]]<-denm1 
+    denm1.1[[l]]<-denm1.2 
     te1.0[[l]]<-te1
   } 
   
   
   #4.4 get the indirect effects
   denm<-NULL
+  denm1<-NULL
   te<-NULL
   ie<-NULL
   for (l in 1:nmod)
   {level=moder.level1$levels[,l]
    n.new=sum(level)
    denm[[l]]<-apply(denm1.0[[l]],2,col_mean,n.new)
+   denm1[[l]]<-apply(denm1.1[[l]],2,col_mean,n.new)
    te0<-matrix(apply(te1.0[[l]],1,mean),n.new)
    colnames(te0)=paste("y",1:ncol(y),sep="")
-   te[[l]]<-te0
+   #te[[l]]<-te0
    temp1<-ncol(denm[[l]])/ncol(te0)
    temp2<-NULL
   for(temp in 1:temp1)
     temp2<-cbind(temp2,te0)
   ie[[l]]<-temp2-denm[[l]]
+  ie[[l]][,1:ncol(y)]=matrix(rep(te0,ncol(y)),ncol=ncol(y))-denm1[[l]]      #the total indirect effect
+  te[[l]]=as.matrix(ie[[l]][,1:ncol(y)]+denm[[l]][,1:ncol(y)])                    #the total effect
+  colnames(te[[l]])=paste("y",1:ncol(y),sep="")
   if(!is.null(listm$multi)) 
     colnames(denm[[l]])<-paste(paste("y",1:ncol(y),sep=""),rep(c("de",colnames(x)[listm$single],paste("j",1:listm$multi[[1]],sep="")),each=ncol(y)),sep=".")
   else 
@@ -1333,7 +1393,7 @@ if(mma1$data$binpred)
   a<-boot.mod.binx(mma1,vari,continuous.resolution=continuous.resolution,n=n,w=w,xj=xj,xmod=xmod)
 else
   a<-boot.mod.contx(mma1,vari,continuous.resolution=continuous.resolution,
-                    w=w,n=n,seed=seed,x.new=x.new,w.new=w.new,pred.new=pred.new,
+                    w=w,n=n,x.new=x.new,w.new=w.new,pred.new=pred.new,
                     cova.new=cova.new,xj=xj,df1=df1,xmod=xmod,margin=margin)
 return(a)
 }
