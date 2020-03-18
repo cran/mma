@@ -16,12 +16,12 @@ data("weight_behavior")
  x=weight_behavior[,c(2,4:14)]
  pred=weight_behavior[,"sex"]
  y=weight_behavior[,"overweigh"]
- data.b.b.1<-data.org(x,y,mediator=5:12,jointm=list(n=1,j1=c(5,7,9)),
+ data.b.b.1<-data.org(x,y,mediator=5:12,jointm=list(n=1,j1=7:9),
                         pred=pred,predref="M", alpha=0.4,alpha2=0.4)
  summary(data.b.b.1)
 
 ## ---- echo=T, results='hide'---------------------------------------------
- data.b.b.2<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),
+ data.b.b.2<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10), jointm=list(n=1,j1=7:9),
    binref=c(1,1),catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4) 
  summary(data.b.b.2)
 
@@ -80,11 +80,11 @@ plot(med.b.b.2, data.b.b.2,vari="sports")
  #results in the linear part unit
 
 ## ---- fig.show='hold', fig.height=5, fig.width=7-------------------------
- bootmed.b.b.1<-boot.med(data=data.b.b.2,n=2,n2=4)
+ bootmed.b.b.1<-boot.med(data=data.b.b.2,n=2,n2=50)
  summary(bootmed.b.b.1)
 
 ## ---- fig.show='hold', fig.height=5, fig.width=7, echo=T, eval=F, results='hide'----
-#   bootmed.b.b.2<-boot.med(data=data.b.b.2,n=2,n2=4,nu=0.05,nonlinear=TRUE)
+#   bootmed.b.b.2<-boot.med(data=data.b.b.2,n=2,n2=40,nu=0.05,nonlinear=TRUE)
 
 ## ---- fig.show='hold', fig.height=5, fig.width=7, include=F--------------
  bootmed.b.b.2<-boot.med(data=data.b.b.2,n=2,n2=4,nu=0.05,nonlinear=TRUE)
@@ -102,13 +102,11 @@ plot(med.b.b.2, data.b.b.2,vari="sports")
  x=weight_behavior[,c(2,4:14)]
  pred=weight_behavior[,3]
  y=weight_behavior[,15]
- mma.b.b.glm<-mma(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,1),
-                    catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4,n=2,n2=2)
+ mma.b.b.glm<-mma(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,1), catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4,n=2,n2=2)
  summary(mma.b.b.glm)
 
 ## ---- fig.show='hold', fig.height=5, fig.width=7, echo=T, eval=F,results='hide'----
-#   mma.b.b.mart<-mma(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,1),
-#                      catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4,nonlinear=TRUE,n=2,n2=5)
+#   mma.b.b.mart<-mma(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,1), catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4,nonlinear=TRUE,n=2,n2=5)
 #   summary(mma.b.b.mart)
 
 ## ---- include=F----------------------------------------------------------

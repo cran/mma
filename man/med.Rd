@@ -7,12 +7,14 @@ Mediation Analysis with Binary or Continuous Predictor
 To estimate the mediation effects when the predictor is binary or continuous.
 }
 \usage{
-med(data, x=data$x, y=data$y, dirx=data$dirx, binm=data$binm, 
-    contm = data$contm,catm = data$catm, jointm = data$jointm, cova=data$cova,
-    allm = c(contm, catm), margin=1,n=20, 
-    nonlinear=F, df1=1, nu=0.001,D=3,distn=NULL,family1=data$family1,
-    refy=rep(0,ncol(y)),binpred=data$binpred,x.new=x,pred.new=dirx,
-    cova.new=cova,type=NULL,w=NULL,w.new=NULL,xmod=NULL,custom.function=NULL)
+med(data, x=data$bin.results$x, y=data$bin.results$y, dirx=data$bin.results$dirx, 
+              binm=data$bin.results$binm,contm = data$bin.results$contm, 
+              catm = data$bin.results$catm, jointm = data$bin.results$jointm, 
+              cova=data$bin.results$cova, allm = c(contm, catm), 
+              margin=1, n=20, nonlinear=F, df1=1, nu=0.001,D=3,distn=NULL,
+              family1=data$bin.results$family1,refy=rep(0,ncol(y)),
+              binpred=data$bin.results$binpred,x.new=x,pred.new=dirx, 
+              cova.new=cova,type=NULL, w=NULL, w.new=NULL,xmod=NULL,custom.function=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -53,10 +55,10 @@ if TURE, Multiple Additive Regression Trees (MART) will be used to fit the final
 if nonlinear is TURE, natural cubic spline will be used to fit the relationship between the predictor and each mediator.  The df is the degree of freedom in the ns() function, the default is 1.
 }
   \item{nu}{
-set the parameter "interaction.depth" in gbm function if MART is to be used, by default, nu=0.001. See also help(gbm.fit).
+set the parameter "shrinkage" in gbm function if MART is to be used, by default, nu=0.001. See also help(gbm.fit).
 }
   \item{D}{
-set the parameter "shrinkage" in gbm function if MART is to be used, by default, D=3. See also help(gbm.fit).
+set the parameter "interaction.depth" in gbm function if MART is to be used, by default, D=3. See also help(gbm.fit).
 }
   \item{distn}{
 the assumed distribution(s) of the outcome(s) if MART is used for final full model. The default value of distn is "gaussian" for continuous y,  "bernoulli" for binary y and coxph for "Surv" class outcome.
@@ -71,13 +73,13 @@ if y is binary, the reference group of y.
 if TRUE, the predict variable is binary.  
 }
   \item{x.new}{
-A new set of predictor and corresponding covariates, of the same format as x (after data.org),  on which to calculate the mediation effects. For continuous predictor only. If is NULL, the mediation effects will be calculated based on the original data set.
+A new set of covariates, of the same format as x (after data.org),  on which to calculate the mediation effects. For continuous predictor only. If is NULL, the mediation effects will be calculated based on the original data set.
 }
   \item{pred.new}{
-A new set of predictor(s), of the same format as x (after data.org), on which to calculate the mediation effects. For continuous predictor only.
+A new set of predictor(s), of the same format as pred (after data.org), on which to calculate the mediation effects. For continuous predictor only.
 }
   \item{cova.new}{
-A new set of covariate(s), of the same format as cova.
+A new set of covariate(s) to estimate mediators, of the same format as cova.
 }
   \item{type}{
 the type of prediction when y is class Surv. By default, type is "risk".
@@ -97,7 +99,7 @@ If there is a moderator, xmod gives the moderator's name in cova and/or x.
 \details{
 The mediators are not tested in this function.  data.org should be used first for the tests and data organizing, and then the resulting list from data.org can be used directly to define the arguments in this function. med considers all variables in x as mediators or covariates in the final model and all variables identified by contm, binm, catm, or jointm as mediators.
 }
-\value{The result is an med object with:
+\value{The result is an med object with the item a.binx for results of binary or categorical exposure(s) and the item a.contx for continuous exposure(s):
   \item{denm }{a matrix where each column gives the estimated direct effect not from the corresponding mediator (identified by the column name), see Yu et al. (2014) for the definition, and each row corresponding to the results from one resampling for binary predictor or the results on a row of x.new for continuous predictor.}
   \item{ie }{a matrix where each column gives the estimated indirect effect from the corresponding mediator (identified by the column name) and each row corresponding to the results from one resampling for binary predictor or the results on a row of x.new for continuous predictor.} 
   \item{te }{a vector of the estimated total effect on x.new.}
@@ -142,11 +144,11 @@ temp1<-med(data=data.bin,n=2,custom.function =
 temp2<-med(data=data.bin,n=2,nonlinear=TRUE)
 
 \donttest{
- #multivariate predictor
- x=weight_behavior[,c(2:3,5:14)]
- pred=weight_behavior[,4]
+ #multiple predictors (categorical and continuous predictors)
+ x=weight_behavior[,c(3,5:14)]
+ pred=weight_behavior[,c(2,4)]
  y=weight_behavior[,15]
- data.b.b.2.3<-data.org(x,y,mediator=5:12,jointm=list(n=1,j1=c(5,7,9)),
+ data.b.b.2.3<-data.org(x,y,mediator=4:11,jointm=list(n=1,j1=c(5,7,9)),
                         pred=pred,predref="OTHER", alpha=0.4,alpha2=0.4)
  temp1.2<-med(data.b.b.2.3,n=2)
  temp2.2<-med(data.b.b.2.3,n=2,nonlinear=TRUE)

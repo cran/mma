@@ -33,8 +33,8 @@ To use the R package mma, we first install the package in R (`install.packages("
 library(mma)
 ```
 
-## Data Organization and Identify Potential Moderators/Confounders
-We use weight_behavior data as an example to show how to do a preliminary data analysis to identify potential MCs and covariates.  The function data.org is used for this purpose. The list of arguments for data.org are defined in @Yu2017a. In the following example, the predictor, "pred", is gender, and the outcome, "y", is a binary indicator of overweight (1) or not (0). The reference group of the exposure variable is the male as defined by "predref="M"". There are 12 variables in "x", which includes all potential MCs and covariates. As an argument in the function data.org, "mediator=5:12" indicates that the variables from column 5 to column 12 in x should be tested for potential MCs. Other columns in "x" are to be treated as coordinates. The "mediator" argument can also be a character vector with names of the potential MCs in x. Two tests are needed to identify a potential MC: first, the variable is significantly related with the predictor adjusting for other covariates. The other covariates here is defined by "cova". If cova is a data frame by itself, all covariates in cova are for all potential MCs. If cova is a list, the first item will be the covariate data frame and the second item list the names or column numbers of MCs in "x" that should adjust for the covariates. The significance level is set by "alpha2", whose default value is 0.1. Second, the variable has to be significantly related with the outcome adjusting (testtype=1, by default) or not adjusting (testtype=2) for the predictor and other variables. The significance level is set by "alpha". In the following example, p-value 1 shows the results for the second test. and p-value 2 are the results for the first test. A variable that pass the second test but not the first test is considered as covariates. Variables do not pass the second test are not adopted in further analysis.  Variables in "x" but not in "mediator" are forced in further analysis as covariates. 
+## Data Organization and Identify Potential Mediators/Confounders
+We use weight_behavior data as an example to show how to do a preliminary data analysis to identify potential MCs and covariates.  The function data.org is used for this purpose. The list of arguments for data.org are defined in @Yu2017a. In the following example, the predictor, "pred", is gender, and the outcome, "y", is a binary indicator of overweight (1) or not (0). The reference group of the exposure variable is the male as defined by "predref="M"". There are 12 variables in "x", which includes all potential MCs and covariates. As an argument in the function data.org, "mediator=5:12" indicates that the variables from column 5 to column 12 in x should be tested for potential MCs. Other columns in "x" are to be treated as covariates. The "mediator" argument can also be a character vector with names of the potential MCs in x. Two tests are needed to identify a potential MC: first, the variable is significantly related with the predictor adjusting for other covariates. The other covariates here is defined by "cova". If cova is a data frame by itself, all covariates in cova are for all potential MCs. If cova is a list, the first item will be the covariate data frame and the second item list the names or column numbers of MCs in "x" that should adjust for the covariates. The significance level is set by "alpha2", whose default value is 0.1. Second, the variable has to be significantly related with the outcome adjusting (testtype=1, by default) or not adjusting (testtype=2) for the predictor and other variables. The significance level is set by "alpha". In the following example, p-value 1 shows the results for the second test. and p-value 2 are the results for the first test. A variable that pass the second test but not the first test is considered as covariates. Variables do not pass the second test are not adopted in further analysis.  Variables in "x" but not in "mediator" are forced in further analysis as covariates. 
 
 "jointm" is a list with the first item identify the number of groups of MCs whose joint effects are of interesting, where each group is defined in an item of "jointm". In the above example, the joint effect of Variables 5, 7, 9 is of interesting. These variables are forced into analysis as potential MCs. A variable can be shown in "jointm" multiple times. The joint effect of each group of variables will be reported. A trick to force in variables as potential MCs is to assign them in a separate group of "jointm". 
 
@@ -46,7 +46,7 @@ data("weight_behavior")
  x=weight_behavior[,c(2,4:14)]
  pred=weight_behavior[,"sex"]
  y=weight_behavior[,"overweigh"]
- data.b.b.1<-data.org(x,y,mediator=5:12,jointm=list(n=1,j1=c(5,7,9)),
+ data.b.b.1<-data.org(x,y,mediator=5:12,jointm=list(n=1,j1=7:9),
                         pred=pred,predref="M", alpha=0.4,alpha2=0.4)
  summary(data.b.b.1)
 ```
@@ -56,7 +56,7 @@ The results from "data.org" function is summarized as above.
 A potential MC defined in "mediator" argument is identified as categorical or binary if it has only two unique values or if the variable is a vector factors or characters. By default, the reference group is the first level of the variable. If the reference group needs to be changed, the categorical variable should be defined in binmed or catmed, and then the corresponding reference group in binref and catref. Continuous MCs can be defined by contmed. The following example did the same analysis as above, only that it defines that potential continuous mediators are columns 7,8,9,11, and 12 of x, binary mediators are columns 6 and 10, and categorical mediator is column 5 of x with 1 to be the reference group for all categorical and binary mediators.
 
 ```{r, echo=T, results='hide'}
- data.b.b.2<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),
+ data.b.b.2<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10), jointm=list(n=1,j1=7:9),
    binref=c(1,1),catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4) 
  summary(data.b.b.2)
 ```
@@ -146,13 +146,13 @@ boot.med function is used to make inferences on the TVE. Results return from dat
 
 ### Binary predictor and binary outcome
 ```{r, fig.show='hold', fig.height=5, fig.width=7}
- bootmed.b.b.1<-boot.med(data=data.b.b.2,n=2,n2=4)
+ bootmed.b.b.1<-boot.med(data=data.b.b.2,n=2,n2=50)
  summary(bootmed.b.b.1)
 ```
 
 Similarly, the default approach is using a generalized linear model to fit the final full model. If the argument nonlinear=TRUE, multiple Additive Regression Trees (MART) will be used to fit the model in estimating the outcome. Applications for nonlinear Mediation Analysis are described in Yu et al. [-@Yu2017b;-@Yu2018]. 
 ```{r, fig.show='hold', fig.height=5, fig.width=7, echo=T, eval=F, results='hide'}
- bootmed.b.b.2<-boot.med(data=data.b.b.2,n=2,n2=4,nu=0.05,nonlinear=TRUE)
+ bootmed.b.b.2<-boot.med(data=data.b.b.2,n=2,n2=40,nu=0.05,nonlinear=TRUE)
 ```
 
 ```{r, fig.show='hold', fig.height=5, fig.width=7, include=F}
@@ -181,16 +181,14 @@ The mma function is a combined function that automatically identify potential MC
  x=weight_behavior[,c(2,4:14)]
  pred=weight_behavior[,3]
  y=weight_behavior[,15]
- mma.b.b.glm<-mma(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,1),
-                    catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4,n=2,n2=2)
+ mma.b.b.glm<-mma(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,1), catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4,n=2,n2=2)
  summary(mma.b.b.glm)
 ```
 
 
 When the argument nonlinear=TRUE, multiple Additive Regression Trees (MART) will be used to fit the final full model in estimating the outcome.
 ```{r, fig.show='hold', fig.height=5, fig.width=7, echo=T, eval=F,results='hide'}
- mma.b.b.mart<-mma(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,1),
-                    catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4,nonlinear=TRUE,n=2,n2=5)
+ mma.b.b.mart<-mma(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,1), catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4,nonlinear=TRUE,n=2,n2=5)
  summary(mma.b.b.mart)
 ```  
 

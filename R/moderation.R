@@ -3,7 +3,8 @@ test.moderation<-function(med1,vari,j=1,kx=NULL) #med1 is a med object from the 
   #for nonlinear method and the interaction term(s) for linear method
   #j is the jth response if there are multiple responses
   #kx is the kth predictor if k=NULL means all predictor
-{binarize<-function(varvec,ref=NULL) #binarize the categorical varvec, ref is the reference group, the first level if null
+{test.moderation2<-function(med1,vari,j=1,kx=NULL)
+  {binarize<-function(varvec,ref=NULL) #binarize the categorical varvec, ref is the reference group, the first level if null
 {a<-factor(varvec)
 b=levels(a)
 d<-matrix(0,length(varvec),length(b)-1)
@@ -70,7 +71,44 @@ for (i in kx)
 }
 }
 
+if(!is.null(med1$a.binx))
+{binpred=med1$a.binx$data$binpred
+catpred=med1$a.binx$data$catpred
+contpred=med1$a.binx$data$contpred
+}
+else
+{binpred=med1$a.contx$data$binpred
+  catpred=med1$a.contx$data$catpred
+  contpred=med1$a.contx$data$contpred
+}
 
+if(is.null(kx))
+{if (is.null(binpred))
+  for (i in binpred)
+    test.moderation2(med1=med1$a.binx,vari=vari,j=j,kx=i)
+  if (is.null(contpred))
+    for (i in contpred)
+      test.moderation2(med1=med1$a.contx,vari=vari,j=j,kx=i)
+  if (is.null(catpred))
+    for (i in 1:length(catpred))
+      test.moderation2(med1=med1$a.binx,vari=vari,j=j,kx=catpred[[i]])
+  
+}
+else{
+if(kx%in%binpred)
+  test.moderation2(med1=med1$a.binx,vari=vari,j=j,kx=kx)
+else if(kx%in%contpred)
+  test.moderation2(med1=med1$a.binx,vari=vari,j=j,kx=kx)
+else
+{z11=rep(F,length(catpred))
+for (i in 1:length(catpred))
+  z11[i]=kx%in%catpred[[i]]
+i=(1:length(catpred))[z11]
+ test.moderation2(med1=med1$a.binx,vari=vari,j=j,kx=catpred[[i]])
+}}
+
+
+}
 ###form the interaction terms
 form.interaction<-function(x,pred,inter.cov,predref=NULL,kx=NULL) #create the interaction term.
                                                     #x and binref is the same as in data.org
@@ -117,6 +155,12 @@ list(x=x,catm=catm)
 binarize<-function(varvec,ref=NULL) #binarize the categorical varvec, ref is the reference group, the first level if null
 {a<-factor(varvec)
 b=levels(a)
+if(length(b)==1)
+  {if(!is.null(ref))
+    if(b==ref)
+      return(d=matrix(0,length(varvec),1))
+   return(d=matrix(1,length(varvec),1))
+  }
 d<-matrix(0,length(varvec),length(b)-1)
 if(is.null(ref))
 {ref=b[1]
@@ -130,7 +174,7 @@ d=data.frame(d)
 d[is.na(varvec),]=NA
 d
 }
-#browser()
+
  pred_names=colnames(pred)
  pred1<-data.frame(pred)
  colnames(pred1)=pred_names
@@ -140,10 +184,10 @@ d
  for (i in kx)
   if(nlevels(as.factor(pred1[,i]))==2)
   {if(!is.null(predref))
-    pred1[,i]<-as.factor(ifelse(pred1[,i]==predref,0,1))
+    pred1[,i]<-ifelse(pred1[,i]==predref,0,1)
    else
-   {pred1[,i]<-as.factor(pred1[,i])
-    pred1[,i]<-as.factor(ifelse(pred1[,i]==levels(pred1[,i])[1],0,1))}
+   {pred1[,i]<-pred1[,i]
+    pred1[,i]<-ifelse(pred1[,i]==levels(pred1[,i])[1],0,1)}
    kx1=c(kx1,i)
   }
  else if(is.character(pred1[,i]) | is.factor(pred1[,i]))
@@ -160,6 +204,7 @@ d
  temp.name=NULL
  inter=NULL
  #kx=1:ncol(pred1)
+ #browser()
  for(i in 1:length(inter.cov))
  {if(is.factor(x[,inter.cov[i]]) | is.character(x[,inter.cov[i]])) #binarize categorical inter.cov
    a=binarize(x[,inter.cov[i]])
@@ -167,7 +212,10 @@ d
    a=as.matrix(x[,inter.cov[i]])
   for(l in 1:ncol(a))
    for (k in kx1)
-     inter=cbind(inter,a[,l]*pred1[,k])
+     #if(is.factor(pred1[,k]))
+      # inter=cbind(inter,a[,l]*binarize(pred1[,k])[,1])
+     #else
+       inter=cbind(inter,a[,l]*pred1[,k])
    temp.name=c(temp.name,paste(rep(paste(inter.cov[i],colnames(a),sep=""),each=length(kx)),
                                rep(colnames(pred1),ncol(a)),sep="."))
    
@@ -178,10 +226,12 @@ inter
 
 #estimate and plot the moderate effect from med function
 moderate<-function(med1,vari,j=1,kx=1,continuous.resolution=100,plot=T)
-{xnames=colnames(med1$data$x)
- pred_names=colnames(med1$data$dirx)
- data1=cbind(med1$data$x,med1$data$dirx)
- colnames(data1)<-c(xnames,pred_names)
+{moderate2<-function(med1,vari,j,kx,continuous.resolution,plot)
+  {xnames=colnames(med1$data$x)
+   pred_names=colnames(med1$data$dirx)
+   data1=cbind(med1$data$x,med1$data$dirx)
+   colnames(data1)<-c(xnames,pred_names)
+   
  if(med1$model$MART)
  {if(is.null(med1$model$type))
    result=plot.gbm(med1$model$model[[j]], i.var=c(pred_names[kx],vari), n.trees=med1$model$best.iter[j],
@@ -224,8 +274,11 @@ moderate<-function(med1,vari,j=1,kx=1,continuous.resolution=100,plot=T)
   pred1=pred_names[kx]
   coef.names=names(model$coefficients)
   beta0=model$coefficients[pred1]  #coefficient for the main dirx
+  if(is.na(beta0))
+  {pred1=paste(pred1,1,sep="")
+   beta0=model$coefficients[pred1]}
   beta=model$coefficients[intersect(grep(pred1,coef.names),grep(vari,coef.names))] #coefficients for the interaction terms
-  if(is.factor(med1$data$x[,vari]))
+    if(is.factor(med1$data$x[,vari]))
     result=data.frame(moderator=c("ref",names(beta)),de=c(beta0,beta0+beta))
   else if (med1$data$binpred){
     if(length(beta)==1)
@@ -263,10 +316,28 @@ a=list(result=result,med1=med1,vari=vari,j=j,kx=kx)
 class(a)="moderate"
 a
 }
+if(!is.null(med1$a.binx))
+{binpred=med1$a.binx$binpred
+ catpred=med1$a.binx$catpred
+ contpred=med1$a.binx$contpred
+}
+else
+{binpred=med1$a.contx$binpred
+ catpred=med1$a.contx$catpred
+ contpred=med1$a.contx$contpred
+}
+
+if(kx %in% contpred)
+  moderate2(med1=med1$a.contx,vari=vari,j=j,kx=kx,
+            continuous.resolution=continuous.resolution,plot=plot)
+else
+  moderate2(med1=med1$a.binx,vari=vari,j=j,kx=kx,
+            continuous.resolution=continuous.resolution,plot=plot)
+}
 
 #make inferences on moderation (mediated or not) effects from the mma function.
 boot.mod<-function(mma1,vari,continuous.resolution=10,
-                   w=rep(1,nrow(mma1$data$x)),n=20,
+                   w=NULL,n=20,
                    x.new=NULL,w.new=NULL,pred.new=NULL,cova.new=NULL,xj=1,margin=1,xmod=vari,df1=1)
   #boots=T for bootstrap method
   #continuous.resolution: for continuous moderator, this is the number of points to be taken from 
@@ -409,7 +480,6 @@ dir.nom
 x2<-cbind(x,dirx)
 colnames(x2)<-c(xnames,pred_names)
 
-
 #1.5 prepare for the moderator
 if(is.null(moder.level1)){
   moder.level=NULL
@@ -420,8 +490,8 @@ if(is.null(moder.level1)){
     moder.level=continuous.resolution
   for (i in moder.level)
   {temp.all=(data$x[,vari]==i)
-  if(sum(apply(as.matrix(dirx[temp.all,]),2,sum,na.rm=T)==0)>1 | 
-     sum(dirx[temp.all,],na.rm=T)==length(dirx[temp.all,1][!is.na(dirx[temp.all,1])]))
+  if(sum(apply(as.matrix(dirx[temp.all,]==1),2,sum,na.rm=T)==0)>1 | 
+     sum(dirx[temp.all,]==1,na.rm=T)==length(dirx[temp.all,1][!is.na(dirx[temp.all,1])]))
     stop("Error: need to reduce the continuous.resolution") #error if the group has all dirx=0 or 1
   }
   temp.q=NULL
@@ -481,7 +551,7 @@ for(q1 in 1:length(moder.level)){
  # 
   for (k in 1:n)
   {#3.1 get the te         full.model,x,y,dirx,best.iter1=NULL
-    x0.temp<-apply(dirx1==1,1,sum)==0  #indicator of the reference group
+    x0.temp<-apply(as.matrix(dirx1[,xj]==1),1,sum)==0  #indicator of the reference group
     if(sum(x0.temp)==0) break #to break out if there is not reference group
     x0<-x2.1[x0.temp,]
     if(is.null(w.temp))
@@ -498,7 +568,7 @@ for(q1 in 1:length(moder.level)){
       new1<-x1.2[sample(1:nrow(x1.2),replace=T,prob=w1),] #floor(n3/2),
       new0<-x0[sample(1:nrow(x0),replace=T,prob=w0),] #floor(n3/2),
       
-      if(!is.null(xmod))
+      if(!is.null(xmod)  & !is.factor(x[,xmod]))
         for(z in allm){
           temp.x=intersect(grep(xnames[z],xnames),grep(xmod,xnames))
           if(sum(temp.x)>0)
@@ -510,7 +580,7 @@ for(q1 in 1:length(moder.level)){
           new1[,m.t1]=m.t3[,m.t]
           m.t=m.t+1}}
         }
-      #browser()
+      
       te[k,((q1-1)*ncol(y)+1):(q1*ncol(y))]<-te.binx(full.model,new1,new0,best.iter1,surv,type)  
       temp.rand<-sample(1:(nrow(x1.2)+nrow(x0)),replace=T)# no need for:prob=c(w1,w0) --redundant
       #the indirect effect of all mediators
@@ -521,12 +591,13 @@ for(q1 in 1:length(moder.level)){
       new0.temp=cbind(x.temp[temp.rand[(nrow(x1.2)+1):(nrow(x1.2)+nrow(x0))],],dirx1[x0.temp,])
       colnames(new1.temp)<-c(xnames,pred_names)
       colnames(new0.temp)<-c(xnames,pred_names)
-      if(!is.null(xmod)){
+      if(!is.null(xmod) & !is.factor(x[,xmod])){
         temp.x=intersect(grep(pred_names[l],xnames),grep(xmod,xnames))
         if(sum(temp.x)>0)
         {m.t=1
-        m.t2=form.interaction(new0.temp,dirx[x0.temp,],inter.cov=xmod)
-        m.t3=form.interaction(new1.temp,dirx[dirx[,l]==1,],inter.cov=xmod)
+        m.t2=form.interaction(new0.temp,dirx1[x0.temp,],inter.cov=xmod)
+        m.t3=form.interaction(new1.temp,dirx1[dirx1[,l]==1,],inter.cov=xmod)
+
         for (m.t1 in temp.x)
         {new0.temp[,m.t1]=m.t2[,m.t]
         new1.temp[,m.t1]=m.t3[,m.t]
@@ -566,7 +637,7 @@ a<-list(denm=denm,ie=ie,te=te,moder.level=list(moder.level=moder.level,cont.mode
 class(a)<-"med"
 return(a)
 }
-
+#browser()
 data=mma1$data
 x=data$x
 y=data$y
@@ -587,9 +658,9 @@ best.iter1<-mma1$model$best.iter
 surv<-mma1$model$Survival
 type<-mma1$model$type
 
-
-temp<-mod.binx(vari,continuous.resolution,n,x,y,dirx,contm,catm,
-               jointm,cova,allm,full.model,best.iter1,surv,type,w,moder.level1=NULL,xj,xmod)
+temp<-mod.binx(vari=vari,continuous.resolution=continuous.resolution,n=n,x=x,y=y,dirx=dirx,
+               contm=contm,catm=catm,jointm=jointm,cova=cova,allm=allm,full.model=full.model,
+               best.iter1=best.iter1,surv=surv,type=type,w=w,moder.level1=NULL,xj=xj,xmod=xmod)
 
 ny=ncol(y)
 nx=1
@@ -1389,18 +1460,54 @@ class(a)<-"mma"
 return(a)
 }
 
-if(mma1$data$binpred)
-  a<-boot.mod.binx(mma1,vari,continuous.resolution=continuous.resolution,n=n,w=w,xj=xj,xmod=xmod)
+if(!is.null(mma1$a.binx))
+{binpred=mma1$a.binx$data$binpred
+ contpred=mma1$a.binx$data$contpred 
+ catpred=mma1$a.binx$data$catpred 
+}
 else
-  a<-boot.mod.contx(mma1,vari,continuous.resolution=continuous.resolution,
+{binpred=mma1$a.contx$data$binpred
+ contpred=mma1$a.contx$data$contpred 
+ catpred=mma1$a.contx$data$catpred 
+}
+
+a.binx=NULL
+a.contx=NULL
+
+if(xj%in%contpred)
+  {if(is.null(w))
+    w=rep(1,nrow(mma1$a.contx$data$x))
+   mma1$a.binx$data$binpred=F
+   a.contx<-boot.mod.contx(mma1$a.contx,vari,continuous.resolution=continuous.resolution,
                     w=w,n=n,x.new=x.new,w.new=w.new,pred.new=pred.new,
                     cova.new=cova.new,xj=xj,df1=df1,xmod=xmod,margin=margin)
+}
+else if(xj%in%binpred)
+{if(is.null(w))
+  w=rep(1,nrow(mma1$a.binx$data$x))
+ mma1$a.binx$data$binpred=T
+ a.binx<-boot.mod.binx(mma1$a.binx,vari,continuous.resolution=continuous.resolution,n=n,w=w,xj=xj,xmod=xmod)
+}
+else
+{z11=rep(F,length(catpred))
+  for (i in 1:length(catpred))
+   z11[i]=xj%in%catpred[[i]]
+ i=(1:length(catpred))[z11]
+ if(is.null(w))
+  w=rep(1,nrow(mma1$a.binx$data$x))
+ mma1$a.binx$data$binpred=T
+ a.binx<-boot.mod.binx(mma1$a.binx,vari,continuous.resolution=continuous.resolution,n=n,w=w,xj=catpred[[i]],xmod=xmod)
+}
+  
+a<-list(a.binx=a.binx,a.contx=a.contx,pred=list(binpred=binpred,catpred=catpred,contpred=contpred))
+class(a)="mma"
 return(a)
 }
 
 
 plot2.mma<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1)
-{marg.den<-function(x,y,w=NULL) #added w
+{plot2.temp<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1){
+  marg.den<-function(x,y,w=NULL) #added w
 {if(!is.null(w))
   w<-w[!is.na(x) & !is.na(y)]
 y<-y[!is.na(x)]
@@ -1887,8 +1994,23 @@ else
   }
 par(op)
 }
+contpred=x$pred$contpred
+catpred=x$pred$catpred
+binpred=x$pred$binpred
 
 
+if(xj%in%contpred)
+  plot2.temp(x=x$a.contx,vari=vari,xlim=xlim,alpha=alpha,quantile=quantile,moderator=moderator,xj=xj)
+else if(xj%in%binpred)
+  plot2.temp(x=x$a.binx,vari=vari,xlim=xlim,alpha=alpha,quantile=quantile,moderator=moderator,xj=xj)
+else
+{z11=rep(F,length(catpred))
+ for (i in 1:length(catpred))
+  z11[i]=xj%in%catpred[[i]]
+ i=(1:length(catpred))[z11]
+ plot2.temp(x=x$a.binx,vari=vari,xlim=xlim,alpha=alpha,quantile=quantile,moderator=moderator,xj=catpred[[i]])
+}
+}
 
 
 

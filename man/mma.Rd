@@ -10,7 +10,7 @@ Test for mediators and do statistical inferences on the identified mediation eff
 \usage{
 mma(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,catmed=NULL,
     catref=NULL,jointm=NULL,cova=NULL, refy=rep(NA,ncol(data.frame(y))),
-    predref=NULL,alpha=0.1,alpha2=0.1, margin=1, n=20,
+    predref=rep(NA,ncol(data.frame(pred))),alpha=0.1,alpha2=0.1, margin=1, n=20,
     nonlinear=F,df1=1,nu=0.001,D=3,distn=NULL,
     family1=as.list(rep(NA,ncol(data.frame(y)))),n2=50,w=rep(1,nrow(x)),
     testtype=1, x.new=NULL, pred.new=NULL, cova.new=NULL, type=NULL,w.new=NULL, 

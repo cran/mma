@@ -59,7 +59,7 @@ Qingzhao Yu \email{qyu@lsuhsc.edu}
  y=weight_behavior[,15]
  data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),
      binref=c(1,1),catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
- temp2<-med(data=data.bin,n=2,seed=1,nonlinear=TRUE)
+ temp2<-med(data=data.bin,n=2,nonlinear=TRUE)
  result1=moderate(temp2,vari="race")
  result2=moderate(temp2,vari="age")
 
@@ -72,7 +72,7 @@ Qingzhao Yu \email{qyu@lsuhsc.edu}
  head(x)
  data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),
      binref=c(1,1),catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
- temp1<-med(data=data.bin,n=2,seed=1)
+ temp1<-med(data=data.bin,n=2)
  result3=moderate(temp1,vari="race")
  result4=moderate(temp1,vari="age")
 
@@ -84,7 +84,7 @@ x=cbind(x,inter)
 head(x)
 data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),
                    binref=c(1,1),catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
-temp1<-med(data=data.bin,n=2,seed=1)
+temp1<-med(data=data.bin,n=2)
 result5=moderate(temp1,vari="age")}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

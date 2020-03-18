@@ -10,7 +10,8 @@ Do a preliminary data analysis to identify potential mediators and covariates. E
 data.org(x,y,pred,mediator=NULL,contmed=NULL,binmed=NULL,binref=NULL,catmed=NULL,
                    catref=NULL,jointm=NULL,refy=rep(NA,ncol(data.frame(y))), 
                    family1=as.list(rep(NA,ncol(data.frame(y)))),
-                   predref=NULL,alpha=0.1,alpha2=0.1,testtype=1, w=NULL,cova=NULL)
+                   predref=rep(NA,ncol(data.frame(pred))),alpha=0.1,alpha2=0.1,
+                   testtype=1, w=NULL,cova=NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -68,7 +69,7 @@ the significant level at which to test if a potential mediator is related with t
 }
 
 \value{
-data.org returns a list with the organized data and identifiers of the potential mediators in the organized data set.
+data.org returns a list with the organized data and identifiers of the potential mediators in the organized data set. The list has two components, bin.results if there is binary or categorical exposure(s), cont.results if there is continuous exposures.
   \item{x }{the organized data frame that include all potential mediators and covariates that should be used to estimate the outcome.}
   \item{dirx }{the vector/matrix of predictor(s)/exposure variable(s).}
   \item{contm }{the column numbers of x that locate the potential continuous mediators.}
@@ -80,6 +81,9 @@ data.org returns a list with the organized data and identifiers of the potential
   \item{fullmodel}{a list with each item the full linear model fitted with all potential mediators and covariates for each response.}
   \item{rela}{p-values of tests on the realtionship between the predictor(s) and each potiential mediator.}
   \item{P1}{If testtype=2, P1 gives the p-value of the corresponding variables in predicting the outcome(s) when only the variable and predictor are covariates in the model.}
+  \item{binpred}{The columne numbers of binary predictors in pred.}
+  \item{contpred}{The columne numbers of continuous predictors in pred.}
+  \item{catpred}{A list with each item includes the columne numbers of a categorical predictor in pred.}
 }
 \references{
 Baron, R.M., and Kenny, D.A. (1986) <doi:10.1037/0022-3514.51.6.1173>. The moderator-mediator variable distinction in social psychological research: conceptual, strategic, and statistical considerations. J. Pers Soc Psychol, 51(6), 1173-1182.

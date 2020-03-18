@@ -214,6 +214,16 @@ temp9.binx<-boot.med(data=data.surv.binx,n=1,n2=2, type="lp")
 summary(temp9.binx)
 temp10.binx<-boot.med(data=data.surv.binx,nonlinear=TRUE,n=1,n2=2) 
 #summary(temp10.binx)
+
+ #multiple predictors (categorical and continuous predictors)
+ x=weight_behavior[,c(3,5:14)]
+ pred=weight_behavior[,c(2,4)]
+ y=weight_behavior[,15]
+ data.b.b.2.3<-data.org(x,y,mediator=4:11,jointm=list(n=1,j1=c(5,7,9)),
+                        pred=pred,predref="OTHER", alpha=0.4,alpha2=0.4)
+ temp1.4<-boot.med(data=data.b.b.2.3,n=2,n2=2)
+ temp2.4<-boot.med(data.b.b.2.3,n=2,n2=2,nonlinear=TRUE)
+
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

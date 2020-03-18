@@ -9,7 +9,7 @@ To make inferences on the mediation effects when the predictor is continuous or 
 }
 \usage{
 boot.mod(mma1,vari,continuous.resolution=10,
-         w=rep(1,nrow(mma1$data$x)),n=20,
+         w=NULL,n=20,
          x.new=NULL,w.new=NULL,pred.new=NULL,cova.new=NULL,xj=1,margin=1,
          xmod=vari,df1=1)
 }
@@ -96,7 +96,7 @@ data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),
                    binref=c(1,1),catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
 temp1<-boot.med(data=data.bin,n=2,n2=4,all.model=T)
 temp1.mode=boot.mod(temp1,vari="race",continuous.resolution=100)
-summary(temp1.mode,ball.use = F)
+#summary(temp1.mode,ball.use = F)
 plot2.mma(temp1.mode,vari="exercises",moderator="race")
 plot2.mma(temp1.mode,vari="sports",moderator="race")
 
@@ -108,7 +108,7 @@ data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,
                     catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
 temp2<-boot.med(data=data.bin,n=2,n2=4,nu=0.05,nonlinear=TRUE,all.model=T)
 temp2.mode=boot.mod(temp2,vari="race",continuous.resolution=100)
-summary(temp2.mode,ball.use = F)
+#summary(temp2.mode,ball.use = F)
 plot2.mma(temp2.mode,vari="exercises",moderator="race")
 plot2.mma(temp2.mode,vari="sports",moderator="race")
 
@@ -160,8 +160,8 @@ temp6<-boot.med(data=data.contx,n=1,refy=0,nonlinear=T,n2=3,
 temp6.mode=boot.mod(temp6,vari="race",continuous.resolution=10)
 summary(temp6.mode)
 
-plot2.mma(temp5.mode,vari="car",moderator="race")
-plot2.mma(temp6.mode,vari="car",moderator="race")
+#plot2.mma(temp5.mode,vari="car",moderator="race")
+#plot2.mma(temp6.mode,vari="car",moderator="race")
 
 #continuous m and x
 x=weight_behavior[,3:14]
