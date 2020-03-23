@@ -8,6 +8,7 @@ knitr::opts_chunk$set(
 
 ## ------------------------------------------------------------------------
 library(mma)
+#source('C:/Users/qyu/Desktop/Research/mma/version current/R/mma.r')
 
 ## ------------------------------------------------------------------------
 data("weight_behavior")

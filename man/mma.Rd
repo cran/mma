@@ -113,7 +113,7 @@ the type of prediction when y is class Surv. Is "risk" if not specified.
 the weights for new.x.
 }
   \item{all.model}{
-save all the fitted model from bootstrap samples if TRUE. This needs to be true to make inferences on moderation effects. This argument cannot be used with the function \code{"\link[=mma.par]{mma.par}"}.
+save all the fitted model from bootstrap samples if TRUE. This needs to be true to make inferences on moderation effects.
 }
   \item{xmod}{
 If there is a moderator, xmod gives the moderator's name in cova and/or x.
@@ -130,9 +130,9 @@ Returns an mma object.
   \item{model }{a list where the first item, MART, is T if mart is fitted for the final model; the second item, Survival, is T if a survival model is fitted; the third item, type, is the type of prediction when a survival model is fitted; the fourth item, model, is the fitted final full model where y is the outcome and all predictor, covariates, and mediators are the explanatory variables; and the fourth item, best.iter is the number of best iterations if MART is used to fit the final model.}
   \item{data }{a list that contains all the used data: x=x, y=y, dirx=dirx, binm=binm, contm=contm, catm=catm, jointm=jointm, binpred=F.}
   \item{boot.detail }{for continuous predictor only: a list that contains the mediation effects on each row of new.pred: new.pred=new.pred, te1, de1, ie1.}
-  \item{all_model}{a list with all fitted models from bootstrap samples if all.model is TRUE.This value cannot be created with the function \code{"\link[=mma.par]{mma.par}"}.}
-  \item{all_iter}{if all.model is TRUE, a matrix with all fitted best iterations if MART is used. Each row is from one bootstrap sample.  This value cannot be created with the function \code{"\link[=boot.med.par]{boot.med.par}"}.}
-    \item{all_boot}{if all.model is TRUE, a matrix with all bootstrap samples. Each row is one bootstrap sample.  This value cannot be created with the function \code{"\link[=boot.med.par]{boot.med.par}"}.}
+  \item{all_model}{a list with all fitted models from bootstrap samples if all.model is TRUE.}
+  \item{all_iter}{if all.model is TRUE, a matrix with all fitted best iterations if MART is used. Each row is from one bootstrap sample.}
+    \item{all_boot}{if all.model is TRUE, a matrix with all bootstrap samples. Each row is one bootstrap sample.}
 }
 \references{
 Baron, R.M., and Kenny, D.A. (1986) <doi:10.1037/0022-3514.51.6.1173>. "The moderator-mediator variable distinction in social psychological research: conceptual, strategic, and statistical considerations," J. Pers Soc Psychol, 51(6), 1173-1182.
@@ -182,7 +182,7 @@ data("weight_behavior")
 
 \donttest{
 ##Surv class outcome (survival analysis)
-data(cgd0)       #a dataset in the survival package
+data(cgd1)       #a dataset in the survival package
 x=cgd1[,c(4:5,7:12)]
 pred=cgd1[,6]
 status<-ifelse(is.na(cgd1$etime1),0,1)
@@ -193,9 +193,9 @@ temp.cox.contx<-mma(x,y,pred=pred,mediator=1:ncol(x),
 summary(temp.cox.contx)
 temp.surv.mart.contx<-mma(x,y,pred=pred,mediator=1:ncol(x),      
                     alpha=0.5,alpha2=0.5,nonlinear=TRUE,n2=2) 
-summary(temp.surv.mart.contx,ball.use=F)
-plot(temp.surv.mart.contx,vari="steroids")
-plot(temp.cox.contx,vari="steroids")
+#summary(temp.surv.mart.contx,ball.use=F)
+#plot(temp.surv.mart.contx,vari="steroids")
+#plot(temp.cox.contx,vari="steroids")
 
 #for binary predictor
 x=cgd1[,c(5:12)]
@@ -203,11 +203,11 @@ pred=cgd1[,4]
 temp.cox.binx<-mma(x,y,pred=pred,mediator=1:ncol(x),   
                     alpha=0.4,alpha2=0.4,n=1,n2=2,type="lp") 
 summary(temp.cox.binx)
-temp.surv.mart.binx<-mma(x,y,pred=pred,mediator=1:ncol(x),   
-                    alpha=0.4,alpha2=0.4,nonlinear=TRUE,n=1,n2=2) 
-summary(temp.surv.mart.binx, RE=T,ball.use=F)
-plot(temp.surv.mart.binx,vari="hos.cat")
-plot(temp.cox.binx,vari="hos.cat")}
+#temp.surv.mart.binx<-mma(x,y,pred=pred,mediator=1:ncol(x),   
+#                    alpha=0.4,alpha2=0.4,nonlinear=TRUE,n=1,n2=2) 
+#summary(temp.surv.mart.binx, RE=T,ball.use=F)
+#plot(temp.surv.mart.binx,vari="hos.cat")
+#plot(temp.cox.binx,vari="hos.cat")}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

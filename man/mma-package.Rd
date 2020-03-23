@@ -11,8 +11,8 @@ This package is used to identify mediators and for general mediation analysis. M
 \tabular{ll}{
 Package: \tab mma\cr
 Type: \tab Package\cr
-Version: \tab 6.1\cr
-Date: \tab 2018-03-08\cr
+Version: \tab 10\cr
+Date: \tab 2020-03-18\cr
 License: \tab GPL (>= 2)\cr
 }
 \code{"\link[=data.org]{data.org}"} is used to identify potential mediators. \code{"\link[=med]{med}"} , and \code{"\link[=boot.med]{boot.med}"} are used for statistical inferences on the mediation effects when the predictor is binary or continuous. \code{"\link[=mma]{mma}"} is a combined function that automatically identify potential mediators, based on which to make statistical inference on the mediation effects.
@@ -60,5 +60,5 @@ data("weight_behavior")
                      predref="M",alpha=0.4,alpha2=0.4,n2=20)
  temp.b.c.mart<-mma(x,y,pred=pred,mediator=5:12,jointm=list(n=1,j1=7:9), 
                      predref="M",alpha=0.4,alpha2=0.4,
-                     n=2,seed=1,nonlinear=TRUE,n2=20)}
+                     n=2,nonlinear=TRUE,n2=20)}
 }

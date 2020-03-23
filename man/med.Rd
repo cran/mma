@@ -200,8 +200,7 @@ temp7<-med(data=data.contx,n=2)
 temp8<-med(data=data.contx,n=2,nonlinear=TRUE,nu=0.05) 
 
 ##Surv class outcome (survival analysis)
-#data(cgd0)       #a dataset in the survival package
-cgd1<-cgd0
+data(cgd1)       #a dataset in the survival package
 x=cgd1[,c(4:5,7:12)]
 pred=cgd1[,6]
 status<-ifelse(is.na(cgd1$etime1),0,1)

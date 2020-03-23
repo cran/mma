@@ -1,5 +1,5 @@
 exportPattern("^[^\\.]")
-import(gbm,car,gplots,splines,survival,doParallel,foreach,lattice)
+import(gbm,car,gplots,splines,survival,lattice)
 importFrom("grDevices", "rainbow")
 importFrom("graphics", "axis", "barplot", "hist", "lines", "par",
           "plot")
