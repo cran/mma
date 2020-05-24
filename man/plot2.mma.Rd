@@ -8,7 +8,7 @@ Relative effects plot of the fitted mma object with moderator
 Plot the marginal effect of the selected variable on the outcome, and the marginal effect of the predictor on the selected variable, at each level of the moderator.
 }
 \usage{
-plot2.mma(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1)
+plot2.mma(x,...,vari,xlim=NULL,alpha=0.95,quantile=FALSE,moderator,xj=1)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -40,6 +40,7 @@ the moderation effect on the xjth predictor.
 \details{
 plot2.mma plots the marginal effect of the selected variable on the outcome, and the marginal effect of the predictor on the selected variable, at each level of the moderator. If the predictor is binary, draw a histogram or boxplot of the marginal density of the variable at each different value of the predictor.
 }
+\value{No return value, called for graphs}
 \references{
 Yu, Q., Fan, Y., and Wu, X. (2014) <doi:10.4172/2155-6180.1000189>. "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189. 
 

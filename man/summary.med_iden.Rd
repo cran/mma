@@ -9,7 +9,7 @@ Summary method for class "med_iden".
 Compute the estimations, standard deviations and confidence intervals of the mediation effects.
 }
 \usage{
-\method{summary}{med_iden}(object,...,only=F) 
+\method{summary}{med_iden}(object,...,only=FALSE) 
 \method{print}{summary.med_iden}(x,...) 
 }
 %- maybe also 'usage' for other objects documented here.

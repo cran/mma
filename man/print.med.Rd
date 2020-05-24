@@ -22,6 +22,7 @@ other arguments passed to the print function.
 the number of digits to keep at printing.
 }
 }
+\value{No return value, called for graphs}
 \references{
 Yu, Q., Fan, Y., and Wu, X. (2014) <doi:10.4172/2155-6180.1000189>. "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189. 
 

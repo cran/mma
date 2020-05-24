@@ -96,7 +96,6 @@ data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),
                    binref=c(1,1),catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
 temp1<-boot.med(data=data.bin,n=2,n2=4,all.model=TRUE)
 temp1.mode=boot.mod(temp1,vari="race",continuous.resolution=100)
-#summary(temp1.mode,ball.use = F)
 plot2.mma(temp1.mode,vari="exercises",moderator="race")
 plot2.mma(temp1.mode,vari="sports",moderator="race")
 
@@ -108,7 +107,6 @@ data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,
                     catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
 temp2<-boot.med(data=data.bin,n=2,n2=4,nu=0.05,nonlinear=TRUE,all.model=TRUE)
 temp2.mode=boot.mod(temp2,vari="race",continuous.resolution=100)
-#summary(temp2.mode,ball.use = F)
 plot2.mma(temp2.mode,vari="exercises",moderator="race")
 plot2.mma(temp2.mode,vari="sports",moderator="race")
 
@@ -137,43 +135,6 @@ temp4<-boot.med(data=data.cont,n=2,n2=4,nu=0.05, nonlinear=TRUE,all.model=TRUE)
 temp4.mode=boot.mod(temp4,vari="age",continuous.resolution=2,n=20)
 summary(temp4.mode)
 summary(temp4.mode,bymed=TRUE)
-
-#categorical m and continuous x
-x=weight_behavior[,3:14]
-pred=weight_behavior[,2]
-inter=form.interaction(x,pred,inter.cov=c("race")) 
-cova=data.frame(inter)
-x=cbind(x,cova)
-head(x)
-y=weight_behavior[,15]
-data.contx<-data.org(x,y,pred=pred,mediator=4:10,alpha=0.4,alpha2=0.4,cova=cova)
-#temp5<-boot.med(data=data.contx,n=1,n2=2,cova=cova,all.model=TRUE)
-#temp5.mode=boot.mod(temp5,vari="race",continuous.resolution=10)
-#summary(temp5.mode)
-
-x=weight_behavior[,3:14]
-pred=weight_behavior[,2]
-y=weight_behavior[,15]
-data.contx<-data.org(x,y,pred=pred,mediator=4:10,alpha=0.4,alpha2=0.4,cova=cova)
-temp6<-boot.med(data=data.contx,n=1,refy=0,nonlinear=TRUE,n2=3,
-                cova=data.frame(race=x$race),all.model = TRUE)
-temp6.mode=boot.mod(temp6,vari="race",continuous.resolution=10)
-summary(temp6.mode)
-
-#plot2.mma(temp5.mode,vari="car",moderator="race")
-#plot2.mma(temp6.mode,vari="car",moderator="race")
-
-#continuous m and x
-x=weight_behavior[,3:14]
-pred=weight_behavior[,2]
-inter=form.interaction(x,pred,inter.cov=c("numpeople")) 
-x=cbind(x,inter)
-head(x)
-y=weight_behavior[,15]
-data.contx<-data.org(x,y,pred=pred,mediator=4:10,alpha=0.4,alpha2=0.4)
-#temp5.1<-boot.med(data=data.contx,n=1,n2=2,all.model=TRUE)
-#temp5.mode1=boot.mod(temp5.1,vari="numpeople",continuous.resolution=2)
-#summary(temp5.mode1)
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

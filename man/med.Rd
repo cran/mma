@@ -11,7 +11,7 @@ med(data, x=data$bin.results$x, y=data$bin.results$y, dirx=data$bin.results$dirx
               binm=data$bin.results$binm,contm = data$bin.results$contm, 
               catm = data$bin.results$catm, jointm = data$bin.results$jointm, 
               cova=data$bin.results$cova, allm = c(contm, catm), 
-              margin=1, n=20, nonlinear=F, df1=1, nu=0.001,D=3,distn=NULL,
+              margin=1, n=20, nonlinear=FALSE, df1=1, nu=0.001,D=3,distn=NULL,
               family1=data$bin.results$family1,refy=rep(0,ncol(y)),
               binpred=data$bin.results$binpred,x.new=x,pred.new=dirx, 
               cova.new=cova,type=NULL, w=NULL, w.new=NULL,xmod=NULL,custom.function=NULL)

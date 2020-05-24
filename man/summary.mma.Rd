@@ -9,7 +9,8 @@ Summary of an mma project
 Compute the estimations, standard deviations and confidence intervals of the mediation effects.
 }
 \usage{
-\method{summary}{mma}(object,..., alpha=0.05, plot=TRUE, RE=FALSE,quant=F,ball.use=F,bymed=FALSE) 
+\method{summary}{mma}(object,..., alpha=0.05, plot=TRUE, RE=FALSE,
+quant=FALSE,ball.use=FALSE,bymed=FALSE) 
 \method{print}{summary.mma}(x,...,digit=3) 
 }
 %- maybe also 'usage' for other objects documented here.
@@ -30,7 +31,7 @@ default is TRUE, if ture, draw a barplot of the mediation effects with confidenc
   \item{RE}{
 default is FALSE, if ture, show the inferences on relative mediation effects.}
   \item{quant}{
-default is TRUE, if ture and ball.use is F, draw the confidence intervals of relative effects using quantile.}
+default is TRUE, if ture and ball.use is FALSE, draw the confidence intervals of relative effects using quantile.}
   \item{ball.use}{
 default is TRUE, if ture, draw the confidence intervals of relative effects using the confidence ball. If both quant and ball.use are false, draw the confidence intervals based on the standard deviaitons from bootstrap estimates.}
   \item{digit}{

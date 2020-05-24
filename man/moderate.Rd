@@ -8,7 +8,7 @@ Calculate and plot the direct effect of the selected exposure variable at each l
 Calculate and plot the direct effect of the selected exposure variable at each level of the moderator.
 }
 \usage{
-moderate(med1,vari,j=1,kx=1,continuous.resolution=100,plot=T)
+moderate(med1,vari,j=1,kx=1,continuous.resolution=100,plot=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -62,30 +62,7 @@ Qingzhao Yu \email{qyu@lsuhsc.edu}
  temp2<-med(data=data.bin,n=2,nonlinear=TRUE)
  result1=moderate(temp2,vari="race")
  result2=moderate(temp2,vari="age")
-
-#linear model
- data("weight_behavior")
- pred=weight_behavior[,3]
- x=weight_behavior[,c(2,4:14)]
- inter=form.interaction(x,pred,inter.cov=c("race","age"),predref="M") 
- x=cbind(x,inter)
- head(x)
- data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),
-     binref=c(1,1),catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
- temp1<-med(data=data.bin,n=2)
- result3=moderate(temp1,vari="race")
- result4=moderate(temp1,vari="age")
-
-##with a transformation of continuous moderator
-x=weight_behavior[,c(2,4:14)]
-x=cbind(x,age2=x[,"age"]^2)
-inter=form.interaction(x,pred,inter.cov=c("age","age2"),predref="M") 
-x=cbind(x,inter)
-head(x)
-data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),
-                   binref=c(1,1),catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
-temp1<-med(data=data.bin,n=2)
-result5=moderate(temp1,vari="age")}
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

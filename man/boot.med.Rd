@@ -11,7 +11,7 @@ To make inferences on the mediation effects when the predictor is continuous or 
 boot.med(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,
          contm=data$contm,catm=data$catm,jointm=data$jointm, 
          cova=data$cova, margin=1,n=20,
-         nonlinear=F,df1=1,nu=0.001,D=3,distn=NULL,family1=data$family1,
+         nonlinear=FALSE,df1=1,nu=0.001,D=3,distn=NULL,family1=data$family1,
          n2=50,w=rep(1,nrow(x)),refy=NULL,x.new=x,pred.new=dirx,
          cova.new=cova,binpred=data$binpred,type=NULL,
          w.new=NULL,all.model=FALSE,xmod=NULL,custom.function=NULL)
@@ -104,8 +104,8 @@ The mediators are not tested in this function.  data.org should be used for the 
 \value{
 Returns an mma object.
   \item{estimation }{list the estimation of ie (indirect effect), te  (total effect), and de (direct effect from the predictor) separately.}  \item{bootsresults }{a list where the first item, ie, is a matrix of n2 rows where each column gives the estimated indirect effect from the corresponding mediator (identified by the column name) from the n2 bootstrap samples; the second item, te, is a vector of estimated total effects from the bootstrap sample; and the 3rd item, de, is a vector of estimated direct effect of the predictor from the bootstrap sample.} 
-  \item{model }{a list where the first item, MART, is T if mart is fitted for the final model; the second item, Survival, is T if a survival model is fitted; the third item, type, is the type of prediction when a survival model is fitted; the fourth item, model, is the fitted final full model where y is the outcome and all predictor, covariates, and mediators are the explanatory variables; and the fourth item, best.iter is the number of best iterations if MART is used to fit the final model.}
-  \item{data }{a list that contains all the used data: x=x, y=y, dirx=dirx, binm=binm, contm=contm, catm=catm, jointm=jointm, binpred=F.}
+  \item{model }{a list where the first item, MART, is TRUE if mart is fitted for the final model; the second item, Survival, is TRUE if a survival model is fitted; the third item, type, is the type of prediction when a survival model is fitted; the fourth item, model, is the fitted final full model where y is the outcome and all predictor, covariates, and mediators are the explanatory variables; and the fourth item, best.iter is the number of best iterations if MART is used to fit the final model.}
+  \item{data }{a list that contains all the used data: x=x, y=y, dirx=dirx, binm=binm, contm=contm, catm=catm, jointm=jointm, binpred=FALSE.}
   \item{boot.detail }{a list that contains the mediation effects on each row of new.x: new.x=new.x, te1, de1, ie1.}
   \item{all_model}{a list with all fitted models from bootstrap samples if all.model is TRUE. }
   \item{all_iter}{if all.model is TRUE, a matrix with all fitted best iterations if MART is used. Each row is from one bootstrap sample. }
@@ -141,24 +141,6 @@ data("weight_behavior")
  temp2<-boot.med(data=data.bin,n=2,n2=4,nu=0.05,nonlinear=TRUE)
 
 \donttest{
- #multivariate predictor
- x=weight_behavior[,c(2:3,5:14)]
- pred=weight_behavior[,4]
- y=weight_behavior[,15]
- data.b.b.2.3<-data.org(x,y,mediator=5:12,jointm=list(n=1,j1=c(5,7,9)),
-                        pred=pred,predref="OTHER", alpha=0.4,alpha2=0.4)
-# temp1.2<-boot.med(data.b.b.2.3,n=2,n2=4)
-# temp2.2<-boot.med(data.b.b.2.3,n=2,n2=4,nu=0.05,nonlinear=TRUE)
-
- #multivariate responses
- x=weight_behavior[,c(2:3,5:14)]
- pred=weight_behavior[,4]
- y=weight_behavior[,c(1,15)]
- data.b.b.2.4<-data.org(x,y,mediator=5:12,jointm=list(n=1,j1=c(5,7,9)),
-                        pred=pred,predref="OTHER", alpha=0.4,alpha2=0.4)
-# temp1.3<-boot.med(data.b.b.2.4,n=2,n2=4)
-# temp2.3<-boot.med(data.b.b.2.4,n=2,n2=4,nonlinear=TRUE)
-
 #continuous y
  x=weight_behavior[,c(2,4:14)]
  pred=weight_behavior[,3]
@@ -167,26 +149,7 @@ data("weight_behavior")
                      predref="M",alpha=0.4,alpha2=0.4)
  temp3<-boot.med(data=data.cont,n=2,n2=4) 
  temp4<-boot.med(data=data.cont,n=2,n2=4,nu=0.05, nonlinear=TRUE)
-
-##continuous x
-#binary y
- x=weight_behavior[,3:14]
- pred=weight_behavior[,2]
- y=weight_behavior[,15]
- data.contx<-data.org(x,y,pred=pred,mediator=4:10,alpha=0.4,alpha2=0.4)
- temp5<-boot.med(data=data.contx,n=1,n2=2)
- #plot(temp5,vari="exercises",xlim=c(0,30))
- temp6<-boot.med(data=data.contx,n=1,refy=0,nonlinear=TRUE,n2=2)
-
-#continuous y
- x=weight_behavior[,3:14]
- y=weight_behavior[,1]
- pred=weight_behavior[,2]
- data.contx<-data.org(x,y,pred=pred,contmed=c(11:12),binmed=c(6,10),
-                     binref=c(1,1),catmed=5,catref=1,
-                     alpha=0.4,alpha2=0.4)
- temp7<-boot.med(data=data.contx,n=1,n2=2) 
- temp8<-boot.med(data=data.contx,nonlinear=TRUE,n=1,n2=2)}
+}
 
 ##Surv class outcome (survival analysis)
 \donttest{
@@ -199,9 +162,7 @@ y=Surv(cgd1$futime,status)
 data.surv.contx<-data.org(x,y,pred=pred,mediator=1:ncol(x),      
                           alpha=0.5,alpha2=0.5)
 temp9.contx<-boot.med(data=data.surv.contx,n=1,n2=2, type="lp") 
-#summary(temp9.contx)
 temp10.contx<-boot.med(data=data.surv.contx,nonlinear=TRUE,n=1,n2=2) 
-#summary(temp10.contx)}
 
 #for binary predictor
 \donttest{
@@ -212,17 +173,7 @@ data.surv.binx<-data.org(x,y,pred=pred,mediator=1:ncol(x),
 temp9.binx<-boot.med(data=data.surv.binx,n=1,n2=2, type="lp") 
 summary(temp9.binx)
 temp10.binx<-boot.med(data=data.surv.binx,nonlinear=TRUE,n=1,n2=2) 
-#summary(temp10.binx)
-
- #multiple predictors (categorical and continuous predictors)
- x=weight_behavior[,c(3,5:14)]
- pred=weight_behavior[,c(2,4)]
- y=weight_behavior[,15]
- data.b.b.2.3<-data.org(x,y,mediator=4:11,jointm=list(n=1,j1=c(5,7,9)),
-                        pred=pred,predref="OTHER", alpha=0.4,alpha2=0.4)
-# temp1.4<-boot.med(data=data.b.b.2.3,n=2,n2=2)
-# temp2.4<-boot.med(data.b.b.2.3,n=2,n2=2,nonlinear=TRUE)
-
+}
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

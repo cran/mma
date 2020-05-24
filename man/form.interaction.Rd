@@ -31,6 +31,9 @@ The interaction is with the kx-th predictor(s). kx can be a vector. If kx is nul
 \details{
 form.interaction is used to create interaction terms between predictor(s) and potential moderator(s). The created interaction terms should be used as covariates in linear mediation analysis. The function is not needed for nonlinear mediation method.
 }
+\value{
+Return a matrix with the interaction terms pred*inter.cov.
+}
 \author{
 Qingzhao Yu \email{qyu@lsuhsc.edu}
 }

@@ -11,7 +11,7 @@ Test for mediators and do statistical inferences on the identified mediation eff
 mma(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,catmed=NULL,
     catref=NULL,jointm=NULL,cova=NULL, refy=rep(NA,ncol(data.frame(y))),
     predref=rep(NA,ncol(data.frame(pred))),alpha=0.1,alpha2=0.1, margin=1, n=20,
-    nonlinear=F,df1=1,nu=0.001,D=3,distn=NULL,
+    nonlinear=FALSE,df1=1,nu=0.001,D=3,distn=NULL,
     family1=as.list(rep(NA,ncol(data.frame(y)))),n2=50,w=rep(1,nrow(x)),
     testtype=1, x.new=NULL, pred.new=NULL, cova.new=NULL, type=NULL,w.new=NULL, 
     all.model=FALSE,xmod=NULL,custom.function = NULL)
@@ -128,7 +128,7 @@ mma first tests if the potential mediators defined by binm, contm, and catm shou
 Returns an mma object.
   \item{estimation }{list the estimation of ie (indirect effect), te  (total effect), and de (direct effect from the predictor) separately.}  \item{bootsresults }{a list where the first item, ie, is a matrix of n2 rows where each column gives the estimated indirect effect from the corresponding mediator (identified by the column name) from the n2 bootstrap samples; the second item, te, is a vector of estimated total effects from the bootstrap sample; and the 3rd item, de, is a vector of estimated direct effect of the predictor from the bootstrap sample.} 
   \item{model }{a list where the first item, MART, is T if mart is fitted for the final model; the second item, Survival, is T if a survival model is fitted; the third item, type, is the type of prediction when a survival model is fitted; the fourth item, model, is the fitted final full model where y is the outcome and all predictor, covariates, and mediators are the explanatory variables; and the fourth item, best.iter is the number of best iterations if MART is used to fit the final model.}
-  \item{data }{a list that contains all the used data: x=x, y=y, dirx=dirx, binm=binm, contm=contm, catm=catm, jointm=jointm, binpred=F.}
+  \item{data }{a list that contains all the used data: x=x, y=y, dirx=dirx, binm=binm, contm=contm, catm=catm, jointm=jointm, binpred=FALSE.}
   \item{boot.detail }{for continuous predictor only: a list that contains the mediation effects on each row of new.pred: new.pred=new.pred, te1, de1, ie1.}
   \item{all_model}{a list with all fitted models from bootstrap samples if all.model is TRUE.}
   \item{all_iter}{if all.model is TRUE, a matrix with all fitted best iterations if MART is used. Each row is from one bootstrap sample.}
@@ -193,9 +193,6 @@ temp.cox.contx<-mma(x,y,pred=pred,mediator=1:ncol(x),
 summary(temp.cox.contx)
 temp.surv.mart.contx<-mma(x,y,pred=pred,mediator=1:ncol(x),      
                     alpha=0.5,alpha2=0.5,nonlinear=TRUE,n2=2) 
-#summary(temp.surv.mart.contx,ball.use=F)
-#plot(temp.surv.mart.contx,vari="steroids")
-#plot(temp.cox.contx,vari="steroids")
 
 #for binary predictor
 x=cgd1[,c(5:12)]
@@ -203,11 +200,7 @@ pred=cgd1[,4]
 temp.cox.binx<-mma(x,y,pred=pred,mediator=1:ncol(x),   
                     alpha=0.4,alpha2=0.4,n=1,n2=2,type="lp") 
 summary(temp.cox.binx)
-#temp.surv.mart.binx<-mma(x,y,pred=pred,mediator=1:ncol(x),   
-#                    alpha=0.4,alpha2=0.4,nonlinear=TRUE,n=1,n2=2) 
-#summary(temp.surv.mart.binx, RE=T,ball.use=F)
-#plot(temp.surv.mart.binx,vari="hos.cat")
-#plot(temp.cox.binx,vari="hos.cat")}
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

@@ -30,6 +30,7 @@ The moderation effect is with the kx-th predictor(s). kx can be a vector. If kx 
 \details{
 test.moderation is used to test whether direct moderation effect is significant based on the med object from med function (mediation analysis). If geralized linear models were used for mediation anlysis, the moderation effects (formed by the interactions of potential moderators and predictor) should be included in the mediation analysis as covariates. The function test.modeartion will give the significance levels of these interaction terms. If nonlinear models were used for mediation analysis, the potential moderators (but not the interaction terms) should have been included in mediation analysis as covarites. The function test.moderation will give not only significance levels of their interaction with the predictor(s) in generalized linear model, but also the H-statistics by Friedman and Popescue (2008).
 }
+\value{No return value, called for test results.}
 \references{
 Yu, Q., Fan, Y., and Wu, X. (2014) <doi:10.4172/2155-6180.1000189>. "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189.
 

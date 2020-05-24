@@ -193,30 +193,30 @@ if(!is.null(jointm))  #mediators that should be jointly considered are forced in
  joint1<-unique(joint)
  
  if(!is.null(contmed))
- {cont1<-rep(F,length(contmed))
+ {cont1<-rep(FALSE,length(contmed))
   for (i in 1:length(contmed))
-    cont1[i]<-ifelse(sum(contmed[i]==joint1)>0,T,F)
+    cont1[i]<-ifelse(sum(contmed[i]==joint1)>0,TRUE,FALSE)
  }
  if(!is.null(binmed))
- {bin1<-rep(F,length(binmed))
+ {bin1<-rep(FALSE,length(binmed))
   for (i in 1:length(binmed))
-    bin1[i]<-ifelse(sum(binmed[i]==joint1)>0,T,F)
+    bin1[i]<-ifelse(sum(binmed[i]==joint1)>0,TRUE,FALSE)
  }
  if(!is.null(catmed))
- {cat1<-rep(F,length(catmed))
+ {cat1<-rep(FALSE,length(catmed))
   for (i in 1:length(catmed))
-    cat1[i]<-ifelse(sum(catmed[i]==joint1)>0,T,F)
+    cat1[i]<-ifelse(sum(catmed[i]==joint1)>0,TRUE,FALSE)
  }
 }
 else
 {if(!is.null(contmed))
-  cont1<-rep(F,length(contmed))
+  cont1<-rep(FALSE,length(contmed))
  
  if(!is.null(binmed))
-   bin1<-rep(F,length(binmed))
+   bin1<-rep(FALSE,length(binmed))
  
  if(!is.null(catmed))
-   cat1<-rep(F,length(catmed))
+   cat1<-rep(FALSE,length(catmed))
 }
 
 if(!is.null(binmed))
@@ -266,9 +266,9 @@ colnames(P1)<-colnames(y2)
 
 
 prednames<-colnames(pred)
-covr.cont<-rep(F,length(contmed))
-covr.bin<-rep(F,length(binmed))
-covr.cat<-rep(F,length(catmed))
+covr.cont<-rep(FALSE,length(contmed))
+covr.bin<-rep(FALSE,length(binmed))
+covr.cat<-rep(FALSE,length(catmed))
 
 for (j in 1:ncol(y2))  #adjust for multivariate response
 {if(testtype==2)
@@ -286,7 +286,7 @@ for (j in 1:ncol(y2))  #adjust for multivariate response
 if(!is.null(contmed))
   for (i in 1:length(contmed))
    if(testtype==1)
-    covr.cont[i]<-ifelse(type3[[j]][xnames3==xname[contmed[i]],3]<alpha,T,covr.cont[i])
+    covr.cont[i]<-ifelse(type3[[j]][xnames3==xname[contmed[i]],3]<alpha,TRUE,covr.cont[i])
    else if(testtype==2)
    {temp.data<-cbind(x[,contmed[i]],pred)
     names(temp.data)<-c(xname[contmed[i]],names(pred))
@@ -297,13 +297,13 @@ if(!is.null(contmed))
     temp.type3<-Anova(temp.fullmodel1,type="III")
     temp.p1<-temp.type3[rownames(temp.type3)==xname[contmed[i]],3]
     P1[grep(xname[contmed[i]],xnames3),j]<-temp.p1
-    covr.cont[i]<-ifelse(temp.p1<alpha,T,covr.cont[i])
+    covr.cont[i]<-ifelse(temp.p1<alpha,TRUE,covr.cont[i])
    }
 
  if(!is.null(binmed))
   for (i in 1:length(binmed))
    if(testtype==1)
-    covr.bin[i]<-ifelse(type3[[j]][xnames3==xname[binmed[i]],3]<alpha,T,covr.bin[i])
+    covr.bin[i]<-ifelse(type3[[j]][xnames3==xname[binmed[i]],3]<alpha,TRUE,covr.bin[i])
    else if(testtype==2)
    {temp.data<-cbind(x[,binmed[i]],pred)
     names(temp.data)<-c(xname[binmed[i]],names(pred))
@@ -314,13 +314,13 @@ if(!is.null(contmed))
    temp.type3<-Anova(temp.fullmodel1,type="III")
    temp.p1<-temp.type3[rownames(temp.type3)==xname[binmed[i]],3]
    P1[grep(xname[binmed[i]],xnames3),j]<-temp.p1
-   covr.bin[i]<-ifelse(temp.p1<alpha,T,covr.bin[i])
+   covr.bin[i]<-ifelse(temp.p1<alpha,TRUE,covr.bin[i])
   }
  
  if(!is.null(catmed))
   for (i in 1:length(catmed))
    if(testtype==1)
-     covr.cat[i]<-ifelse(type3[[j]][xnames3==xname[catmed[i]],3]<alpha,T,covr.cat[i]) 
+     covr.cat[i]<-ifelse(type3[[j]][xnames3==xname[catmed[i]],3]<alpha,TRUE,covr.cat[i]) 
    else if(testtype==2)
     {temp.data<-cbind(x[,catmed[i]],pred)
      names(temp.data)<-c(xname[catmed[i]],names(pred))
@@ -331,20 +331,20 @@ if(!is.null(contmed))
     temp.type3<-Anova(temp.fullmodel1,type="III")
     temp.p1<-temp.type3[rownames(temp.type3)==xname[catmed[i]],3]
     P1[grep(xname[catmed[i]],xnames3),j]<-temp.p1
-    covr.cat[i]<-ifelse(temp.p1<alpha,T,covr.cat[i])
+    covr.cat[i]<-ifelse(temp.p1<alpha,TRUE,covr.cat[i])
    }
 } 
 
 if(!is.null(contmed))
- {covr.cont<-ifelse(covr.cont|cont1,T,F)
+ {covr.cont<-ifelse(covr.cont|cont1,TRUE,FALSE)
   cont2<-cont1[covr.cont]
   contmed1<-contmed[covr.cont]}
 if(!is.null(binmed))
- {covr.bin<-ifelse(covr.bin+bin1>0,T,F) 
+ {covr.bin<-ifelse(covr.bin+bin1>0,TRUE,FALSE) 
   bin2<-bin1[covr.bin]
   binmed1<-binmed[covr.bin]}
 if(!is.null(catmed))
- {covr.cat<-ifelse(covr.cat+cat1>0,T,F)
+ {covr.cat<-ifelse(covr.cat+cat1>0,TRUE,FALSE)
   cat2<-cat1[covr.cat]
   catmed1<-catmed[covr.cat]
   catref1<-catref[covr.cat]}
@@ -405,37 +405,37 @@ else
 
  contm2<-contm1
  if(length(contm1)>0)
-  {med.cont<-rep(F,length(contm1))
+  {med.cont<-rep(FALSE,length(contm1))
    for (i in 1:length(contm1))
    {if (!(contm1[i] %in% indi))          #to check if the covariates are needed to estimate the mediator
      tempmodel<-summary(glm(newx1[,contm1[i]]~.,weights=w,data=pred1)) #allowing multivariate predictors
     else 
      tempmodel<-summary(glm(newx1[,contm1[i]]~.,weights=w,data=pred2)) #allowing multivariate predictors
-    med.cont[i]<-ifelse(min(tempmodel$coef[2:(nx+1),4])<alpha2,T,F)
+    med.cont[i]<-ifelse(min(tempmodel$coef[2:(nx+1),4])<alpha2,TRUE,FALSE)
     rela_var<-c(rela_var,name_newx[contm1[i]])
     rela_p<-rbind(rela_p,tempmodel$coef[2:(nx+1),4])
    }
-  med.cont<-ifelse(med.cont+cont2>0,T,F)
+  med.cont<-ifelse(med.cont+cont2>0,TRUE,FALSE)
   contm2<-contm1[med.cont]}
 
  binm2<-binm1
  if(length(binm1)>0) 
- {med.bin<-rep(F,length(binm1))
+ {med.bin<-rep(FALSE,length(binm1))
   for (i in 1:length(binm1))   
     {if (!(binm1[i]%in%indi))          #to check if the covariates are needed to estimate the mediator
        tempmodel<-summary(glm(newx1[,binm1[i]]~.,weights=w,family="binomial",data=pred1)) #allowing multivariate predictors
      else
        tempmodel<-summary(glm(newx1[,binm1[i]]~.,weights=w,family="binomial",data=pred2)) #allowing multivariate predictors
-     med.bin[i]<-ifelse(min(tempmodel$coef[2:(nx+1),4])<alpha2,T,F)
+     med.bin[i]<-ifelse(min(tempmodel$coef[2:(nx+1),4])<alpha2,TRUE,FALSE)
      rela_var<-c(rela_var,name_newx[binm1[i]])
      rela_p<-rbind(rela_p,tempmodel$coef[2:(nx+1),4])
     }
-  med.bin<-ifelse(med.bin+bin2>0,T,F)
+  med.bin<-ifelse(med.bin+bin2>0,TRUE,FALSE)
   binm2<-binm1[med.bin]}
  
  catm2<-catm1
  if(length(catm1)>0) 
- {med.cat<-rep(F,length(catm1))
+ {med.cat<-rep(FALSE,length(catm1))
   for (i in 1:length(catm1))  
    {temp.p<-NULL                                 #allowing multivariate predictors
     for (j in 1:ncol(pred)) 
@@ -443,11 +443,11 @@ else
         temp.p<-c(temp.p,min(summary(glm(pred[,j]~newx1[,catm1[i]],weights=w))$coef[-1,4]))
       else
         temp.p<-c(temp.p,min(summary(glm(pred[,j]~newx1[,catm1[i]],weights=w,family="binomial"))$coef[-1,4]))
-    med.cat[i]<-ifelse(min(temp.p)<alpha2,T,F)
+    med.cat[i]<-ifelse(min(temp.p)<alpha2,TRUE,FALSE)
     rela_var<-c(rela_var,name_newx[catm1[i]])
     rela_p<-rbind(rela_p,temp.p)
    }
-  med.cat<-ifelse(med.cat+cat2>0,T,F)
+  med.cat<-ifelse(med.cat+cat2>0,TRUE,FALSE)
   cat3<-cat2[med.cat]
   catm2<-catm1[med.cat]
   catref2<-catref1[med.cat]}
@@ -530,7 +530,7 @@ class(results)="med_iden"
  return(results)
 }
 
-summary.med_iden<-function(object,...,only=F)
+summary.med_iden<-function(object,...,only=FALSE)
 {if(!is.null(object$bin.results))
   object=object$bin.results
  else
@@ -613,16 +613,16 @@ med<-function(data, x=data$bin.results$x, y=data$bin.results$y, dirx=data$bin.re
               binm=data$bin.results$binm,contm = data$bin.results$contm, 
               catm = data$bin.results$catm, jointm = data$bin.results$jointm, 
               cova=data$bin.results$cova, allm = c(contm, catm), 
-              margin=1, n=20, nonlinear=F, df1=1, nu=0.001,D=3,distn=NULL,
+              margin=1, n=20, nonlinear=FALSE, df1=1, nu=0.001,D=3,distn=NULL,
               family1=data$bin.results$family1,refy=rep(0,ncol(y)),
               binpred=data$bin.results$binpred,x.new=x,pred.new=dirx, 
               cova.new=cova,type=NULL, w=NULL, w.new=NULL,xmod=NULL,custom.function=NULL)
 {#for binary predictor
   med.binx<-function(data, x=data$x, y=data$y, dirx=data$dirx, dirx1=dirx, contm = data$contm, 
                      catm = data$catm, jointm = data$jointm, cova=data$cova, allm = c(contm, catm), 
-                     n=20,nonlinear=F,nu=0.001,
+                     n=20,nonlinear=FALSE,nu=0.001,
                      D=3,distn=NULL,family1=data$family1, #
-                     biny=rep(F,ncol(y)),refy=rep(0,ncol(y)),surv=rep(F,ncol(y)),type=NULL,
+                     biny=rep(FALSE,ncol(y)),refy=rep(0,ncol(y)),surv=rep(FALSE,ncol(y)),type=NULL,
                      w=NULL,xmod=NULL,custom.function=NULL, full.model, best.iter1) #
   {if (is.null(allm))
     stop("Error: no potential mediator is specified")
@@ -653,17 +653,17 @@ med<-function(data, x=data$bin.results$x, y=data$bin.results$y, dirx=data$bin.re
       if(surv[m] & !is.null(best.iter1[m]))
       {if(is.null(type))
          type="link"
-        te[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=T)}
+        te[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=TRUE)}
       else if (surv[m])
-        te[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=T)- mean(predict(full.model[[m]],new0,type=type),na.rm=T)
+        te[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,type=type),na.rm=TRUE)
       else
-        te[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=T)
+        te[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=TRUE)
       te
     }
     
     med.binx.contm<-function(full.model,nom1,nom0,med,best.iter1=NULL,surv,type,xmod,xnames)  
     {n3<-nrow(nom1)+nrow(nom0)
-    marg.m<-c(nom1[,med],nom0[,med])[sample(1:n3,replace=T)]
+    marg.m<-c(nom1[,med],nom0[,med])[sample(1:n3,replace=TRUE)]
     new1<-nom1
     new1[,med]<-marg.m[1:nrow(nom1)]
     new0<-nom0
@@ -684,11 +684,11 @@ med<-function(data, x=data$bin.results$x, y=data$bin.results$y, dirx=data$bin.re
       if(surv[m] & !is.null(best.iter1[m]))
         {if(is.null(type))
           type="link"
-        dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=T)}
+        dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=TRUE)}
     else if(surv[m])
-      dir.nom[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=T)- mean(predict(full.model[[m]],new0,type=type),na.rm=T)
+      dir.nom[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,type=type),na.rm=TRUE)
     else
-      dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=T)
+      dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=TRUE)
     dir.nom
     }
     
@@ -726,17 +726,17 @@ med<-function(data, x=data$bin.results$x, y=data$bin.results$y, dirx=data$bin.re
         if(surv[m] & !is.null(best.iter1[m]))
           {if(is.null(type))
             type="link"
-           dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=T)}
+           dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=TRUE)}
       else if(surv[m])
-        dir.nom[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=T)- mean(predict(full.model[[m]],new0,type=type),na.rm=T)
+        dir.nom[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,type=type),na.rm=TRUE)
       else
-        dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=T)
+        dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=TRUE)
       dir.nom
     }
     
     med.binx.catm<-function(full.model,nom1,nom0,med,best.iter1=NULL,surv,type,xmod,xnames)  
     {n3<-nrow(nom1)+nrow(nom0)
-    temp.rand<-unlist(list(nom1[,med],nom0[,med]))[sample(1:n3,replace=T)]
+    temp.rand<-unlist(list(nom1[,med],nom0[,med]))[sample(1:n3,replace=TRUE)]
     marg.m1<-temp.rand[1:nrow(nom1)]
     marg.m2<-temp.rand[(nrow(nom1)+1):n3]
     dir.nom<-rep(0,length(full.model))
@@ -757,15 +757,15 @@ med<-function(data, x=data$bin.results$x, y=data$bin.results$y, dirx=data$bin.re
       new1[,m.t1]=m.t3[,m.t]
       m.t=m.t+1}}
       }
-      p<-mean(temp.rand==i,na.rm=T)
+      p<-mean(temp.rand==i,na.rm=TRUE)
       if(surv[m] & !is.null(best.iter1[m])){
         if(is.null(type))
           type="link"
-        dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=T))}
+        dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=TRUE))}
       else if(surv[m])
-        dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,type=type),na.rm=T)- mean(predict(full.model[[m]],new0,type=type),na.rm=T))
+        dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,type=type),na.rm=TRUE))
       else
-        dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=T))
+        dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=TRUE))
       }
     dir.nom
     }
@@ -801,8 +801,8 @@ med<-function(data, x=data$bin.results$x, y=data$bin.results$y, dirx=data$bin.re
       if(!is.null(w))
         w1<-w[dirx[,dirx1[l]]==1]
       #n3<-dim(x)[1] use the original size
-      new1<-x1.2[sample(1:nrow(x1.2),replace=T,prob=w1),] #floor(n3/2),
-      new0<-x0[sample(1:nrow(x0),replace=T,prob=w0),] #floor(n3/2),
+      new1<-x1.2[sample(1:nrow(x1.2),replace=TRUE,prob=w1),] #floor(n3/2),
+      new0<-x0[sample(1:nrow(x0),replace=TRUE,prob=w0),] #floor(n3/2),
       
       if(!is.null(xmod))
         for(z in allm){
@@ -818,7 +818,7 @@ med<-function(data, x=data$bin.results$x, y=data$bin.results$y, dirx=data$bin.re
         }
       
       te[k,((l-1)*ncol(y)+1):(l*ncol(y))]<-te.binx(full.model,new1,new0,best.iter1,surv,type)  
-      temp.rand<-sample(1:(nrow(x1.2)+nrow(x0)),replace=T)# no need for:prob=c(w1,w0) --redundant
+      temp.rand<-sample(1:(nrow(x1.2)+nrow(x0)),replace=TRUE)# no need for:prob=c(w1,w0) --redundant
       #the indirect effect of all mediators
       temp.ie<-te[k,((l-1)*ncol(y)+1):(l*ncol(y))]-med.binx.jointm(full.model,new1,new0,allm,best.iter1,surv,type,temp.rand,xmod,xnames) #add temp.rand
       #new method to calculate the direct effect     
@@ -853,7 +853,7 @@ med<-function(data, x=data$bin.results$x, y=data$bin.results$y, dirx=data$bin.re
       #3.4 mediation effect from the joint mediators
       if (!is.null(jointm))
         for (i in 1:jointm[[1]])          #full.model,x,y,med,dirx,best.iter1=NULL
-        {temp.rand<-sample(1:(nrow(x1.2)+nrow(x0)),replace=T)# no need for:prob=c(w1,w0) --redundant
+        {temp.rand<-sample(1:(nrow(x1.2)+nrow(x0)),replace=TRUE)# no need for:prob=c(w1,w0) --redundant
         denm[[l]][k,(ncol(y)*(j-1)+1):(ncol(y)*j)]<-med.binx.jointm(full.model,new1,new0,jointm[[i+1]],best.iter1,surv,type,temp.rand,xmod,xnames)
         j<-j+1}
       #3.5 get the indirect effects and total effect
@@ -877,7 +877,7 @@ med<-function(data, x=data$bin.results$x, y=data$bin.results$y, dirx=data$bin.re
 #for continous predictor
   med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx, dirx1=data$contpred, binm=data$binm,contm=data$contm,
                       catm=data$catm, jointm=data$jointm, cova=data$cova, margin=1, n=20,
-                      nonlinear=F,df1=1,nu=0.001,D=3,distn=NULL,family1=data$family1,
+                      nonlinear=FALSE,df1=1,nu=0.001,D=3,distn=NULL,family1=data$family1,
                       biny=(data$y_type==2),refy=rep(NA,ncol(y)),x.new=x,pred.new=dirx, cova.new=cova, surv=(data$y_type==4),
                       type=NULL,w=NULL, w.new=NULL, xmod=NULL,custom.function=NULL)
   {if (is.null(c(binm,contm,catm)))
@@ -904,18 +904,18 @@ med<-function(data, x=data$bin.results$x, y=data$bin.results$y, dirx=data$bin.re
         if(is.character(jointm[[i]]))
           jointm[[i]]<-unlist(sapply(jointm[[i]],grep,xnames))
     
-    anymissing<-function(vec) #return T if there is any missing in the vec
+    anymissing<-function(vec) #return TRUE if there is any missing in the vec
     {if(sum(is.na(vec))>0)
-      return(F)
-      else return(T)
+      return(FALSE)
+      else return(TRUE)
     }
     
     col_mean<-function(col,n.row,w=NULL)
     {temp<-matrix(col,n.row)
     if(is.null(w))
-      return(apply(temp,1,mean,na.rm=T))
+      return(apply(temp,1,mean,na.rm=TRUE))
     else
-      return(apply(temp,1,weighted.mean,na.rm=T,w=w))}
+      return(apply(temp,1,weighted.mean,na.rm=TRUE,w=w))}
     
     
     dist.m.given.x<-function(x,dirx,binm=NULL,contm=NULL,catm=NULL,nonlinear,df1,w,cova) #give the model and residual of m given x
@@ -987,7 +987,7 @@ med<-function(data, x=data$bin.results$x, y=data$bin.results$y, dirx=data$bin.re
       res<-cbind(res,models[[j]]$res)
       j<-j+1
       }
-      list(models=models,varmat=var(res,na.rm=T))
+      list(models=models,varmat=var(res,na.rm=TRUE))
     }
     
     
@@ -1013,7 +1013,7 @@ med<-function(data, x=data$bin.results$x, y=data$bin.results$y, dirx=data$bin.re
     match.margin<-function(vec)   
     {range1<-vec[1:2]
     vec1<-vec[-(1:2)]
-    range2<-range(vec1,na.rm=T)
+    range2<-range(vec1,na.rm=TRUE)
     vec1<-range1[1]+diff(range1)/diff(range2)*(vec1-range2[1])
     vec1
     }
@@ -1065,11 +1065,11 @@ med<-function(data, x=data$bin.results$x, y=data$bin.results$y, dirx=data$bin.re
     
     if(dim(means)[2]==1)                                                   #added in the new program, in case there is only one mediator
     {sim.m<-suppressWarnings(rnorm(length(means),mean=means,sd=sqrt(distmgivenx$varmat)))     #added in the new program
-    sim.m2<-match.margin(c(range(means,na.rm=T),sim.m))}                          #added in the new program   
+    sim.m2<-match.margin(c(range(means,na.rm=TRUE),sim.m))}                          #added in the new program   
     else{
       sim.m<-t(apply(means,1,mult.norm,vari=distmgivenx$varmat,n=1))
       
-      range.means<-apply(means,2,range,na.rm=T)
+      range.means<-apply(means,2,range,na.rm=TRUE)
       
       sim.m2<-apply(rbind(range.means,sim.m),2,match.margin)    #to make the simulate fit the means' ranges
     }
@@ -1245,7 +1245,7 @@ med<-function(data, x=data$bin.results$x, y=data$bin.results$y, dirx=data$bin.re
       
       #browser()   
       
-      sample.temp<-sample(1:n.new,2*n.new,replace = T,prob=w.new)   #random sample from the original data
+      sample.temp<-sample(1:n.new,2*n.new,replace = TRUE,prob=w.new)   #random sample from the original data
       
       #4.0.0 get the total indirect effect
       temp.new1<-new1
@@ -1419,21 +1419,21 @@ med<-function(data, x=data$bin.results$x, y=data$bin.results$y, dirx=data$bin.re
     return(a)
   }
  
- anymissing<-function(vec) #return T if there is any missing in the vec
+ anymissing<-function(vec) #return TRUE if there is any missing in the vec
  {if(sum(is.na(vec))>0)
-   return(F)
-   else return(T)
+   return(FALSE)
+   else return(TRUE)
  }
 
 
  if(is.null(data)){
-   surv=rep(F,ncol(y))
-   biny=rep(F,ncol(y))
+   surv=rep(FALSE,ncol(y))
+   biny=rep(FALSE,ncol(y))
    if(is.null(distn))
      distn<-rep(NA,ncol(y))
    for(j in 1:ncol(y)) {
      if(class(y[,j])=="Surv"){
-       surv[j]=T
+       surv[j]=TRUE
        if(is.na(distn[j]))
          distn[j]="coxph"
        if(is.null(type) & nonlinear)
@@ -1442,7 +1442,7 @@ med<-function(data, x=data$bin.results$x, y=data$bin.results$y, dirx=data$bin.re
          type="risk"
      }
      else if(is.character(y[,j]) | is.factor(y[,j]) | nlevels(as.factor(y[,j]))==2)
-     {biny[j]=T
+     {biny[j]=TRUE
      if(is.na(family1[[j]]))
        family1[[j]] = binomial("logit")
      if(is.na(distn[j]))
@@ -1659,47 +1659,47 @@ print.med<-function(x,...,digit=4)
  {cat("\n\nFor the predictor",names(x1$ie)[l],":\n")
   cat(" The estimated total effect:")
   if(is.null(x1$w.new))
-    print(mean(x1$te[,l],na.rm=T),digit)
+    print(mean(x1$te[,l],na.rm=TRUE),digit)
   else
-    print(round(weighted.mean(x1$te[,l],na.rm=T,w=x1$w.new),digit))
+    print(round(weighted.mean(x1$te[,l],na.rm=TRUE,w=x1$w.new),digit))
   cat("\n The estimated indirect effect:\n")
   if(is.null(x1$w.new))
-     print(round(apply(x1$ie[[l]],2,mean,na.rm=T),digit))
+     print(round(apply(x1$ie[[l]],2,mean,na.rm=TRUE),digit))
   else
-     print(round(apply(x1$ie[[l]],2,weighted.mean,na.rm=T,w=x1$w.new),digit))}}
+     print(round(apply(x1$ie[[l]],2,weighted.mean,na.rm=TRUE,w=x1$w.new),digit))}}
   if(!is.null(x$a.cont)){
     x1=x$a.cont
     for(l in 1:length(x1$ie))
     {cat("\n\nFor the predictor",names(x1$ie)[l],":\n")
       cat(" The estimated total effect:")
       if(is.null(x1$w.new))
-        print(mean(x1$te[,l],na.rm=T),digit)
+        print(mean(x1$te[,l],na.rm=TRUE),digit)
       else
-        print(round(weighted.mean(x1$te[,l],na.rm=T,w=x1$w.new),digit))
+        print(round(weighted.mean(x1$te[,l],na.rm=TRUE,w=x1$w.new),digit))
       cat("\n The estimated indirect effect:\n")
       if(is.null(x1$w.new))
-        print(round(apply(x1$ie[[l]],2,mean,na.rm=T),digit))
+        print(round(apply(x1$ie[[l]],2,mean,na.rm=TRUE),digit))
       else
-        print(round(apply(x1$ie[[l]],2,weighted.mean,na.rm=T,w=x1$w.new),digit))}}
+        print(round(apply(x1$ie[[l]],2,weighted.mean,na.rm=TRUE,w=x1$w.new),digit))}}
 }
 
 
 boot.med<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,contm=data$contm,catm=data$catm,
-                   jointm=data$jointm, cova=data$cova, margin=1,n=20,nonlinear=F,df1=1,nu=0.001,
+                   jointm=data$jointm, cova=data$cova, margin=1,n=20,nonlinear=FALSE,df1=1,nu=0.001,
                    D=3,distn=NULL,family1=data$family1,n2=50,w=rep(1,nrow(x)),refy=NULL,x.new=x,
                    pred.new=dirx,cova.new=cova,binpred=data$binpred,type=NULL,w.new=NULL,
                    all.model=FALSE,xmod=NULL,custom.function=NULL)
 {boot.med.binx<-function(data,x=data$x, y=data$y,dirx=data$dirx,contm=data$contm,catm=data$catm,
-                         jointm=data$jointm, cova=data$cova,n=20,n2=50,nonlinear=F,nu=0.001,binpred=data$binpred,catpred=data$catpred,
+                         jointm=data$jointm, cova=data$cova,n=20,n2=50,nonlinear=FALSE,nu=0.001,binpred=data$binpred,catpred=data$catpred,
                          D=3,distn="bernoulli",family1=binomial("logit"),w=rep(1,nrow(x)),biny=(data$y_type==2),
                          refy=rep(NA,ncol(y)),surv=(data$y_type==4),type,all.model=FALSE,xmod=NULL,custom.function=NULL)
   #n2 is the time of bootstrap
 {
   med.binx<-function(data, x=data$x, y=data$y, dirx=data$dirx, dirx1=dirx, contm = data$contm, 
                      catm = data$catm, jointm = data$jointm, cova=data$cova, allm = c(contm, catm), 
-                     n=20,nonlinear=F,nu=0.001,
+                     n=20,nonlinear=FALSE,nu=0.001,
                      D=3,distn=NULL,family1=data$family1, #
-                     biny=rep(F,ncol(y)),refy=rep(0,ncol(y)),surv=rep(F,ncol(y)),type=NULL,
+                     biny=rep(FALSE,ncol(y)),refy=rep(0,ncol(y)),surv=rep(FALSE,ncol(y)),type=NULL,
                      w=NULL,xmod=NULL,custom.function=NULL, full.model, best.iter1) #
   {if (is.null(allm))
     stop("Error: no potential mediator is specified")
@@ -1730,17 +1730,17 @@ boot.med<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,contm=d
       if(surv[m] & !is.null(best.iter1[m])){
         if(is.null(type))
           type="link"
-        te[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=T)}
+        te[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=TRUE)}
       else if (surv[m])
-        te[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=T)- mean(predict(full.model[[m]],new0,type=type),na.rm=T)
+        te[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,type=type),na.rm=TRUE)
       else
-        te[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=T)
+        te[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=TRUE)
       te
     }
     
     med.binx.contm<-function(full.model,nom1,nom0,med,best.iter1=NULL,surv,type,xmod,xnames)  
     {n3<-nrow(nom1)+nrow(nom0)
-    marg.m<-c(nom1[,med],nom0[,med])[sample(1:n3,replace=T)]
+    marg.m<-c(nom1[,med],nom0[,med])[sample(1:n3,replace=TRUE)]
     new1<-nom1
     new1[,med]<-marg.m[1:nrow(nom1)]
     new0<-nom0
@@ -1761,11 +1761,11 @@ boot.med<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,contm=d
       if(surv[m] & !is.null(best.iter1[m])){
         if(is.null(type))
           type="link"
-        dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=T)}
+        dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=TRUE)}
     else if(surv[m])
-      dir.nom[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=T)- mean(predict(full.model[[m]],new0,type=type),na.rm=T)
+      dir.nom[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,type=type),na.rm=TRUE)
     else
-      dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=T)
+      dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=TRUE)
     dir.nom
     }
     
@@ -1803,17 +1803,17 @@ boot.med<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,contm=d
         if(surv[m] & !is.null(best.iter1[m])){
           if(is.null(type))
             type="link"
-          dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=T)}
+          dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=TRUE)}
       else if(surv[m])
-        dir.nom[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=T)- mean(predict(full.model[[m]],new0,type=type),na.rm=T)
+        dir.nom[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,type=type),na.rm=TRUE)
       else
-        dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=T)
+        dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=TRUE)
       dir.nom
     }
     
     med.binx.catm<-function(full.model,nom1,nom0,med,best.iter1=NULL,surv,type,xmod,xnames)  
     {n3<-nrow(nom1)+nrow(nom0)
-    temp.rand<-unlist(list(nom1[,med],nom0[,med]))[sample(1:n3,replace=T)]
+    temp.rand<-unlist(list(nom1[,med],nom0[,med]))[sample(1:n3,replace=TRUE)]
     marg.m1<-temp.rand[1:nrow(nom1)]
     marg.m2<-temp.rand[(nrow(nom1)+1):n3]
     dir.nom<-rep(0,length(full.model))
@@ -1834,15 +1834,15 @@ boot.med<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,contm=d
       new1[,m.t1]=m.t3[,m.t]
       m.t=m.t+1}}
       }
-      p<-mean(temp.rand==i,na.rm=T)
+      p<-mean(temp.rand==i,na.rm=TRUE)
       if(surv[m] & !is.null(best.iter1[m])){
         if(is.null(type))
           type="link"
-        dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=T))}
+        dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=TRUE))}
       else if(surv[m])
-        dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,type=type),na.rm=T)- mean(predict(full.model[[m]],new0,type=type),na.rm=T))
+        dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,type=type),na.rm=TRUE))
       else
-        dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=T))
+        dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=TRUE))
       }
     dir.nom
     }
@@ -1878,8 +1878,8 @@ boot.med<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,contm=d
       if(!is.null(w))
         w1<-w[dirx[,dirx1[l]]==1]
       #n3<-dim(x)[1] use the original size
-      new1<-x1.2[sample(1:nrow(x1.2),replace=T,prob=w1),] #floor(n3/2),
-      new0<-x0[sample(1:nrow(x0),replace=T,prob=w0),] #floor(n3/2),
+      new1<-x1.2[sample(1:nrow(x1.2),replace=TRUE,prob=w1),] #floor(n3/2),
+      new0<-x0[sample(1:nrow(x0),replace=TRUE,prob=w0),] #floor(n3/2),
       
       if(!is.null(xmod))
         for(z in allm){
@@ -1895,7 +1895,7 @@ boot.med<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,contm=d
         }
       
       te[k,((l-1)*ncol(y)+1):(l*ncol(y))]<-te.binx(full.model,new1,new0,best.iter1,surv,type)  
-      temp.rand<-sample(1:(nrow(x1.2)+nrow(x0)),replace=T)# no need for:prob=c(w1,w0) --redundant
+      temp.rand<-sample(1:(nrow(x1.2)+nrow(x0)),replace=TRUE)# no need for:prob=c(w1,w0) --redundant
       #the indirect effect of all mediators
       temp.ie<-te[k,((l-1)*ncol(y)+1):(l*ncol(y))]-med.binx.jointm(full.model,new1,new0,allm,best.iter1,surv,type,temp.rand,xmod,xnames) #add temp.rand
       #new method to calculate the direct effect     
@@ -1930,7 +1930,7 @@ boot.med<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,contm=d
       #3.4 mediation effect from the joint mediators
       if (!is.null(jointm))
         for (i in 1:jointm[[1]])          #full.model,x,y,med,dirx,best.iter1=NULL
-        {temp.rand<-sample(1:(nrow(x1.2)+nrow(x0)),replace=T)# no need for:prob=c(w1,w0) --redundant
+        {temp.rand<-sample(1:(nrow(x1.2)+nrow(x0)),replace=TRUE)# no need for:prob=c(w1,w0) --redundant
         denm[[l]][k,(ncol(y)*(j-1)+1):(ncol(y)*j)]<-med.binx.jointm(full.model,new1,new0,jointm[[i+1]],best.iter1,surv,type,temp.rand,xmod,xnames)
         j<-j+1}
       #3.5 get the indirect effects and total effect
@@ -2083,19 +2083,19 @@ boot.med<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,contm=d
   #temp<-med.binx(data=NULL,x,y,dirx,contm,catm,jointm,cova,allm,n,nonlinear,nu,D,distn,family1,
   #               biny,refy,surv,type,w=w,xmod,custom.function=custom.function)
   temp=a.binx
-  te[1,]<-apply(temp$te,2,mean,na.rm=T)
+  te[1,]<-apply(temp$te,2,mean,na.rm=TRUE)
   temp.1<-NULL
   for (l in 1:nx)
   {temp.1<-cbind(temp.1,temp$denm[[l]][,1:ny])
    ie1[l,]<-apply(temp$ie[[l]],2,mean)}  #first row is the estimated value
-  de[1,]<-apply(temp.1,2,mean,na.rm=T)
+  de[1,]<-apply(temp.1,2,mean,na.rm=TRUE)
   model<-temp$model
   all_model=NULL #to store all fitted models if all.model is TRUE
   all_iter=NULL
   all_boot=NULL
   
   for (t.i in 1:n2)
-  {boots<-sample(1:nrow(x),replace=T,prob=w)
+  {boots<-sample(1:nrow(x),replace=TRUE,prob=w)
    x.temp<-data.frame(x[boots,])
    names(x.temp)=xnames
    y.temp<-data.frame(y[boots,])
@@ -2198,12 +2198,12 @@ boot.med<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,contm=d
      {all_model[[t.i]]=temp$model$model
       all_iter=rbind(all_iter,temp$model$best.iter)
       all_boot=rbind(all_boot,boots)}
-   te[1+t.i,]<-apply(temp$te,2,mean,na.rm=T)
+   te[1+t.i,]<-apply(temp$te,2,mean,na.rm=TRUE)
    temp.1<-NULL
    for (l in 1:nx)
    {temp.1<-cbind(temp.1,temp$denm[[l]][,1:ny])
-    ie[[l]][t.i,]<-apply(temp$ie[[l]],2,mean,na.rm=T)}  #first row is the estimated value
-   de[1+t.i,]<-apply(temp.1,2,mean,na.rm=T)
+    ie[[l]][t.i,]<-apply(temp$ie[[l]],2,mean,na.rm=TRUE)}  #first row is the estimated value
+   de[1+t.i,]<-apply(temp.1,2,mean,na.rm=TRUE)
    print(t.i)
   }
   
@@ -2211,14 +2211,14 @@ boot.med<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,contm=d
   colnames(de)<-paste(paste("y",1:ncol(y),sep=""),rep(pred_names1,each=ncol(y)),sep=".")
   a<-list(estimation=list(ie=ie1,te=te[1,],de=de[1,]),bootsresults=list(ie=ie,te=te[-1,],de=de[-1,]),model=model, 
           data=list(x=x,y=y,dirx=dirx,contm=contm,catm=catm,jointm=jointm,binpred=binpred,contpred=NULL,catpred=catpred),
-          all_model=all_model,all_iter=all_iter,all_boot=all_boot,mod=F)
+          all_model=all_model,all_iter=all_iter,all_boot=all_boot,mod=FALSE)
   class(a)<-"mma"
   return(a)
 }
 
 boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpred,binm=data$binm,contm=data$contm,
                          catm=data$catm, jointm=data$jointm, cova=data$cova, margin=1, n=20,
-                         nonlinear=F,df1=1,nu=0.001,D=3,distn="gaussian",
+                         nonlinear=FALSE,df1=1,nu=0.001,D=3,distn="gaussian",
                          family1=gaussian(link="identity"),n2=50,w=rep(1,nrow(x)),
                          biny=(data$y_type==2),refy=rep(NA,ncol(y)),x.new=x,pred.new=dirx,
                          cova.new=cova,surv,type,w.new=NULL,all.model=all.model,xmod=NULL,
@@ -2226,7 +2226,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
 {
   med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx, dirx1=data$contpred, binm=data$binm,contm=data$contm,
                       catm=data$catm, jointm=data$jointm, cova=data$cova, margin=1, n=20,
-                      nonlinear=F,df1=1,nu=0.001,D=3,distn=NULL,family1=data$family1,
+                      nonlinear=FALSE,df1=1,nu=0.001,D=3,distn=NULL,family1=data$family1,
                       biny=(data$y_type==2),refy=rep(NA,ncol(y)),x.new=x,pred.new=dirx, cova.new=cova, surv=(data$y_type==4),
                       type=NULL,w=NULL, w.new=NULL, xmod=NULL,custom.function=NULL)
   {if (is.null(c(binm,contm,catm)))
@@ -2253,18 +2253,18 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
         if(is.character(jointm[[i]]))
           jointm[[i]]<-unlist(sapply(jointm[[i]],grep,xnames))
     
-    anymissing<-function(vec) #return T if there is any missing in the vec
+    anymissing<-function(vec) #return TRUE if there is any missing in the vec
     {if(sum(is.na(vec))>0)
-      return(F)
-      else return(T)
+      return(FALSE)
+      else return(TRUE)
     }
     
     col_mean<-function(col,n.row,w=NULL)
     {temp<-matrix(col,n.row)
     if(is.null(w))
-      return(apply(temp,1,mean,na.rm=T))
+      return(apply(temp,1,mean,na.rm=TRUE))
     else
-      return(apply(temp,1,weighted.mean,na.rm=T,w=w))}
+      return(apply(temp,1,weighted.mean,na.rm=TRUE,w=w))}
     
     
     dist.m.given.x<-function(x,dirx,binm=NULL,contm=NULL,catm=NULL,nonlinear,df1,w,cova) #give the model and residual of m given x
@@ -2361,7 +2361,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
     match.margin<-function(vec)   
     {range1<-vec[1:2]
     vec1<-vec[-(1:2)]
-    range2<-range(vec1,na.rm=T)
+    range2<-range(vec1,na.rm=TRUE)
     vec1<-range1[1]+diff(range1)/diff(range2)*(vec1-range2[1])
     vec1
     }
@@ -2414,11 +2414,11 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
     
     if(dim(means)[2]==1)                                                   #added in the new program, in case there is only one mediator
     {sim.m<-suppressWarnings(rnorm(length(means),mean=means,sd=sqrt(distmgivenx$varmat)))     #added in the new program
-    sim.m2<-match.margin(c(range(means,na.rm=T),sim.m))}                          #added in the new program   
+    sim.m2<-match.margin(c(range(means,na.rm=TRUE),sim.m))}                          #added in the new program   
     else{
       sim.m<-t(apply(means,1,mult.norm,vari=distmgivenx$varmat,n=1))
       
-      range.means<-apply(means,2,range,na.rm=T)
+      range.means<-apply(means,2,range,na.rm=TRUE)
       
       sim.m2<-apply(rbind(range.means,sim.m),2,match.margin)    #to make the simulate fit the means' ranges
     }
@@ -2594,7 +2594,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
       
       #browser()   
       
-      sample.temp<-sample(1:n.new,2*n.new,replace = T,prob=w.new)   #random sample from the original data
+      sample.temp<-sample(1:n.new,2*n.new,replace = TRUE,prob=w.new)   #random sample from the original data
       
       #4.0.0 get the total indirect effect
       temp.new1<-new1
@@ -2769,8 +2769,8 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
   
   anymissing<-function(vec)
   {if(sum(is.na(vec))>0)
-    return(F)
-    else return(T)
+    return(FALSE)
+    else return(TRUE)
   }
   
 if (is.null(c(binm,contm,catm)))
@@ -2848,16 +2848,16 @@ temp.1<-NULL
 for (l in 1:nx)
  temp.1<-cbind(temp.1,temp$denm[[l]][,1:ny])
 if(is.null(w.new))
-{te[1,]<-apply(temp$te,2,mean,na.rm=T)
- de[1,]<-apply(temp.1,2,mean,na.rm=T) 
+{te[1,]<-apply(temp$te,2,mean,na.rm=TRUE)
+ de[1,]<-apply(temp.1,2,mean,na.rm=TRUE) 
  for (l in 1:nx)
-   ie1[l,]<-apply(temp$ie[[l]],2,mean,na.rm=T)  #first row is the estimated value
+   ie1[l,]<-apply(temp$ie[[l]],2,mean,na.rm=TRUE)  #first row is the estimated value
 }
 else
-{te[1,]<-apply(temp$te,2,weighted.mean,na.rm=T,w=w.new)
- de[1,]<-apply(temp$denm[,1],2,weighted.mean,na.rm=T,w=w.new) 
+{te[1,]<-apply(temp$te,2,weighted.mean,na.rm=TRUE,w=w.new)
+ de[1,]<-apply(temp$denm[,1],2,weighted.mean,na.rm=TRUE,w=w.new) 
  for (l in 1:nx)
-   ie1[l,]<-apply(temp$ie[[l]],2,weighted.mean,na.rm=T,w=w.new)  #first row is the estimated value
+   ie1[l,]<-apply(temp$ie[[l]],2,weighted.mean,na.rm=TRUE,w=w.new)  #first row is the estimated value
 }
 
 
@@ -2871,7 +2871,7 @@ all_iter=NULL
 all_boot=NULL
 
 for (i in 1:n2)
-{boots<-sample(1:nrow(x),replace=T, prob=w)
+{boots<-sample(1:nrow(x),replace=TRUE, prob=w)
  x1<-data.frame(x[boots,])
  colnames(x1)=xnames
  y1<-data.frame(y[boots,])
@@ -2901,16 +2901,16 @@ for (i in 1:n2)
  for (l in 1:nx)
    temp.1<-cbind(temp.1,temp$denm[[l]][,1:ny])
  if(is.null(w.new))
-   {te[1+i,]<-apply(temp$te,2,mean,na.rm=T)
-    de[1+i,]<-apply(temp.1,2,mean,na.rm=T)
+   {te[1+i,]<-apply(temp$te,2,mean,na.rm=TRUE)
+    de[1+i,]<-apply(temp.1,2,mean,na.rm=TRUE)
     for (l in 1:nx)
-      ie[[l]][i,]<-apply(temp$ie[[l]],2,mean,na.rm=T)  #first row is the estimated value
+      ie[[l]][i,]<-apply(temp$ie[[l]],2,mean,na.rm=TRUE)  #first row is the estimated value
    }
 else
-{te[1+i,]<-apply(temp$te,2,weighted.mean,na.rm=T,w=w.new)
- de[1+i,]<-apply(temp$denm[,1],weighted.mean,na.rm=T,w=w.new)
+{te[1+i,]<-apply(temp$te,2,weighted.mean,na.rm=TRUE,w=w.new)
+ de[1+i,]<-apply(temp$denm[,1],weighted.mean,na.rm=TRUE,w=w.new)
  for (l in 1:nx)
-   ie[[l]][i,]<-apply(temp$ie[[l]],2,weighted.mean,na.rm=T)  #first row is the estimated value
+   ie[[l]][i,]<-apply(temp$ie[[l]],2,weighted.mean,na.rm=TRUE)  #first row is the estimated value
 }
 te1<-cbind(te1,temp$te)
 de1<-cbind(de1,temp.1)
@@ -2927,19 +2927,19 @@ a<-list(estimation=list(ie=ie1,te=te[1,],de=de[1,]),bootsresults=list(ie=ie,te=t
         data=list(x=x,y=y,dirx=dirx,binm=binm,contm=contm,catm=catm, jointm=jointm, cova=cova, binpred=NULL,
                   contpred=dirx1,catpred=NULL),
         boot.detail=list(pred.new=pred.new,cova.new=cova.new,te1=te1,de1=de1,ie1=ie2),w.new=w.new,
-        all_model=all_model,all_iter=all_iter,all_boot=all_boot,mod=F,med=temp.med)
+        all_model=all_model,all_iter=all_iter,all_boot=all_boot,mod=FALSE,med=temp.med)
 class(a)<-"mma"
 return(a)
 }
 
 if(is.null(data)){
-  surv=rep(F,ncol(y))
-  biny=rep(F,ncol(y))
+  surv=rep(FALSE,ncol(y))
+  biny=rep(FALSE,ncol(y))
   if(is.null(distn))
     distn<-rep(NA,ncol(y))
   for(j in 1:ncol(y)) {
     if(class(y[,j])=="Surv"){
-      surv[j]=T
+      surv[j]=TRUE
       if(is.na(distn[j]))
         distn[j]="coxph"
       if(is.null(type) & nonlinear)
@@ -2948,7 +2948,7 @@ if(is.null(data)){
         type="risk"
     }
     else if(is.character(y[,j]) | is.factor(y[,j]) | nlevels(as.factor(y[,j]))==2)
-    {biny[j]=T
+    {biny[j]=TRUE
     if(is.na(family1[[j]]))
       family1[[j]] = binomial("logit")
     if(is.na(distn[j]))
@@ -3070,19 +3070,19 @@ return(a)
 mma<-function(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
               catmed=NULL,catref=NULL,jointm=NULL,cova=NULL,refy=rep(NA,ncol(data.frame(y))),
               predref=rep(NA,ncol(data.frame(pred))),alpha=0.1,alpha2=0.1, margin=1, n=20,
-              nonlinear=F,df1=1,nu=0.001,D=3,distn=NULL,family1=as.list(rep(NA,ncol(data.frame(y)))),
+              nonlinear=FALSE,df1=1,nu=0.001,D=3,distn=NULL,family1=as.list(rep(NA,ncol(data.frame(y)))),
               n2=50,w=rep(1,nrow(x)), testtype=1, x.new=NULL, pred.new=NULL,cova.new=NULL,type=NULL,
               w.new=NULL,all.model=FALSE,xmod=NULL,custom.function = NULL)
 {boot.med.binx<-function(data,x=data$x, y=data$y,dirx=data$dirx,contm=data$contm,catm=data$catm,
-                         jointm=data$jointm, cova=data$cova,n=20,n2=50,nonlinear=F,nu=0.001,binpred=data$binpred,catpred=data$catpred,
+                         jointm=data$jointm, cova=data$cova,n=20,n2=50,nonlinear=FALSE,nu=0.001,binpred=data$binpred,catpred=data$catpred,
                          D=3,distn="bernoulli",family1=binomial("logit"),w=rep(1,nrow(x)),biny=(data$y_type==2),
                          refy=rep(NA,ncol(y)),surv=(data$y_type==4),type,all.model=FALSE,xmod=NULL,custom.function=NULL)
   #n2 is the time of bootstrap
 { med.binx<-function(data, x=data$x, y=data$y, dirx=data$dirx, dirx1=dirx, contm = data$contm, 
                      catm = data$catm, jointm = data$jointm, cova=data$cova, allm = c(contm, catm), 
-                     n=20,nonlinear=F,nu=0.001,
+                     n=20,nonlinear=FALSE,nu=0.001,
                      D=3,distn=NULL,family1=data$family1, #
-                     biny=rep(F,ncol(y)),refy=rep(0,ncol(y)),surv=rep(F,ncol(y)),type=NULL,
+                     biny=rep(FALSE,ncol(y)),refy=rep(0,ncol(y)),surv=rep(FALSE,ncol(y)),type=NULL,
                      w=NULL,xmod=NULL,custom.function=NULL, full.model, best.iter1) #
   {if (is.null(allm))
     stop("Error: no potential mediator is specified")
@@ -3113,17 +3113,17 @@ mma<-function(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
       if(surv[m] & !is.null(best.iter1[m])){
         if(is.null(type))
           type="link"
-        te[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=T)}
+        te[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=TRUE)}
     else if (surv[m])
-      te[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=T)- mean(predict(full.model[[m]],new0,type=type),na.rm=T)
+      te[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,type=type),na.rm=TRUE)
     else
-      te[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=T)
+      te[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=TRUE)
     te
     }
     
     med.binx.contm<-function(full.model,nom1,nom0,med,best.iter1=NULL,surv,type,xmod,xnames)  
     {n3<-nrow(nom1)+nrow(nom0)
-    marg.m<-c(nom1[,med],nom0[,med])[sample(1:n3,replace=T)]
+    marg.m<-c(nom1[,med],nom0[,med])[sample(1:n3,replace=TRUE)]
     new1<-nom1
     new1[,med]<-marg.m[1:nrow(nom1)]
     new0<-nom0
@@ -3144,11 +3144,11 @@ mma<-function(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
       if(surv[m] & !is.null(best.iter1[m])){
         if(is.null(type))
           type="link"
-        dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=T)}
+        dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=TRUE)}
     else if(surv[m])
-      dir.nom[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=T)- mean(predict(full.model[[m]],new0,type=type),na.rm=T)
+      dir.nom[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,type=type),na.rm=TRUE)
     else
-      dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=T)
+      dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=TRUE)
     dir.nom
     }
     
@@ -3186,17 +3186,17 @@ mma<-function(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
         if(surv[m] & !is.null(best.iter1[m])){
           if(is.null(type))
             type="link"
-          dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=T)}
+          dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=TRUE)}
       else if(surv[m])
-        dir.nom[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=T)- mean(predict(full.model[[m]],new0,type=type),na.rm=T)
+        dir.nom[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,type=type),na.rm=TRUE)
       else
-        dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=T)
+        dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=TRUE)
       dir.nom
     }
     
     med.binx.catm<-function(full.model,nom1,nom0,med,best.iter1=NULL,surv,type,xmod,xnames)  
     {n3<-nrow(nom1)+nrow(nom0)
-    temp.rand<-unlist(list(nom1[,med],nom0[,med]))[sample(1:n3,replace=T)]
+    temp.rand<-unlist(list(nom1[,med],nom0[,med]))[sample(1:n3,replace=TRUE)]
     marg.m1<-temp.rand[1:nrow(nom1)]
     marg.m2<-temp.rand[(nrow(nom1)+1):n3]
     dir.nom<-rep(0,length(full.model))
@@ -3217,15 +3217,15 @@ mma<-function(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
       new1[,m.t1]=m.t3[,m.t]
       m.t=m.t+1}}
       }
-      p<-mean(temp.rand==i,na.rm=T)
+      p<-mean(temp.rand==i,na.rm=TRUE)
       if(surv[m] & !is.null(best.iter1[m])){
         if(is.null(type))
           type="link"
-        dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=T))}
+        dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=TRUE))}
       else if(surv[m])
-        dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,type=type),na.rm=T)- mean(predict(full.model[[m]],new0,type=type),na.rm=T))
+        dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,type=type),na.rm=TRUE))
       else
-        dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=T))
+        dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=TRUE))
       }
     dir.nom
     }
@@ -3261,8 +3261,8 @@ mma<-function(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
       if(!is.null(w))
         w1<-w[dirx[,dirx1[l]]==1]
       #n3<-dim(x)[1] use the original size
-      new1<-x1.2[sample(1:nrow(x1.2),replace=T,prob=w1),] #floor(n3/2),
-      new0<-x0[sample(1:nrow(x0),replace=T,prob=w0),] #floor(n3/2),
+      new1<-x1.2[sample(1:nrow(x1.2),replace=TRUE,prob=w1),] #floor(n3/2),
+      new0<-x0[sample(1:nrow(x0),replace=TRUE,prob=w0),] #floor(n3/2),
       
       if(!is.null(xmod))
         for(z in allm){
@@ -3278,7 +3278,7 @@ mma<-function(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
         }
       
       te[k,((l-1)*ncol(y)+1):(l*ncol(y))]<-te.binx(full.model,new1,new0,best.iter1,surv,type)  
-      temp.rand<-sample(1:(nrow(x1.2)+nrow(x0)),replace=T)# no need for:prob=c(w1,w0) --redundant
+      temp.rand<-sample(1:(nrow(x1.2)+nrow(x0)),replace=TRUE)# no need for:prob=c(w1,w0) --redundant
       #the indirect effect of all mediators
       temp.ie<-te[k,((l-1)*ncol(y)+1):(l*ncol(y))]-med.binx.jointm(full.model,new1,new0,allm,best.iter1,surv,type,temp.rand,xmod,xnames) #add temp.rand
       #new method to calculate the direct effect     
@@ -3313,7 +3313,7 @@ mma<-function(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
       #3.4 mediation effect from the joint mediators
       if (!is.null(jointm))
         for (i in 1:jointm[[1]])          #full.model,x,y,med,dirx,best.iter1=NULL
-        {temp.rand<-sample(1:(nrow(x1.2)+nrow(x0)),replace=T)# no need for:prob=c(w1,w0) --redundant
+        {temp.rand<-sample(1:(nrow(x1.2)+nrow(x0)),replace=TRUE)# no need for:prob=c(w1,w0) --redundant
         denm[[l]][k,(ncol(y)*(j-1)+1):(ncol(y)*j)]<-med.binx.jointm(full.model,new1,new0,jointm[[i+1]],best.iter1,surv,type,temp.rand,xmod,xnames)
         j<-j+1}
       #3.5 get the indirect effects and total effect
@@ -3466,19 +3466,19 @@ mma<-function(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
   #temp<-med.binx(data=NULL,x,y,dirx,contm,catm,jointm,cova,allm,n,nonlinear,nu,D,distn,family1,
   #               biny,refy,surv,type,w=w,xmod,custom.function=custom.function)
   temp=a.binx
-  te[1,]<-apply(temp$te,2,mean,na.rm=T)
+  te[1,]<-apply(temp$te,2,mean,na.rm=TRUE)
   temp.1<-NULL
   for (l in 1:nx)
   {temp.1<-cbind(temp.1,temp$denm[[l]][,1:ny])
   ie1[l,]<-apply(temp$ie[[l]],2,mean)}  #first row is the estimated value
-  de[1,]<-apply(temp.1,2,mean,na.rm=T)
+  de[1,]<-apply(temp.1,2,mean,na.rm=TRUE)
   model<-temp$model
   all_model=NULL #to store all fitted models if all.model is TRUE
   all_iter=NULL
   all_boot=NULL
   
   for (t.i in 1:n2)
-  {boots<-sample(1:nrow(x),replace=T,prob=w)
+  {boots<-sample(1:nrow(x),replace=TRUE,prob=w)
   x.temp<-data.frame(x[boots,])
   names(x.temp)=xnames
   y.temp<-data.frame(y[boots,])
@@ -3581,12 +3581,12 @@ mma<-function(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
   {all_model[[t.i]]=temp$model$model
   all_iter=rbind(all_iter,temp$model$best.iter)
   all_boot=rbind(all_boot,boots)}
-  te[1+t.i,]<-apply(temp$te,2,mean,na.rm=T)
+  te[1+t.i,]<-apply(temp$te,2,mean,na.rm=TRUE)
   temp.1<-NULL
   for (l in 1:nx)
   {temp.1<-cbind(temp.1,temp$denm[[l]][,1:ny])
-  ie[[l]][t.i,]<-apply(temp$ie[[l]],2,mean,na.rm=T)}  #first row is the estimated value
-  de[1+t.i,]<-apply(temp.1,2,mean,na.rm=T)
+  ie[[l]][t.i,]<-apply(temp$ie[[l]],2,mean,na.rm=TRUE)}  #first row is the estimated value
+  de[1+t.i,]<-apply(temp.1,2,mean,na.rm=TRUE)
   print(t.i)
   }
   
@@ -3594,14 +3594,14 @@ mma<-function(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
   colnames(de)<-paste(paste("y",1:ncol(y),sep=""),rep(pred_names1,each=ncol(y)),sep=".")
   a<-list(estimation=list(ie=ie1,te=te[1,],de=de[1,]),bootsresults=list(ie=ie,te=te[-1,],de=de[-1,]),model=model, 
           data=list(x=x,y=y,dirx=dirx,contm=contm,catm=catm,jointm=jointm,binpred=binpred,contpred=NULL,catpred=catpred),
-          all_model=all_model,all_iter=all_iter,all_boot=all_boot,mod=F)
+          all_model=all_model,all_iter=all_iter,all_boot=all_boot,mod=FALSE)
   class(a)<-"mma"
   return(a)
 }
 
 boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpred,binm=data$binm,contm=data$contm,
                          catm=data$catm, jointm=data$jointm, cova=data$cova, margin=1, n=20,
-                         nonlinear=F,df1=1,nu=0.001,D=3,distn="gaussian",
+                         nonlinear=FALSE,df1=1,nu=0.001,D=3,distn="gaussian",
                          family1=gaussian(link="identity"),n2=50,w=rep(1,nrow(x)),
                          biny=(data$y_type==2),refy=rep(NA,ncol(y)),x.new=x,pred.new=dirx,
                          cova.new=cova,surv,type,w.new=NULL,all.model=all.model,xmod=NULL,
@@ -3609,7 +3609,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
 {
   med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx, dirx1=data$contpred, binm=data$binm,contm=data$contm,
                       catm=data$catm, jointm=data$jointm, cova=data$cova, margin=1, n=20,
-                      nonlinear=F,df1=1,nu=0.001,D=3,distn=NULL,family1=data$family1,
+                      nonlinear=FALSE,df1=1,nu=0.001,D=3,distn=NULL,family1=data$family1,
                       biny=(data$y_type==2),refy=rep(NA,ncol(y)),x.new=x,pred.new=dirx, cova.new=cova, surv=(data$y_type==4),
                       type=NULL,w=NULL, w.new=NULL, xmod=NULL,custom.function=NULL)
   {if (is.null(c(binm,contm,catm)))
@@ -3636,18 +3636,18 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
         if(is.character(jointm[[i]]))
           jointm[[i]]<-unlist(sapply(jointm[[i]],grep,xnames))
     
-    anymissing<-function(vec) #return T if there is any missing in the vec
+    anymissing<-function(vec) #return TRUE if there is any missing in the vec
     {if(sum(is.na(vec))>0)
-      return(F)
-      else return(T)
+      return(FALSE)
+      else return(TRUE)
     }
     
     col_mean<-function(col,n.row,w=NULL)
     {temp<-matrix(col,n.row)
     if(is.null(w))
-      return(apply(temp,1,mean,na.rm=T))
+      return(apply(temp,1,mean,na.rm=TRUE))
     else
-      return(apply(temp,1,weighted.mean,na.rm=T,w=w))}
+      return(apply(temp,1,weighted.mean,na.rm=TRUE,w=w))}
     
     
     dist.m.given.x<-function(x,dirx,binm=NULL,contm=NULL,catm=NULL,nonlinear,df1,w,cova) #give the model and residual of m given x
@@ -3744,7 +3744,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
     match.margin<-function(vec)   
     {range1<-vec[1:2]
     vec1<-vec[-(1:2)]
-    range2<-range(vec1,na.rm=T)
+    range2<-range(vec1,na.rm=TRUE)
     vec1<-range1[1]+diff(range1)/diff(range2)*(vec1-range2[1])
     vec1
     }
@@ -3797,11 +3797,11 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
     
     if(dim(means)[2]==1)                                                   #added in the new program, in case there is only one mediator
     {sim.m<-suppressWarnings(rnorm(length(means),mean=means,sd=sqrt(distmgivenx$varmat)))     #added in the new program
-    sim.m2<-match.margin(c(range(means,na.rm=T),sim.m))}                          #added in the new program   
+    sim.m2<-match.margin(c(range(means,na.rm=TRUE),sim.m))}                          #added in the new program   
     else{
       sim.m<-t(apply(means,1,mult.norm,vari=distmgivenx$varmat,n=1))
       
-      range.means<-apply(means,2,range,na.rm=T)
+      range.means<-apply(means,2,range,na.rm=TRUE)
       
       sim.m2<-apply(rbind(range.means,sim.m),2,match.margin)    #to make the simulate fit the means' ranges
     }
@@ -3977,7 +3977,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
       
       #browser()   
       
-      sample.temp<-sample(1:n.new,2*n.new,replace = T,prob=w.new)   #random sample from the original data
+      sample.temp<-sample(1:n.new,2*n.new,replace = TRUE,prob=w.new)   #random sample from the original data
       
       #4.0.0 get the total indirect effect
       temp.new1<-new1
@@ -4152,8 +4152,8 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
   
   anymissing<-function(vec)
   {if(sum(is.na(vec))>0)
-    return(F)
-    else return(T)
+    return(FALSE)
+    else return(TRUE)
   }
   
   if (is.null(c(binm,contm,catm)))
@@ -4230,16 +4230,16 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
   for (l in 1:nx)
     temp.1<-cbind(temp.1,temp$denm[[l]][,1:ny])
   if(is.null(w.new))
-  {te[1,]<-apply(temp$te,2,mean,na.rm=T)
-  de[1,]<-apply(temp.1,2,mean,na.rm=T) 
+  {te[1,]<-apply(temp$te,2,mean,na.rm=TRUE)
+  de[1,]<-apply(temp.1,2,mean,na.rm=TRUE) 
   for (l in 1:nx)
-    ie1[l,]<-apply(temp$ie[[l]],2,mean,na.rm=T)  #first row is the estimated value
+    ie1[l,]<-apply(temp$ie[[l]],2,mean,na.rm=TRUE)  #first row is the estimated value
   }
   else
-  {te[1,]<-apply(temp$te,2,weighted.mean,na.rm=T,w=w.new)
-  de[1,]<-apply(temp$denm[,1],2,weighted.mean,na.rm=T,w=w.new) 
+  {te[1,]<-apply(temp$te,2,weighted.mean,na.rm=TRUE,w=w.new)
+  de[1,]<-apply(temp$denm[,1],2,weighted.mean,na.rm=TRUE,w=w.new) 
   for (l in 1:nx)
-    ie1[l,]<-apply(temp$ie[[l]],2,weighted.mean,na.rm=T,w=w.new)  #first row is the estimated value
+    ie1[l,]<-apply(temp$ie[[l]],2,weighted.mean,na.rm=TRUE,w=w.new)  #first row is the estimated value
   }
   
   
@@ -4253,7 +4253,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
   all_boot=NULL
   
   for (i in 1:n2)
-  {boots<-sample(1:nrow(x),replace=T, prob=w)
+  {boots<-sample(1:nrow(x),replace=TRUE, prob=w)
   x1<-data.frame(x[boots,])
   colnames(x1)=xnames
   y1<-data.frame(y[boots,])
@@ -4283,16 +4283,16 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
   for (l in 1:nx)
     temp.1<-cbind(temp.1,temp$denm[[l]][,1:ny])
   if(is.null(w.new))
-  {te[1+i,]<-apply(temp$te,2,mean,na.rm=T)
-  de[1+i,]<-apply(temp.1,2,mean,na.rm=T)
+  {te[1+i,]<-apply(temp$te,2,mean,na.rm=TRUE)
+  de[1+i,]<-apply(temp.1,2,mean,na.rm=TRUE)
   for (l in 1:nx)
-    ie[[l]][i,]<-apply(temp$ie[[l]],2,mean,na.rm=T)  #first row is the estimated value
+    ie[[l]][i,]<-apply(temp$ie[[l]],2,mean,na.rm=TRUE)  #first row is the estimated value
   }
   else
-  {te[1+i,]<-apply(temp$te,2,weighted.mean,na.rm=T,w=w.new)
-  de[1+i,]<-apply(temp$denm[,1],weighted.mean,na.rm=T,w=w.new)
+  {te[1+i,]<-apply(temp$te,2,weighted.mean,na.rm=TRUE,w=w.new)
+  de[1+i,]<-apply(temp$denm[,1],weighted.mean,na.rm=TRUE,w=w.new)
   for (l in 1:nx)
-    ie[[l]][i,]<-apply(temp$ie[[l]],2,weighted.mean,na.rm=T)  #first row is the estimated value
+    ie[[l]][i,]<-apply(temp$ie[[l]],2,weighted.mean,na.rm=TRUE)  #first row is the estimated value
   }
   te1<-cbind(te1,temp$te)
   de1<-cbind(de1,temp.1)
@@ -4309,7 +4309,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
           data=list(x=x,y=y,dirx=dirx,binm=binm,contm=contm,catm=catm, jointm=jointm, cova=cova, binpred=NULL,
                     contpred=dirx1,catpred=NULL),
           boot.detail=list(pred.new=pred.new,cova.new=cova.new,te1=te1,de1=de1,ie1=ie2),w.new=w.new,
-          all_model=all_model,all_iter=all_iter,all_boot=all_boot,mod=F,med=temp.med)
+          all_model=all_model,all_iter=all_iter,all_boot=all_boot,mod=FALSE,med=temp.med)
   class(a)<-"mma"
   return(a)
 }
@@ -4388,13 +4388,13 @@ print.mma<-function(x,...,digit=3)
 }
 
 
-summary.mma<-function(object,...,alpha=0.05,plot=TRUE,RE=FALSE,quant=F,ball.use=F,bymed=FALSE)
+summary.mma<-function(object,...,alpha=0.05,plot=TRUE,RE=FALSE,quant=FALSE,ball.use=FALSE,bymed=FALSE)
 { bin.result=NULL
  cont.result=NULL
   
  summary1<-function(object, alpha,plot,RE,quant,ball.use,bymed)
  {sqr.dist<-function(vec1,vec2,w)
- {weighted.mean((vec1-vec2)^2,w,na.rm=T)}
+ {weighted.mean((vec1-vec2)^2,w,na.rm=TRUE)}
 
  bound.ball<-function(mat1,mat2)
  {upbd=rep(NA,ncol(mat1))
@@ -4403,8 +4403,8 @@ summary.mma<-function(object,...,alpha=0.05,plot=TRUE,RE=FALSE,quant=F,ball.use=
   for(i in 1:n1)
   {temp.t<-i%%n1
    temp.z<-(1:ncol(mat1))%%n1==temp.t
-   upbd[temp.z]<-apply(as.matrix(mat1[mat2[,i],temp.z]),2,max,na.rm=T)
-   lwbd[temp.z]<-apply(as.matrix(mat1[mat2[,i],temp.z]),2,min,na.rm=T)
+   upbd[temp.z]<-apply(as.matrix(mat1[mat2[,i],temp.z]),2,max,na.rm=TRUE)
+   lwbd[temp.z]<-apply(as.matrix(mat1[mat2[,i],temp.z]),2,min,na.rm=TRUE)
   }
   return(cbind(upbd,lwbd)) 
  }
@@ -4426,13 +4426,13 @@ summary.mma<-function(object,...,alpha=0.05,plot=TRUE,RE=FALSE,quant=F,ball.use=
  k<-0
  for(l in 1:nx)
    {temp.te<-as.matrix(temp3$te)[,(k+1):(k+ny)]
-    temp.te1<-do.call(cbind, replicate(nie,temp.te,simplify=F))
+    temp.te1<-do.call(cbind, replicate(nie,temp.te,simplify=FALSE))
     temp3$ie[[l]]<-temp3$ie[[l]]/temp.te1
     k<-k+ny
    }
  temp4<-x$est
- temp.te<-matrix(temp4$te,nx,ny,byrow=T)
- temp.te1<-do.call(cbind, replicate(nie,temp.te,simplify=F))
+ temp.te<-matrix(temp4$te,nx,ny,byrow=TRUE)
+ temp.te1<-do.call(cbind, replicate(nie,temp.te,simplify=FALSE))
  temp4$ie<-temp4$ie/temp.te1
  temp4$de<-temp4$de/temp4$te
  
@@ -4442,15 +4442,15 @@ summary.mma<-function(object,...,alpha=0.05,plot=TRUE,RE=FALSE,quant=F,ball.use=
    for (m in 1:ny)
    {temp.t<-m%%ny
     temp.z<-(1:ncol(x$bootsresults$ie[[l]]))%%ny==temp.t
-    temp.z[1:ny]<-F
+    temp.z[1:ny]<-FALSE
     if(!is.null(x$data$jointm$n))
-      temp.z[(ncol(x$bootsresults$ie[[l]])-ny*x$data$jointm$n+1):ncol(x$bootsresults$ie[[l]])]<-F #delete the joint effect estimates
+      temp.z[(ncol(x$bootsresults$ie[[l]])-ny*x$data$jointm$n+1):ncol(x$bootsresults$ie[[l]])]<-FALSE #delete the joint effect estimates
     temp.est<-c(x$estimation$de[(l-1)*ny+m], x$estimation$ie[l,temp.z])
     temp.boot<-cbind(as.matrix(x$bootsresults$de)[,(l-1)*ny+m],x$bootsresults$ie[[l]][,temp.z])
     temp.w<-1/apply(temp.boot,2,var)
     temp.dist<-apply(temp.boot,1,sqr.dist,temp.est,temp.w)
 #    temp.rank<-rank(temp.dist)
-    temp.ball<-temp.dist<quantile(temp.dist,1-alpha,na.rm=T) #temp.rank<=length(temp.dist)*(1-alpha)
+    temp.ball<-temp.dist<quantile(temp.dist,1-alpha,na.rm=TRUE) #temp.rank<=length(temp.dist)*(1-alpha)
     ball<-cbind(ball,temp.ball)
    }
 colnames(ball)<-paste(rep(paste("x",1:nx,sep=""),each=ny),rep(paste("y",1:ny,sep=""),nx),sep=".") 
@@ -4462,46 +4462,46 @@ colnames(ball)<-paste(rep(paste("x",1:nx,sep=""),each=ny),rep(paste("y",1:ny,sep
  ie<-NULL
  for (l in 1:nx)
   {temp.bound<-bound.ball(temp1$ie[[l]],as.matrix(ball[,((l-1)*ny+1):(l*ny)]))
-   ie[[l]]<-rbind(est=as.matrix(temp2$ie)[l,],mean=apply(temp1$ie[[l]],2,mean,na.rm=T),sd=apply(temp1$ie[[l]],2,sd,na.rm=T),
-                 upbd=apply(temp1$ie[[l]],2,mean,na.rm=T)+b2*apply(temp1$ie[[l]],2,sd,na.rm=T),
-                 lwbd=apply(temp1$ie[[l]],2,mean,na.rm=T)+b1*apply(temp1$ie[[l]],2,sd,na.rm=T),
-                 upbd_q=apply(temp1$ie[[l]],2,quantile,a2,na.rm=T), lwbd_q=apply(temp1$ie[[l]],2,quantile,a1,na.rm=T),
+   ie[[l]]<-rbind(est=as.matrix(temp2$ie)[l,],mean=apply(temp1$ie[[l]],2,mean,na.rm=TRUE),sd=apply(temp1$ie[[l]],2,sd,na.rm=TRUE),
+                 upbd=apply(temp1$ie[[l]],2,mean,na.rm=TRUE)+b2*apply(temp1$ie[[l]],2,sd,na.rm=TRUE),
+                 lwbd=apply(temp1$ie[[l]],2,mean,na.rm=TRUE)+b1*apply(temp1$ie[[l]],2,sd,na.rm=TRUE),
+                 upbd_q=apply(temp1$ie[[l]],2,quantile,a2,na.rm=TRUE), lwbd_q=apply(temp1$ie[[l]],2,quantile,a1,na.rm=TRUE),
                  upbd_b=temp.bound[,1], lwbd_b=temp.bound[,2])}
  names(ie)<-names(temp1$ie)
  
  temp.bound1<-bound.ball(as.matrix(temp1$te),as.matrix(ball))
  temp.bound2<-bound.ball(as.matrix(temp1$de),as.matrix(ball))
  temp1.result<-list(indirect.effect=ie,
-                    total.effect=rbind(est=temp2$te,mean=apply(as.matrix(temp1$te),2,mean,na.rm=T),sd=apply(as.matrix(temp1$te),2,sd,na.rm=T),
-                                   upbd=apply(as.matrix(temp1$te),2,mean,na.rm=T)+b2*apply(as.matrix(temp1$te),2,sd,na.rm=T),
-                                   lwbd=apply(as.matrix(temp1$te),2,mean,na.rm=T)+b1*apply(as.matrix(temp1$te),2,sd,na.rm=T),
-                                   upbd_q=apply(as.matrix(temp1$te),2,quantile,a2,na.rm=T),
-                                   lwbd_q=apply(as.matrix(temp1$te),2,quantile,a1,na.rm=T),
+                    total.effect=rbind(est=temp2$te,mean=apply(as.matrix(temp1$te),2,mean,na.rm=TRUE),sd=apply(as.matrix(temp1$te),2,sd,na.rm=TRUE),
+                                   upbd=apply(as.matrix(temp1$te),2,mean,na.rm=TRUE)+b2*apply(as.matrix(temp1$te),2,sd,na.rm=TRUE),
+                                   lwbd=apply(as.matrix(temp1$te),2,mean,na.rm=TRUE)+b1*apply(as.matrix(temp1$te),2,sd,na.rm=TRUE),
+                                   upbd_q=apply(as.matrix(temp1$te),2,quantile,a2,na.rm=TRUE),
+                                   lwbd_q=apply(as.matrix(temp1$te),2,quantile,a1,na.rm=TRUE),
                                    upbd_b=temp.bound1[,1],lwbd_b=temp.bound1[,2]),
-                    direct.effect=rbind(est=temp2$de,mean=apply(as.matrix(temp1$de),2,mean,na.rm=T),sd=apply(as.matrix(temp1$de),2,sd,na.rm=T),
-                                   upbd=apply(as.matrix(temp1$de),2,mean,na.rm=T)+b2*apply(as.matrix(temp1$de),2,sd,na.rm=T),
-                                   lwbd=apply(as.matrix(temp1$de),2,mean,na.rm=T)+b1*apply(as.matrix(temp1$de),2,sd,na.rm=T),
-                                   upbd_q=apply(as.matrix(temp1$de),2,quantile,a2,na.rm=T),
-                                   lwbd_q=apply(as.matrix(temp1$de),2,quantile,a1,na.rm=T),
+                    direct.effect=rbind(est=temp2$de,mean=apply(as.matrix(temp1$de),2,mean,na.rm=TRUE),sd=apply(as.matrix(temp1$de),2,sd,na.rm=TRUE),
+                                   upbd=apply(as.matrix(temp1$de),2,mean,na.rm=TRUE)+b2*apply(as.matrix(temp1$de),2,sd,na.rm=TRUE),
+                                   lwbd=apply(as.matrix(temp1$de),2,mean,na.rm=TRUE)+b1*apply(as.matrix(temp1$de),2,sd,na.rm=TRUE),
+                                   upbd_q=apply(as.matrix(temp1$de),2,quantile,a2,na.rm=TRUE),
+                                   lwbd_q=apply(as.matrix(temp1$de),2,quantile,a1,na.rm=TRUE),
                                    upbd_b=temp.bound2[,1],lwbd_b=temp.bound2[,2]))
  
  ie<-NULL
    for (l in 1:nx)
    {temp.bound<-bound.ball(temp3$ie[[l]],as.matrix(ball[,((l-1)*ny+1):(l*ny)]))
-    ie[[l]]<-rbind(est=as.matrix(temp4$ie)[l,],mean=apply(temp3$ie[[l]],2,mean,na.rm=T),sd=apply(temp3$ie[[l]],2,sd,na.rm=T),
-                   upbd=apply(temp3$ie[[l]],2,mean,na.rm=T)+b2*apply(temp3$ie[[l]],2,sd,na.rm=T),
-                   lwbd=apply(temp3$ie[[l]],2,mean,na.rm=T)+b1*apply(temp3$ie[[l]],2,sd,na.rm=T),
-                   upbd_q=apply(temp3$ie[[l]],2,quantile,a2,na.rm=T), 
-                   lwbd_q=apply(temp3$ie[[l]],2,quantile,a1,na.rm=T),
+    ie[[l]]<-rbind(est=as.matrix(temp4$ie)[l,],mean=apply(temp3$ie[[l]],2,mean,na.rm=TRUE),sd=apply(temp3$ie[[l]],2,sd,na.rm=TRUE),
+                   upbd=apply(temp3$ie[[l]],2,mean,na.rm=TRUE)+b2*apply(temp3$ie[[l]],2,sd,na.rm=TRUE),
+                   lwbd=apply(temp3$ie[[l]],2,mean,na.rm=TRUE)+b1*apply(temp3$ie[[l]],2,sd,na.rm=TRUE),
+                   upbd_q=apply(temp3$ie[[l]],2,quantile,a2,na.rm=TRUE), 
+                   lwbd_q=apply(temp3$ie[[l]],2,quantile,a1,na.rm=TRUE),
                    upbd_b=temp.bound[,1], lwbd_b=temp.bound[,2])}
  names(ie)<-names(temp3$ie)
  temp.bound2<-bound.ball(as.matrix(temp3$de),as.matrix(ball))
  temp2.result<-list(indirect.effect=ie,
-                    direct.effect=rbind(est=temp4$de,mean=apply(as.matrix(temp3$de),2,mean,na.rm=T),sd=apply(as.matrix(temp3$de),2,sd,na.rm=T),
-                                        upbd=apply(as.matrix(temp3$de),2,mean,na.rm=T)+b2*apply(as.matrix(temp3$de),2,sd,na.rm=T),
-                                        lwbd=apply(as.matrix(temp3$de),2,mean,na.rm=T)+b1*apply(as.matrix(temp3$de),2,sd,na.rm=T),
-                                        upbd_q=apply(as.matrix(temp3$de),2,quantile,a2,na.rm=T),
-                                        lwbd_q=apply(as.matrix(temp3$de),2,quantile,a1,na.rm=T),
+                    direct.effect=rbind(est=temp4$de,mean=apply(as.matrix(temp3$de),2,mean,na.rm=TRUE),sd=apply(as.matrix(temp3$de),2,sd,na.rm=TRUE),
+                                        upbd=apply(as.matrix(temp3$de),2,mean,na.rm=TRUE)+b2*apply(as.matrix(temp3$de),2,sd,na.rm=TRUE),
+                                        lwbd=apply(as.matrix(temp3$de),2,mean,na.rm=TRUE)+b1*apply(as.matrix(temp3$de),2,sd,na.rm=TRUE),
+                                        upbd_q=apply(as.matrix(temp3$de),2,quantile,a2,na.rm=TRUE),
+                                        lwbd_q=apply(as.matrix(temp3$de),2,quantile,a1,na.rm=TRUE),
                                         upbd_b=temp.bound2[,1],lwbd_b=temp.bound2[,2]))
  result<-list(results=temp1.result,re=temp2.result,alpha=alpha,plot=plot,obj=x,RE=RE,quant=quant,nx=nx,nie=nie,ny=ny,ball.use=ball.use,bymed=bymed)
  result
@@ -4553,7 +4553,10 @@ print.summary.mma<-function(x,...,digit=3)
      }}
    
    if(x$plot)
-   {if(x$RE)
+   {oldpar <- par(no.readonly = TRUE)  
+    on.exit(par(oldpar)) 
+   
+    if(x$RE)
    {re<-x$re$direct.effect[2,]
    if(x$ball.use)
    {re<-x$re$direct.effect[1,]  # ball is more likely to centered around the est but not mean
@@ -4569,7 +4572,7 @@ print.summary.mma<-function(x,...,digit=3)
    par(mfrow=c(1,1),mar=c(1,6,1,1),oma=c(3,2,2,4))
    bp <- barplot2(re, horiz = TRUE, main=paste("Relative Direct Effect"), 
                   names.arg=name1,plot.ci = TRUE, ci.u = upper, ci.l = lower,
-                  cex.names=0.9,beside=FALSE,cex.axis=0.9,las=1,xlim=range(c(upper,lower),na.rm=T),
+                  cex.names=0.9,beside=FALSE,cex.axis=0.9,las=1,xlim=range(c(upper,lower),na.rm=TRUE),
                   col = rainbow(length(re), start = 3/6, end = 4/6))
    }
      else
@@ -4588,7 +4591,7 @@ print.summary.mma<-function(x,...,digit=3)
      par(mfrow=c(1,1),mar=c(1,6,1,1),oma=c(3,2,2,4))
      bp <- barplot2(re, horiz = TRUE, main=paste("Total Effect"), 
                     names.arg=name1,plot.ci = TRUE, ci.u = upper, ci.l = lower,
-                    cex.names=0.9,beside=FALSE,cex.axis=0.9,las=1,xlim=range(c(upper,lower),na.rm=T),
+                    cex.names=0.9,beside=FALSE,cex.axis=0.9,las=1,xlim=range(c(upper,lower),na.rm=TRUE),
                     col = rainbow(length(re), start = 3/6, end = 4/6))
      
      re<-x$results$direct.effect[2,]
@@ -4606,7 +4609,7 @@ print.summary.mma<-function(x,...,digit=3)
      par(mfrow=c(1,1),mar=c(1,6,1,1),oma=c(3,2,2,4))
      bp <- barplot2(re, horiz = TRUE, main=paste("Direct Effect"), 
                     names.arg=name1,plot.ci = TRUE, ci.u = upper, ci.l = lower,
-                    cex.names=0.9,beside=FALSE,cex.axis=0.9,las=1,xlim=range(c(upper,lower),na.rm = T),
+                    cex.names=0.9,beside=FALSE,cex.axis=0.9,las=1,xlim=range(c(upper,lower),na.rm = TRUE),
                     col = rainbow(length(re), start = 3/6, end = 4/6))
      }
      
@@ -4626,7 +4629,7 @@ print.summary.mma<-function(x,...,digit=3)
      par(mfrow=c(1,1),mar=c(1,6,1,1),oma=c(3,2,2,4))
      bp <- barplot2(re, horiz = TRUE, main=paste("Indirect Effects of",med_names[l], "on y"), 
                     names.arg=name1,plot.ci = TRUE, ci.u = upper, ci.l = lower,
-                    cex.names=0.9,beside=FALSE,cex.axis=0.9,las=1,xlim=range(c(upper,lower),na.rm=T),
+                    cex.names=0.9,beside=FALSE,cex.axis=0.9,las=1,xlim=range(c(upper,lower),na.rm=TRUE),
                     col = rainbow(length(re), start = 3/6, end = 4/6))
      }
    }
@@ -4656,7 +4659,7 @@ if(x$RE)
   for (m in 1:x$ny)
   {temp.t<-m%%x$ny
    temp.z<-(1:ncol(x$re$indirect.effect[[l]]))%%x$ny==temp.t
-   temp.z[1:x$ny]<-F
+   temp.z[1:x$ny]<-FALSE
    re<-c(x$re$indirect.effect[[l]][2,temp.z],x$re$dir[2,x$ny*(l-1)+m])
    if(x$ball.use)
    {re<-c(x$re$indirect.effect[[l]][1,temp.z],x$re$dir[1,x$ny*(l-1)+m])  # ball is more likely to centered around the est but not mean
@@ -4673,7 +4676,7 @@ if(x$RE)
    par(mfrow=c(1,1),mar=c(1,6,1,1),oma=c(3,2,2,4))
    bp <- barplot2(re[d], horiz = TRUE, main=paste("Relative Effects on y",m," on Predictor/Moderator at ",pred.names[l],sep=""), 
                 names.arg=name1[d],plot.ci = TRUE, ci.u = upper[d], ci.l = lower[d],
-                cex.names=0.9,beside=FALSE,cex.axis=0.9,las=1,xlim=range(c(upper,lower),na.rm=T),
+                cex.names=0.9,beside=FALSE,cex.axis=0.9,las=1,xlim=range(c(upper,lower),na.rm=TRUE),
                 col = rainbow(length(re), start = 3/6, end = 4/6))
   }
 else
@@ -4681,7 +4684,7 @@ else
     for (m in 1:x$ny)
     {temp.t<-m%%x$ny
      temp.z<-(1:ncol(x$results$indirect.effect[[l]]))%%x$ny==temp.t
-     temp.z[1:x$ny]<-F
+     temp.z[1:x$ny]<-FALSE
      results<-c(x$results$indirect.effect[[l]][2,temp.z],x$results$dir[2,x$ny*(l-1)+m])
      temp.tot<-x$results$tot[2,x$ny*(l-1)+m]
     if(x$ball.use)
@@ -4705,7 +4708,7 @@ else
     par(mfrow=c(1,1),mar=c(1,6,1,1),oma=c(3,2,2,4))
     bp <- barplot2(c(results[d],temp.tot), horiz = TRUE, main=paste("Mediation Effects on y",m," on Predictor/Moderator at ",pred.names[l],sep=""), 
                    names.arg=c(name1[d],"total"),plot.ci = TRUE, ci.u = c(upper[d],upper.tot), ci.l = c(lower[d],lower.tot),
-                   cex.names=0.9,beside=FALSE,cex.axis=0.9,las=1,xlim=range(c(upper,lower,upper.tot,lower.tot),na.rm=T),
+                   cex.names=0.9,beside=FALSE,cex.axis=0.9,las=1,xlim=range(c(upper,lower,upper.tot,lower.tot),na.rm=TRUE),
                    col = rainbow(length(d)+1, start = 3/6, end = 4/6))
     }
 }
@@ -4716,7 +4719,7 @@ if(!is.null(x$cont.result))
   print1(x$cont.result,digit)
 }
 
-plot.mma<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=F)
+plot.mma<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=FALSE)
 {plot1.mma<-function(x,vari,xlim,alpha,quantile){
 marg.den<-function(x,y,w=NULL) #added w
 {if(!is.null(w))
@@ -4729,10 +4732,10 @@ z1<-unique(x)
 z2<-rep(0,length(z1))
 if(is.null(w))   #
   for (i in 1:length(z1))
-    z2[i]<-mean(y[x==z1[i]],na.rm=T)  
+    z2[i]<-mean(y[x==z1[i]],na.rm=TRUE)  
 else          #
   for (i in 1:length(z1))      #
-    z2[i]<-weighted.mean(y[x==z1[i]],w[x==z1[i]],na.rm=T)  #added ,w[x==z1[i]]
+    z2[i]<-weighted.mean(y[x==z1[i]],w[x==z1[i]],na.rm=TRUE)  #added ,w[x==z1[i]]
 z3<-order(z1)
 cbind(z1[z3],z2[z3])
 }
@@ -4820,18 +4823,18 @@ b<-b[!is.na(a1) & !is.na(b1)]
 if(!is.null(w))                     #
   w<-w[!is.na(a1) & !is.na(b1)]    #
 j<-sort(unique(b))
-ahist<-hist(a[b==j[1]],plot=F)
+ahist<-hist(a[b==j[1]],plot=FALSE)
 if(!is.null(w))                     #
-  ahist<-weighted.hist(a[b==j[1]], w[b==j[1]], plot=F)    #
+  ahist<-weighted.hist(a[b==j[1]], w[b==j[1]], plot=FALSE)    #
 dist = ahist$breaks[2]-ahist$breaks[1]
-lb =min(ahist$breaks,na.rm = T)
-ub=max(ahist$breaks,na.rm = T)
-yl=max(ahist$density,na.rm = T)
+lb =min(ahist$breaks,na.rm = TRUE)
+ub=max(ahist$breaks,na.rm = TRUE)
+yl=max(ahist$density,na.rm = TRUE)
 for(i in j[-1])
-{bhist<-hist(a[b==i],plot=F)
-lb =min(lb,bhist$breaks,na.rm = T)
-ub =max(ub,bhist$breaks,na.rm = T)
-yl=max(yl,bhist$density,na.rm = T)
+{bhist<-hist(a[b==i],plot=FALSE)
+lb =min(lb,bhist$breaks,na.rm = TRUE)
+ub =max(ub,bhist$breaks,na.rm = TRUE)
+yl=max(yl,bhist$density,na.rm = TRUE)
 dist = min(dist,bhist$breaks[2]-bhist$breaks[1])
 }
 breaks=seq(lb,ub,dist)
@@ -4841,38 +4844,39 @@ if(is.null(xlim))
 if(is.null(w))                     #
   for (i in j)
     hist(a[b==i],ylab="Density",xlab="",breaks=breaks, 
-         xlim=xlim, ylim=c(0,yl), freq=F,main=paste(xname,i,sep="="))
+         xlim=xlim, ylim=c(0,yl), freq=FALSE,main=paste(xname,i,sep="="))
 else           #
   for (i in j) #
     weighted.hist(a[b==i],w[b==i],ylab="Density",xlab="",breaks=breaks, #
-                  xlim=xlim, ylim=c(0,yl), freq=F,main=paste(xname,i,sep="=")) #
+                  xlim=xlim, ylim=c(0,yl), freq=FALSE,main=paste(xname,i,sep="=")) #
 }
 
 weighted.prop.table<-function(x,w)  #the whole function is added for weighted proportions
-{sumw<-sum(w[!is.na(x)],na.rm=T)
+{sumw<-sum(w[!is.na(x)],na.rm=TRUE)
 temp<-sort(unique(x))
 table<-rep(0,length(temp))
 names(table)<-temp
 j<-1
 for(temp1 in temp)
-{table[j]<-sum(w[x==temp1],na.rm=T)/sumw
+{table[j]<-sum(w[x==temp1],na.rm=TRUE)/sumw
 j<-j+1}
 table
 }
 
-boot.ci<-function(x,mat,alpha,quantile=F) #the mat is the booted results with row be different x, and columns diff boot
+boot.ci<-function(x,mat,alpha,quantile=FALSE) #the mat is the booted results with row be different x, and columns diff boot
   #cri_val is the critical value
-{x.uniq<-sort(unique(x,na.rm=T))
+{x.uniq<-sort(unique(x,na.rm=TRUE))
 mn<-NULL
 upbd<-NULL
 lwbd<-NULL
 alpha<-(1-alpha)/2
 for (i in x.uniq)
-{sd_dev<-sd(as.vector(mat[x==i,]),na.rm=T)
-mn1<-mean(as.vector(mat[x==i,]),na.rm=T)
+{#browser()
+  sd_dev<-sd(as.vector(mat[x==i,]),na.rm=TRUE)
+mn1<-mean(as.vector(mat[x==i,]),na.rm=TRUE)
 if(quantile)
-{upbd<-c(upbd,quantile(as.vector(mat[x==i,]),1-alpha,na.rm=T))
-lwbd<-c(lwbd,quantile(as.vector(mat[x==i,]),alpha,na.rm=T))
+{upbd<-c(upbd,quantile(as.vector(mat[x==i,]),1-alpha,na.rm=TRUE))
+lwbd<-c(lwbd,quantile(as.vector(mat[x==i,]),alpha,na.rm=TRUE))
 }
 else
 {cri_val<-qnorm(1-alpha)
@@ -4884,27 +4888,28 @@ tt<-(!is.na(lwbd)) & (!is.na(upbd))
 mn<-mn[tt]
 lwbd<-lwbd[tt]
 upbd<-upbd[tt]
-return(data.frame(x=x.uniq,F=mn,L=lwbd,U=upbd))
+return(data.frame(x=x.uniq,FA=mn,L=lwbd,U=upbd))
 }
 
 plot_ci<-function(df1,xlab="x",ylab="IE")
-{plot(df1$x, df1$F, ylim = range(c(df1$L,df1$U),na.rm=T), type = "l",xlab=xlab,ylab=ylab)
+{plot(df1$x, df1$FA, ylim = range(c(df1$L,df1$U),na.rm=TRUE), type = "l",xlab=xlab,ylab=ylab)
   polygon(c(df1$x,rev(df1$x)),c(df1$L,rev(df1$U)),col = "grey75", border = FALSE)
-  lines(df1$x, df1$F, lwd = 2)
+  lines(df1$x, df1$FA, lwd = 2)
   lines(df1$x, df1$U, col="red",lty=2)
   lines(df1$x, df1$L, col="red",lty=2)}
 
 nx<-length(c(x$data$binpred,x$data$contpred,unlist(x$data$catpred)))
 ny<-ncol(x$data$y)
-op <- par(no.readonly = TRUE) # the whole list of settable par's.
+oldpar <- par(no.readonly = TRUE) # the whole list of settable par's.
+on.exit(par(oldpar)) 
 data=x$data
 pred_name=colnames(x$data$dirx)
 mname<-ifelse(is.character(vari),vari,names(data$x)[vari])
 vari=mname
 if(is.null(xlim) & !is.factor(x$data$x[,grep(vari,names(x$data$x))]))
-   xlim=range(x$data$x[,grep(vari,colnames(x$data$x))],na.rm=T)
+   xlim=range(x$data$x[,grep(vari,colnames(x$data$x))],na.rm=TRUE)
 
-if (x$model[1]==T) 
+if (x$model[1]==TRUE) 
  for (m in 1:ny) {
   full.model=x$model$model[[m]]
   best.iter=x$model$best.iter[m]
@@ -4945,9 +4950,9 @@ if (x$model[1]==T)
        {par(mfrow=c(2,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
         temp1<-prop.table(table(data$x[data$dirx[,z.b]==0,vari]))
         temp1<-c(temp1,prop.table(table(data$x[data$dirx[,z.b]==1,vari])))
-        barplot(prop.table(table(data$x[data$dirx[,z.b]==0,vari])),ylim=c(0,max(temp1,na.rm=T)),
+        barplot(prop.table(table(data$x[data$dirx[,z.b]==0,vari])),ylim=c(0,max(temp1,na.rm=TRUE)),
              ylab="Prop",sub=paste(pred_name[z.b], "at the Reference Level: pred=",0,sep=""))     
-        barplot(prop.table(table(data$x[data$dirx[,z.b]==1,vari])),ylim=c(0,max(temp1,na.rm=T)),
+        barplot(prop.table(table(data$x[data$dirx[,z.b]==1,vari])),ylim=c(0,max(temp1,na.rm=TRUE)),
              ylab="Prop",sub=paste(colnames(data$dirx)[z.b], ", pred=",1,sep=""))}
      if(!is.null(data$catpred))
         for (z.c in 1:length(data$catpred))
@@ -4956,10 +4961,10 @@ if (x$model[1]==T)
           for (j in data$catpred[[z.c]])
             temp1<-c(temp1,prop.table(table(data$x[data$dirx[,j]==1,vari])))
           barplot(prop.table(table(data$x[apply(data$dirx[,data$catpred[[z.c]]]!=0,1,sum)==0,vari])),
-                  ylim=c(0,max(temp1,na.rm=T)),
+                  ylim=c(0,max(temp1,na.rm=TRUE)),
                   ylab="Prop",sub=paste("Categorical Predictor", z.c, "at the Reference Level: pred=",0,sep=""))  
           for (j in data$catpred[[z.c]])
-            barplot(prop.table(table(data$x[data$dirx[,j]==1,vari])),ylim=c(0,max(temp1,na.rm=T)),
+            barplot(prop.table(table(data$x[data$dirx[,j]==1,vari])),ylim=c(0,max(temp1,na.rm=TRUE)),
                     ylab="Prop",sub=paste(colnames(data$dirx)[j], ", pred=",j,sep=""))   
         }
     }
@@ -4969,9 +4974,9 @@ if (x$model[1]==T)
       {par(mfrow=c(2,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
         temp1<-        weighted.prop.table(data$x[data$dirx[,z.b]==0,vari],data$w)
         temp1<-c(temp1,weighted.prop.table(data$x[data$dirx[,z.b]==1,vari],data$w))#
-        barplot(weighted.prop.table(data$x[data$dirx[,z.b]==0,vari]),ylim=c(0,max(temp1,na.rm=T)),#
+        barplot(weighted.prop.table(data$x[data$dirx[,z.b]==0,vari]),ylim=c(0,max(temp1,na.rm=TRUE)),#
              ylab="Prop",sub=paste(pred_name[z.b], "at the Reference Level: pred=",0,sep=""))
-        barplot(weighted.prop.table(data$x[data$dirx[,z.b]==1,vari]),ylim=c(0,max(temp1,na.rm=T)),#
+        barplot(weighted.prop.table(data$x[data$dirx[,z.b]==1,vari]),ylim=c(0,max(temp1,na.rm=TRUE)),#
               ylab="Prop",sub=paste(colnames(data$dirx)[j], ", pred=", j,sep=""))}
       if(!is.null(data$catpred))
         for (z.c in 1:length(data$catpred))
@@ -4979,10 +4984,10 @@ if (x$model[1]==T)
           temp1<-c(temp1,weighted.prop.table(data$x[apply(data$dirx[,data$catpred[[z.c]]]!=0,1,sum)==0,vari],data$w))#
           for (j in data$catpred[[z.c]]) #
             temp1<-c(temp1,weighted.prop.table(data$x[data$dirx[,j]==1,vari],data$w))#
-          barplot(weighted.prop.table(data$x[apply(data$dirx[,data$catpred[[z.c]]]!=0,1,sum)==0,vari]),ylim=c(0,max(temp1,na.rm=T)),#
+          barplot(weighted.prop.table(data$x[apply(data$dirx[,data$catpred[[z.c]]]!=0,1,sum)==0,vari]),ylim=c(0,max(temp1,na.rm=TRUE)),#
                   ylab="Prop",sub=paste("Categorical Predictor", z.c, "at the Reference Level: pred=",0,sep=""))
           for (j in data$catpred[[z.c]])#
-            barplot(weighted.prop.table(data$x[data$dirx[,j]==1,vari]),ylim=c(0,max(temp1,na.rm=T)),#
+            barplot(weighted.prop.table(data$x[data$dirx[,j]==1,vari]),ylim=c(0,max(temp1,na.rm=TRUE)),#
                     ylab="Prop",sub=paste(colnames(data$dirx)[j], ", pred=", j,sep=""))}
   }
    }
@@ -5002,9 +5007,9 @@ else
       suppressWarnings(print(plot.gbm(full.model, i.var=vari,best.iter,xlim=xlim,type="response")))
     if(nx>1)
       for (i in 1:(nx-1))
-        plot(1, type="n", axes=F, xlab="", ylab="")
+        plot(1, type="n", axes=FALSE, xlab="", ylab="")
     for(l in data$contpred){
-    axis(1,at=data$x[,vari],labels=F)
+    axis(1,at=data$x[,vari],labels=FALSE)
     a<-marg.den(data$dirx[,l],data$x[,vari],data$w) #added data$w
     scatter.smooth(a[,1],a[,2],family="gaussian",xlab=colnames(data$dirx)[l],ylim=xlim,ylab=paste("Mean",mname,sep="."))}
   }
@@ -5017,7 +5022,7 @@ else
       suppressWarnings(print(plot.gbm(full.model, i.var=vari,best.iter,type="response")))
     if(nx>1)
       for (i in 1:(nx-1))
-        plot(1, type="n", axes=F, xlab="", ylab="")
+        plot(1, type="n", axes=FALSE, xlab="", ylab="")
     for(l in data$contpred){
       plot(data$x[,vari],data$dirx[,l],ylab=colnames(data$dirx)[l],xlab="")}}
 }
@@ -5047,8 +5052,8 @@ else
        else
          b<-marg.den(data1,predict(full.model,type=x$model$type),data.w)  #added data$w
        plot(b,xlab=mname,ylab=paste("f(",mname,")",sep=""),xlim=xlim)
-       abline(a=mean(b[,2],na.rm=T)-coef*mean(b[,1],na.rm=T),b=coef)
-       axis(1,at=data1,labels=F)
+       abline(a=mean(b[,2],na.rm=TRUE)-coef*mean(b[,1],na.rm=TRUE),b=coef)
+       axis(1,at=data1,labels=FALSE)
        if(!is.null(data$binpred))
        {par(mfrow=c(2,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
          for(j in data$binpred)
@@ -5078,9 +5083,9 @@ else
             for(j in data$binpred){
              temp1<-        prop.table(table(data$x[data$dirx[,j]==0,grep(vari,names(data$x))]))
              temp1<-c(temp1,prop.table(table(data$x[data$dirx[,j]==1,grep(vari,names(data$x))])))
-             barplot(prop.table(table(data$x[data$dirx[,j]==0,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=T)),
+             barplot(prop.table(table(data$x[data$dirx[,j]==0,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=TRUE)),
                    ylab="Prop",sub=paste(colnames(data$dirx)[j], "at the reference level",sep=" "))
-             barplot(prop.table(table(data$x[data$dirx[,j]==1,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=T)),
+             barplot(prop.table(table(data$x[data$dirx[,j]==1,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=TRUE)),
                      ylab="Prop",sub=colnames(data$dirx)[j])}}
 
           if(!is.null(data$catpred)){
@@ -5089,10 +5094,10 @@ else
                 temp1<-prop.table(table(data$x[apply(data$dirx[,data$catpred[[z.c]]]!=0,1,sum)==0,grep(vari,names(data$x))]))
                 for (j in data$catpred[[z.c]])
                   temp1<-c(temp1,prop.table(table(data$x[data$dirx[,j]==1,grep(vari,names(data$x))])))
-                barplot(prop.table(table(data$x[apply(data$dirx[,data$catpred[[z.c]]]!=0,1,sum)==0,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=T)),
+                barplot(prop.table(table(data$x[apply(data$dirx[,data$catpred[[z.c]]]!=0,1,sum)==0,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=TRUE)),
                         ylab="Prop",sub=paste("Categorical Predictor",z.c, "at the reference level",sep=" "))
                 for (j in data$catpred[[z.c]])
-                  barplot(prop.table(table(data$x[data$dirx[,j]==1,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=T)),
+                  barplot(prop.table(table(data$x[data$dirx[,j]==1,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=TRUE)),
                           ylab="Prop",sub=colnames(data$dirx)[j])
               }
               }
@@ -5142,11 +5147,11 @@ else
        else
          b<-marg.den(data1,predict(full.model),data.w) #added data$w
        plot(b,xlab=mname,ylab=paste("f(",mname,")",sep=""),xlim=xlim)
-       abline(a=mean(b[,2],na.rm=T)-coef*mean(b[,1],na.rm=T),b=coef)
-       axis(1,at=data1,labels=F)
+       abline(a=mean(b[,2],na.rm=TRUE)-coef*mean(b[,1],na.rm=TRUE),b=coef)
+       axis(1,at=data1,labels=FALSE)
        if(nx>1)
          for (i in 1:(nx-1))
-           plot(1, type="n", axes=F, xlab="", ylab="")
+           plot(1, type="n", axes=FALSE, xlab="", ylab="")
        for(l in data$contpred){
          a<-marg.den(data$dirx[,l],data$x[,grep(vari,colnames(data$x))],data$w)   #added data$w
          scatter.smooth(a[,1],a[,2],family="gaussian", xlab=colnames(data$dirx)[l],ylim=xlim,ylab=paste("Mean",mname,sep="."))}
@@ -5158,12 +5163,12 @@ else
         plot(predict(full.model,type=x$model$type)~data$x[-full.model$na.action,grep(vari,names(data$x))],ylab=paste("f(",mname,")",sep=""),xlab=mname)
       if(nx>1)
         for (i in 1:(nx-1))
-          plot(1, type="n", axes=F, xlab="", ylab="")
+          plot(1, type="n", axes=FALSE, xlab="", ylab="")
       for(l in data$contpred){
          plot(data$x[,grep(vari,names(data$x))],data$dirx[,l],ylab=colnames(data$dirx)[l],xlab="")}}
 }
 }
-par(op)
+#par(op)
 }
 
 if(!is.null(x$a.binx))
@@ -5186,10 +5191,10 @@ z1<-unique(x)
 z2<-rep(0,length(z1))
 if(is.null(w))   #
   for (i in 1:length(z1))
-    z2[i]<-mean(y[x==z1[i]],na.rm=T)  
+    z2[i]<-mean(y[x==z1[i]],na.rm=TRUE)  
 else          #
   for (i in 1:length(z1))      #
-    z2[i]<-weighted.mean(y[x==z1[i]],w[x==z1[i]],na.rm=T)  #added ,w[x==z1[i]]
+    z2[i]<-weighted.mean(y[x==z1[i]],w[x==z1[i]],na.rm=TRUE)  #added ,w[x==z1[i]]
 z3<-order(z1)
 cbind(z1[z3],z2[z3])
 }
@@ -5277,18 +5282,18 @@ b<-d}
   if(!is.null(w))                     #
     w<-w[!is.na(a1) & !is.na(b1)]    #
   j<-sort(unique(b))
-  ahist<-hist(a[b==j[1]],plot=F)
+  ahist<-hist(a[b==j[1]],plot=FALSE)
   if(!is.null(w))                     #
-    ahist<-weighted.hist(a[b==j[1]], w[b==j[1]], plot=F)    #
+    ahist<-weighted.hist(a[b==j[1]], w[b==j[1]], plot=FALSE)    #
   dist = ahist$breaks[2]-ahist$breaks[1]
-  lb =min(ahist$breaks,na.rm = T)
-  ub=max(ahist$breaks,na.rm = T)
-  yl=max(ahist$density,na.rm = T)
+  lb =min(ahist$breaks,na.rm = TRUE)
+  ub=max(ahist$breaks,na.rm = TRUE)
+  yl=max(ahist$density,na.rm = TRUE)
   for(i in j[-1])
-  {bhist<-hist(a[b==i],plot=F)
-  lb =min(lb,bhist$breaks,na.rm = T)
-  ub =max(ub,bhist$breaks,na.rm = T)
-  yl=max(yl,bhist$density,na.rm = T)
+  {bhist<-hist(a[b==i],plot=FALSE)
+  lb =min(lb,bhist$breaks,na.rm = TRUE)
+  ub =max(ub,bhist$breaks,na.rm = TRUE)
+  yl=max(yl,bhist$density,na.rm = TRUE)
   dist = min(dist,bhist$breaks[2]-bhist$breaks[1])
   }
   breaks=seq(lb,ub,dist)
@@ -5297,36 +5302,37 @@ b<-d}
   if(is.null(w))                     #
     for (i in j)
       hist(a[b==i],ylab="Density",xlab="",breaks=breaks, 
-           xlim=xlim, ylim=c(0,yl), freq=F,main=paste(xname,i,sep="="))
+           xlim=xlim, ylim=c(0,yl), freq=FALSE,main=paste(xname,i,sep="="))
   else           #
     for (i in j) #
       weighted.hist(a[b==i],w[b==i],ylab="Density",xlab="",breaks=breaks, #
-                    xlim=xlim, ylim=c(0,yl), freq=F,main=paste(xname,i,sep="=")) #
+                    xlim=xlim, ylim=c(0,yl), freq=FALSE,main=paste(xname,i,sep="=")) #
 }
 
 
 weighted.prop.table<-function(x,w)  #the whole function is added for weighted proportions
-{sumw<-sum(w[!is.na(x)],na.rm=T)
+{sumw<-sum(w[!is.na(x)],na.rm=TRUE)
 temp<-sort(unique(x))
 table<-rep(0,length(temp))
 names(table)<-temp
 j<-1
 for(temp1 in temp)
-{table[j]<-sum(w[x==temp1],na.rm=T)/sumw
+{table[j]<-sum(w[x==temp1],na.rm=TRUE)/sumw
 j<-j+1}
 table
 }
 
 data<-x$data
 if(is.null(xlim)  & !is.factor(data$x[,grep(vari,names(data$x))]))
-  xlim=range(data$x[,grep(vari,names(data$x))],na.rm=T)
-op <- par(no.readonly = TRUE) # the whole list of settable par's.
+  xlim=range(data$x[,grep(vari,names(data$x))],na.rm=TRUE)
+oldpar <- par(no.readonly = TRUE) # the whole list of settable par's.
+on.exit(par(oldpar)) 
 nx<-length(x$ie)
 ny<-ncol(data.frame(x$data$y))
 mname<-ifelse(is.character(vari),vari,names(data$x)[vari])
 pred_name<-colnames(data$dirx)
 
-if (x$model[1]==T) 
+if (x$model[1]==TRUE) 
  for (m in 1:ny) {
   full.model=x$model$model[[m]]
   best.iter=x$model$best.iter[m]
@@ -5368,9 +5374,9 @@ if (x$model[1]==T)
       {par(mfrow=c(2,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
         temp1<-prop.table(table(data$x[data$dirx[,z.b]==0,grep(vari,names(data$x))]))
         temp1<-c(temp1,prop.table(table(data$x[data$dirx[,z.b]==1,grep(vari,names(data$x))])))
-        barplot(prop.table(table(data$x[data$dirx[,z.b]==0,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=T)),
+        barplot(prop.table(table(data$x[data$dirx[,z.b]==0,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=TRUE)),
                 ylab="Prop",sub=paste(pred_name[z.b], "at the Reference Level: pred=",0,sep=" "))     
-        barplot(prop.table(table(data$x[data$dirx[,z.b]==1,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=T)),
+        barplot(prop.table(table(data$x[data$dirx[,z.b]==1,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=TRUE)),
                 ylab="Prop",sub=paste(colnames(data$dirx)[z.b], ", pred=",1,sep=""))}
       if(!is.null(data$catpred))
         for (z.c in 1:length(data$catpred))
@@ -5379,10 +5385,10 @@ if (x$model[1]==T)
           for (j in data$catpred[[z.c]])
             temp1<-c(temp1,prop.table(table(data$x[data$dirx[,j]==1,grep(vari,names(data$x))])))
           barplot(prop.table(table(data$x[apply(data$dirx[,data$catpred[[z.c]]]!=0,1,sum)==0,grep(vari,names(data$x))])),
-                  ylim=c(0,max(temp1,na.rm=T)),
+                  ylim=c(0,max(temp1,na.rm=TRUE)),
                   ylab="Prop",sub=paste("Categorical Predictor", z.c, "at the Reference Level: pred=",0,sep=""))  
           for (j in data$catpred[[z.c]])
-            barplot(prop.table(table(data$x[data$dirx[,j]==1,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=T)),
+            barplot(prop.table(table(data$x[data$dirx[,j]==1,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=TRUE)),
                     ylab="Prop",sub=paste(colnames(data$dirx)[j], ", pred=",j,sep=""))   
         }
     }
@@ -5392,9 +5398,9 @@ if (x$model[1]==T)
       {par(mfrow=c(2,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
         temp1<-        weighted.prop.table(data$x[data$dirx[,z.b]==0,grep(vari,names(data$x))],data$w)
         temp1<-c(temp1,weighted.prop.table(data$x[data$dirx[,z.b]==1,grep(vari,names(data$x))],data$w))#
-        barplot(weighted.prop.table(data$x[data$dirx[,z.b]==0,grep(vari,names(data$x))]),ylim=c(0,max(temp1,na.rm=T)),#
+        barplot(weighted.prop.table(data$x[data$dirx[,z.b]==0,grep(vari,names(data$x))]),ylim=c(0,max(temp1,na.rm=TRUE)),#
                 ylab="Prop",sub=paste(pred_name[z.b], "at the Reference Level: pred=",0,sep=""))
-        barplot(weighted.prop.table(data$x[data$dirx[,z.b]==1,grep(vari,names(data$x))]),ylim=c(0,max(temp1,na.rm=T)),#
+        barplot(weighted.prop.table(data$x[data$dirx[,z.b]==1,grep(vari,names(data$x))]),ylim=c(0,max(temp1,na.rm=TRUE)),#
                 ylab="Prop",sub=paste(colnames(data$dirx)[j], ", pred=", j,sep=""))}
       if(!is.null(data$catpred))
         for (z.c in 1:length(data$catpred))
@@ -5402,10 +5408,10 @@ if (x$model[1]==T)
           temp1<-c(temp1,weighted.prop.table(data$x[apply(data$dirx[,data$catpred[[z.c]]]!=0,1,sum)==0,grep(vari,names(data$x))],data$w))#
           for (j in data$catpred[[z.c]]) #
             temp1<-c(temp1,weighted.prop.table(data$x[data$dirx[,j]==1,grep(vari,names(data$x))],data$w))#
-          barplot(weighted.prop.table(data$x[apply(data$dirx[,data$catpred[[z.c]]]!=0,1,sum)==0,grep(vari,names(data$x))]),ylim=c(0,max(temp1,na.rm=T)),#
+          barplot(weighted.prop.table(data$x[apply(data$dirx[,data$catpred[[z.c]]]!=0,1,sum)==0,grep(vari,names(data$x))]),ylim=c(0,max(temp1,na.rm=TRUE)),#
                   ylab="Prop",sub=paste("Categorical Predictor", z.c, "at the Reference Level: pred=",0,sep=""))
           for (j in data$catpred[[z.c]])#
-            barplot(weighted.prop.table(data$x[data$dirx[,j]==1,grep(vari,names(data$x))]),ylim=c(0,max(temp1,na.rm=T)),#
+            barplot(weighted.prop.table(data$x[data$dirx[,j]==1,grep(vari,names(data$x))]),ylim=c(0,max(temp1,na.rm=TRUE)),#
                     ylab="Prop",sub=paste(colnames(data$dirx)[j], ", pred=", j,sep=""))}
     }  }
 }
@@ -5429,9 +5435,9 @@ else
       suppressWarnings(print(plot.gbm(full.model, i.var=vari,best.iter,xlim=xlim,type="response")))
     if(nx>1)
       for (i in 1:(nx-1))
-        plot(1, type="n", axes=F, xlab="", ylab="")
+        plot(1, type="n", axes=FALSE, xlab="", ylab="")
     for(l in data$contpred){
-      axis(1,at=data$x[,grep(vari,names(data$x))],labels=F)
+      axis(1,at=data$x[,grep(vari,names(data$x))],labels=FALSE)
       a<-marg.den(data$dirx[,l],data$x[,grep(vari,names(data$x))],data$w) #added data$w
       scatter.smooth(a[,1],a[,2],family="gaussian",xlab=colnames(data$dirx)[l],ylim=xlim,ylab=paste("Mean",mname,sep="."))}
   }
@@ -5444,7 +5450,7 @@ else
       suppressWarnings(print(plot.gbm(full.model, i.var=vari,best.iter,type="response")))
     if(nx>1)
       for (i in 1:(nx-1))
-        plot(1, type="n", axes=F, xlab="", ylab="")
+        plot(1, type="n", axes=FALSE, xlab="", ylab="")
     for(l in data$contpred){
       plot(data$x[,grep(vari,names(data$x))],data$dirx[,l],ylab=colnames(data$dirx)[l],xlab="")}}
 }
@@ -5475,7 +5481,7 @@ else
      par(mfrow=c(1,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
      plot(b,xlab=mname,ylab=paste("f(",mname,")",sep=""),xlim=xlim)
      abline(a=mean(b[,2])-coef*mean(b[,1]),b=coef)
-     axis(1,at=data1,labels=F)
+     axis(1,at=data1,labels=FALSE)
      
      if(!is.null(data$binpred))
      {par(mfrow=c(2,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
@@ -5505,9 +5511,9 @@ else
         for(j in data$binpred){
           temp1<-        prop.table(table(data$x[data$dirx[,j]==0,grep(vari,names(data$x))]))
           temp1<-c(temp1,prop.table(table(data$x[data$dirx[,j]==1,grep(vari,names(data$x))])))
-          barplot(prop.table(table(data$x[data$dirx[,j]==0,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=T)),
+          barplot(prop.table(table(data$x[data$dirx[,j]==0,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=TRUE)),
                   ylab="Prop",sub=paste(colnames(data$dirx)[j], "at the reference level",sep=" "))
-          barplot(prop.table(table(data$x[data$dirx[,j]==1,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=T)),
+          barplot(prop.table(table(data$x[data$dirx[,j]==1,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=TRUE)),
                   ylab="Prop",sub=colnames(data$dirx)[j])}}
       
       if(!is.null(data$catpred)){
@@ -5516,10 +5522,10 @@ else
           temp1<-prop.table(table(data$x[apply(data$dirx[,data$catpred[[z.c]]]!=0,1,sum)==0,grep(vari,names(data$x))]))
           for (j in data$catpred[[z.c]])
             temp1<-c(temp1,prop.table(table(data$x[data$dirx[,j]==1,grep(vari,names(data$x))])))
-          barplot(prop.table(table(data$x[apply(data$dirx[,data$catpred[[z.c]]]!=0,1,sum)==0,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=T)),
+          barplot(prop.table(table(data$x[apply(data$dirx[,data$catpred[[z.c]]]!=0,1,sum)==0,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=TRUE)),
                   ylab="Prop",sub=paste("Categorical Predictor",z.c, "at the reference level",sep=" "))
           for (j in data$catpred[[z.c]])
-            barplot(prop.table(table(data$x[data$dirx[,j]==1,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=T)),
+            barplot(prop.table(table(data$x[data$dirx[,j]==1,grep(vari,names(data$x))])),ylim=c(0,max(temp1,na.rm=TRUE)),
                     ylab="Prop",sub=colnames(data$dirx)[j])
         }
       }
@@ -5572,11 +5578,11 @@ else
    else
     b<-marg.den(data1,predict(full.model,type=x$model$type),data$w) #added data$w
    plot(b,xlab=mname,ylab=paste("f(",mname,")",sep=""),xlim=xlim)
-   abline(a=mean(b[,2],na.rm=T)-coef*mean(b[,1],na.rm=T),b=coef)
-   axis(1,at=data1,labels=F)
+   abline(a=mean(b[,2],na.rm=TRUE)-coef*mean(b[,1],na.rm=TRUE),b=coef)
+   axis(1,at=data1,labels=FALSE)
    if(nx>1)
      for (i in 1:(nx-1))
-       plot(1, type="n", axes=F, xlab="", ylab="")
+       plot(1, type="n", axes=FALSE, xlab="", ylab="")
    for(l in 1:data$contpred){
      a<-marg.den(data$x[,l],data$x[,grep(vari,names(data$x))],data$w) #added data$w
      scatter.smooth(a[,1],a[,2],family="gaussian", xlab=colnames(data$dirx)[l],ylim=xlim,ylab=paste("Mean",mname,sep="."))}
@@ -5588,12 +5594,12 @@ else
       plot(predict(full.model,type=x$model$type)~data$x[-full.model$na.action,grep(vari,names(data$x))],ylab=paste("f(",mname,")",sep=""),xlab=mname)
     if(nx>1)
       for (i in 1:(nx-1))
-        plot(1, type="n", axes=F, xlab="", ylab="")
+        plot(1, type="n", axes=FALSE, xlab="", ylab="")
     for(l in data$contpred){
       plot(data$x[,grep(vari,names(data$x))],data$dirx[,l],ylab=colnames(data$dirx)[l],xlab="")}}
   }
 }
-par(op)
+#par(op)
 }
 
 if(!is.null(x$a.binx))
@@ -5708,7 +5714,7 @@ else{
   else if(kx%in%contpred)
     test.moderation2(med1=med1$a.binx,vari=vari,j=j,kx=kx)
   else
-  {z11=rep(F,length(catpred))
+  {z11=rep(FALSE,length(catpred))
   for (i in 1:length(catpred))
     z11[i]=kx%in%catpred[[i]]
   i=(1:length(catpred))[z11]
@@ -5833,7 +5839,7 @@ inter
 }
 
 #estimate and plot the moderate effect from med function
-moderate<-function(med1,vari,j=1,kx=1,continuous.resolution=100,plot=T)
+moderate<-function(med1,vari,j=1,kx=1,continuous.resolution=100,plot=TRUE)
 {moderate2<-function(med1,vari,j,kx,continuous.resolution,plot)
 {xnames=colnames(med1$data$x)
 pred_names=colnames(med1$data$dirx)
@@ -5843,10 +5849,10 @@ colnames(data1)<-c(xnames,pred_names)
 if(med1$model$MART)
 {if(is.null(med1$model$type))
   result=plot.gbm(med1$model$model[[j]], i.var=c(pred_names[kx],vari), n.trees=med1$model$best.iter[j],
-                  continuous.resolution = continuous.resolution, return.grid=T)
+                  continuous.resolution = continuous.resolution, return.grid=TRUE)
 else
   result=plot.gbm(med1$model$model[[j]], i.var=c(pred_names[kx],vari), n.trees=med1$model$best.iter[j],
-                  continuous.resolution = continuous.resolution, return.grid=T,type=med1$model$type)
+                  continuous.resolution = continuous.resolution, return.grid=TRUE,type=med1$model$type)
 if(med1$data$binpred)
 {result=result[(result[,pred_names[kx]]==0 | result[,pred_names[kx]]==1),]
 moderator=unique(result[,2])
@@ -5947,13 +5953,13 @@ else
 boot.mod<-function(mma1,vari,continuous.resolution=10,
                    w=NULL,n=20,
                    x.new=NULL,w.new=NULL,pred.new=NULL,cova.new=NULL,xj=1,margin=1,xmod=vari,df1=1)
-  #boots=T for bootstrap method
+  #boots=TRUE for bootstrap method
   #continuous.resolution: for continuous moderator, this is the number of points to be taken from 
   ##min to max by 1/continuous.resolution. For categorical moderator, this is the categories to moderate, 
   ##all if it is not set. If there is no enough case with the 1/continuous.resolution quintile, error shows
   ##to reduce continuous.resolution.
   #kx and jy can be vectors #kx should be xj
-{boot.mod.binx<-function(mma1,vari,plot=T,continuous.resolution=100,n2=NULL,
+{boot.mod.binx<-function(mma1,vari,plot=TRUE,continuous.resolution=100,n2=NULL,
                          n=20,w=rep(1,nrow(mma1$data$x)),xj=1,xmod=vari)
   #n2 is the time of bootstrap if set as null. It has to be less or equal to the number of bootstrap
 {mod.binx<-function(vari,continuous.resolution,n,x,y,dirx,contm,catm,
@@ -5965,19 +5971,19 @@ te.binx<-function(full.model,new1,new0,best.iter1=NULL,surv,type)
 {te<-NULL
 for(m in 1:length(full.model))
   if(surv[m] & !is.null(best.iter1[m]))
-    te[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=T)
+    te[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=TRUE)
   else if (surv[m])
-    te[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=T)- mean(predict(full.model[[m]],new0,type=type),na.rm=T)
+    te[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,type=type),na.rm=TRUE)
   else if(!is.null(best.iter1[m]))
-    te[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=T)
+    te[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=TRUE)
   else
-    te[m]<-mean(predict(full.model[[m]],new1),na.rm=T)- mean(predict(full.model[[m]],new0),na.rm=T)
+    te[m]<-mean(predict(full.model[[m]],new1),na.rm=TRUE)- mean(predict(full.model[[m]],new0),na.rm=TRUE)
   te
 }
 
 med.binx.contm<-function(full.model,nom1,nom0,med,best.iter1=NULL,surv,type,xmod,xnames)  
 {n3<-nrow(nom1)+nrow(nom0)
-marg.m<-c(nom1[,med],nom0[,med])[sample(1:n3,replace=T)]
+marg.m<-c(nom1[,med],nom0[,med])[sample(1:n3,replace=TRUE)]
 new1<-nom1
 new1[,med]<-marg.m[1:nrow(nom1)]
 new0<-nom0
@@ -5996,13 +6002,13 @@ m.t=m.t+1}}
 dir.nom<-NULL
 for(m in 1:length(full.model))
   if(surv[m] & !is.null(best.iter1[m]))
-    dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=T)
+    dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=TRUE)
 else if(surv[m])
-  dir.nom[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=T)- mean(predict(full.model[[m]],new0,type=type),na.rm=T)
+  dir.nom[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,type=type),na.rm=TRUE)
 else if(!is.null(best.iter1[m]))
-  dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=T)
+  dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=TRUE)
 else
-  dir.nom[m]<-mean(predict(full.model[[m]],new1),na.rm=T)- mean(predict(full.model[[m]],new0),na.rm=T)
+  dir.nom[m]<-mean(predict(full.model[[m]],new1),na.rm=TRUE)- mean(predict(full.model[[m]],new0),na.rm=TRUE)
 dir.nom
 }
 
@@ -6038,19 +6044,19 @@ else
   dir.nom<-NULL
   for (m in 1:length(full.model))
     if(surv[m] & !is.null(best.iter1[m]))
-      dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=T)
+      dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=TRUE)
   else if(surv[m])
-    dir.nom[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=T)- mean(predict(full.model[[m]],new0,type=type),na.rm=T)
+    dir.nom[m]<-mean(predict(full.model[[m]],new1,type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,type=type),na.rm=TRUE)
   else if(!is.null(best.iter1[m]))
-    dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=T)
+    dir.nom[m]<-mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=TRUE)
   else
-    dir.nom[m]<-mean(predict(full.model[[m]],new1),na.rm=T)- mean(predict(full.model[[m]],new0),na.rm=T)
+    dir.nom[m]<-mean(predict(full.model[[m]],new1),na.rm=TRUE)- mean(predict(full.model[[m]],new0),na.rm=TRUE)
   dir.nom
 }
 
 med.binx.catm<-function(full.model,nom1,nom0,med,best.iter1=NULL,surv,type,xmod,xnames)  
 {n3<-nrow(nom1)+nrow(nom0)
-temp.rand<-unlist(list(nom1[,med],nom0[,med]))[sample(1:n3,replace=T)]
+temp.rand<-unlist(list(nom1[,med],nom0[,med]))[sample(1:n3,replace=TRUE)]
 marg.m1<-temp.rand[1:nrow(nom1)]
 marg.m2<-temp.rand[(nrow(nom1)+1):n3]
 dir.nom<-rep(0,length(full.model))
@@ -6071,15 +6077,15 @@ for (m in 1:length(full.model))
   new1[,m.t1]=m.t3[,m.t]
   m.t=m.t+1}}
   }
-  p<-mean(temp.rand==i,na.rm=T)
+  p<-mean(temp.rand==i,na.rm=TRUE)
   if(surv[m] & !is.null(best.iter1[m]))
-    dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=T))
+    dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,best.iter1[m],type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m],type=type),na.rm=TRUE))
   else if(surv[m])
-    dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,type=type),na.rm=T)- mean(predict(full.model[[m]],new0,type=type),na.rm=T))
+    dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,type=type),na.rm=TRUE)- mean(predict(full.model[[m]],new0,type=type),na.rm=TRUE))
   else if(!is.null(best.iter1[m]))
-    dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=T)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=T))
+    dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1,best.iter1[m]),na.rm=TRUE)- mean(predict(full.model[[m]],new0,best.iter1[m]),na.rm=TRUE))
   else
-    dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1),na.rm=T)- mean(predict(full.model[[m]],new0),na.rm=T))
+    dir.nom[m]<-dir.nom[m]+p*(mean(predict(full.model[[m]],new1),na.rm=TRUE)- mean(predict(full.model[[m]],new0),na.rm=TRUE))
   }
 dir.nom
 }
@@ -6098,27 +6104,27 @@ if(is.null(moder.level1)){
     moder.level=continuous.resolution
   for (i in moder.level)
   {temp.all=(data$x[,vari]==i)
-  if(sum(apply(as.matrix(dirx[temp.all,]==1),2,sum,na.rm=T)==0)>1 | 
-     sum(dirx[temp.all,]==1,na.rm=T)==length(dirx[temp.all,1][!is.na(dirx[temp.all,1])]))
+  if(sum(apply(as.matrix(dirx[temp.all,]==1),2,sum,na.rm=TRUE)==0)>1 | 
+     sum(dirx[temp.all,]==1,na.rm=TRUE)==length(dirx[temp.all,1][!is.na(dirx[temp.all,1])]))
     stop("Error: need to reduce the continuous.resolution") #error if the group has all dirx=0 or 1
   }
   temp.q=NULL
   }
   else
-  {temp.q=quantile(unique(x[,vari]),probs=(seq(0,1,by=1/continuous.resolution))[-1],na.rm=T)  #add unique to take care of repeats
+  {temp.q=quantile(unique(x[,vari]),probs=(seq(0,1,by=1/continuous.resolution))[-1],na.rm=TRUE)  #add unique to take care of repeats
   for(i in 1:length(temp.q))
   {if (i==1)
     temp.all=(x[,vari]<=temp.q[i])
   else
     temp.all=(x[,vari]<=temp.q[i] & x[,vari]>temp.q[i-1])
-  if(sum(apply(as.matrix(dirx[temp.all,]==0),2,sum,na.rm=T)==0)>1 | 
-     sum(dirx[temp.all,]==0,na.rm=T)==length(dirx[temp.all,1][!is.na(dirx[temp.all,1])]))
+  if(sum(apply(as.matrix(dirx[temp.all,]==0),2,sum,na.rm=TRUE)==0)>1 | 
+     sum(dirx[temp.all,]==0,na.rm=TRUE)==length(dirx[temp.all,1][!is.na(dirx[temp.all,1])]))
     stop("Error: need to reduce the continuous.resolution") #error if the group has all dirx=0 or 1
   #if(!is.null(w))
   #{w.moder=c(w.moder,sum(w[temp.all]))
   # moder.level=c(moder.level, weighted.mean(data$x[temp.all,vari],w[temp.all]))}
   #else}
-  moder.level=c(moder.level,mean(data$x[temp.all,vari],na.rm=T))
+  moder.level=c(moder.level,mean(data$x[temp.all,vari],na.rm=TRUE))
   }}}
 else
 {moder.level=moder.level1$moder.level
@@ -6173,8 +6179,8 @@ for(q1 in 1:length(moder.level)){
       x1.2<-x2.1[dirx1[,l]==1,]
       if(!is.null(w.temp))
         w1<-w.temp[dirx1[,l]==1]
-      new1<-x1.2[sample(1:nrow(x1.2),replace=T,prob=w1),] #floor(n3/2),
-      new0<-x0[sample(1:nrow(x0),replace=T,prob=w0),] #floor(n3/2),
+      new1<-x1.2[sample(1:nrow(x1.2),replace=TRUE,prob=w1),] #floor(n3/2),
+      new0<-x0[sample(1:nrow(x0),replace=TRUE,prob=w0),] #floor(n3/2),
       
       if(!is.null(xmod)  & !is.factor(x[,xmod]))
         for(z in allm){
@@ -6190,7 +6196,7 @@ for(q1 in 1:length(moder.level)){
         }
       
       te[k,((q1-1)*ncol(y)+1):(q1*ncol(y))]<-te.binx(full.model,new1,new0,best.iter1,surv,type)  
-      temp.rand<-sample(1:(nrow(x1.2)+nrow(x0)),replace=T)# no need for:prob=c(w1,w0) --redundant
+      temp.rand<-sample(1:(nrow(x1.2)+nrow(x0)),replace=TRUE)# no need for:prob=c(w1,w0) --redundant
       #the indirect effect of all mediators
       temp.ie<-te[k,((q1-1)*ncol(y)+1):(q1*ncol(y))]-med.binx.jointm(full.model,new1,new0,allm,best.iter1,surv,type,temp.rand,xmod,xnames) #add temp.rand
       #new method to calculate the direct effect     
@@ -6226,7 +6232,7 @@ for(q1 in 1:length(moder.level)){
       #3.4 mediation effect from the joint mediators
       if (!is.null(jointm))
         for (i in 1:jointm[[1]])          #full.model,x,y,med,dirx,best.iter1=NULL
-        {temp.rand<-sample(1:(nrow(x1.2)+nrow(x0)),replace=T)# no need for:prob=c(w1,w0) --redundant
+        {temp.rand<-sample(1:(nrow(x1.2)+nrow(x0)),replace=TRUE)# no need for:prob=c(w1,w0) --redundant
         denm[[q1]][k,(ncol(y)*(j-1)+1):(ncol(y)*j)]<-med.binx.jointm(full.model,new1,new0,jointm[[i+1]],best.iter1,surv,type,temp.rand,xmod,xnames)
         j<-j+1}
       #3.5 recalculate the total effect and get the indirect effects
@@ -6241,7 +6247,7 @@ for(q1 in 1:length(moder.level)){
   }}
 names(denm)<-moder.level
 names(ie)<-moder.level
-a<-list(denm=denm,ie=ie,te=te,moder.level=list(moder.level=moder.level,cont.moder.q=temp.q,moder=x[,vari]),data=data,mod=T)
+a<-list(denm=denm,ie=ie,te=te,moder.level=list(moder.level=moder.level,cont.moder.q=temp.q,moder=x[,vari]),data=data,mod=TRUE)
 class(a)<-"med"
 return(a)
 }
@@ -6297,12 +6303,12 @@ rownames(ie1)<-temp$moder.level$moder.level
 ie<-rep(list(ie),nmod)
 names(ie)<-temp$moder.level$moder.level
 
-te[1,]<-apply(temp$te,2,mean,na.rm=T)
+te[1,]<-apply(temp$te,2,mean,na.rm=TRUE)
 temp.1<-temp$te
 for (l in 1:nmod)
 {temp.1[,l]<-temp$denm[[l]][,1:ny]
-ie1[l,]<-apply(temp$ie[[l]],2,mean,na.rm=T)}  #first row is the estimated value
-de[1,]<-apply(temp.1,2,mean,na.rm=T)
+ie1[l,]<-apply(temp$ie[[l]],2,mean,na.rm=TRUE)}  #first row is the estimated value
+de[1,]<-apply(temp.1,2,mean,na.rm=TRUE)
 
 moder.level1=temp$moder.level
 
@@ -6322,12 +6328,12 @@ if(n2>0){
   temp<-mod.binx(vari,continuous.resolution,n,x1,y1,pred1,contm,catm,
                  jointm,cova,allm,full.model,best.iter1,surv,type,wz,moder.level1,xj,xmod)
   
-  te[1+i,]<-apply(temp$te,2,mean,na.rm=T)
+  te[1+i,]<-apply(temp$te,2,mean,na.rm=TRUE)
   temp.1<-temp$te
   for (l in 1:nmod)
   {temp.1[,l]<-temp$denm[[l]][,1:ny]
-  ie[[l]][i,]<-apply(temp$ie[[l]],2,mean,na.rm=T)}  #first row is the estimated value
-  de[1+i,]<-apply(temp.1,2,mean,na.rm=T)
+  ie[[l]][i,]<-apply(temp$ie[[l]],2,mean,na.rm=TRUE)}  #first row is the estimated value
+  de[1+i,]<-apply(temp.1,2,mean,na.rm=TRUE)
   print(i)
   }}
 
@@ -6341,8 +6347,8 @@ colnames(te)<-paste(paste("y",1:ncol(y),sep=""),rep(moder.level,each=ncol(y)),se
 colnames(de)<-paste(paste("y",1:ncol(y),sep=""),rep(moder.level,each=ncol(y)),sep=".")
 
 a<-list(estimation=list(ie=ie1,te=te[1,],de=de[1,]),bootsresults=list(ie=ie,te=te1,de=de1), 
-        data=list(x=x,y=y,dirx=dirx,contm=contm,catm=catm,jointm=jointm,binpred=T),model=mma1$model,
-        moder.level=moder.level1,mod=T)
+        data=list(x=x,y=y,dirx=dirx,contm=contm,catm=catm,jointm=jointm,binpred=TRUE),model=mma1$model,
+        moder.level=moder.level1,mod=TRUE)
 class(a)<-"mma"
 return(a)
 }
@@ -6363,18 +6369,18 @@ boot.mod.contx<-function(mma1,vari,continuous.resolution=10,
   ynames<-colnames(y)
   cova_names<-colnames(cova)
   
-  anymissing<-function(vec) #return T if there is any missing in the vec
+  anymissing<-function(vec) #return TRUE if there is any missing in the vec
   {if(sum(is.na(vec))>0)
-    return(F)
-    else return(T)
+    return(FALSE)
+    else return(TRUE)
   }
   
   col_mean<-function(col,n.row,w=NULL)
   {temp<-matrix(col,n.row)
   if(is.null(w))
-    return(apply(temp,1,mean,na.rm=T))
+    return(apply(temp,1,mean,na.rm=TRUE))
   else
-    return(apply(temp,1,weighted.mean,na.rm=T,w=w))}
+    return(apply(temp,1,weighted.mean,na.rm=TRUE,w=w))}
   
   
   dist.m.given.x<-function(x,dirx,binm=NULL,contm=NULL,catm=NULL,nonlinear,df1,w,cova) #give the model and residual of m given x
@@ -6470,7 +6476,7 @@ boot.mod.contx<-function(mma1,vari,continuous.resolution=10,
   match.margin<-function(vec)   
   {range1<-vec[1:2]
   vec1<-vec[-(1:2)]
-  range2<-range(vec1,na.rm=T)
+  range2<-range(vec1,na.rm=TRUE)
   vec1<-range1[1]+diff(range1)/diff(range2)*(vec1-range2[1])
   vec1
   }
@@ -6523,11 +6529,11 @@ boot.mod.contx<-function(mma1,vari,continuous.resolution=10,
   
   if(dim(means)[2]==1)                                                   #added in the new program, in case there is only one mediator
   {sim.m<-suppressWarnings(rnorm(length(means),mean=means,sd=sqrt(distmgivenx$varmat)))     #added in the new program
-  sim.m2<-match.margin(c(range(means,na.rm=T),sim.m))}                          #added in the new program   
+  sim.m2<-match.margin(c(range(means,na.rm=TRUE),sim.m))}                          #added in the new program   
   else{
     sim.m<-t(apply(means,1,mult.norm,vari=distmgivenx$varmat,n=1))
     
-    range.means<-apply(means,2,range,na.rm=T)
+    range.means<-apply(means,2,range,na.rm=TRUE)
     
     sim.m2<-apply(rbind(range.means,sim.m),2,match.margin)    #to make the simulate fit the means' ranges
   }
@@ -6659,7 +6665,7 @@ boot.mod.contx<-function(mma1,vari,continuous.resolution=10,
     
     # browser()
     
-    sample.temp<-sample(1:n.new,2*n.new,replace = T,prob=w.new[level])   #random sample from the original data
+    sample.temp<-sample(1:n.new,2*n.new,replace = TRUE,prob=w.new[level])   #random sample from the original data
     
     #4.0.0 get the total indirect effect
     temp.new1<-new1
@@ -6831,20 +6837,20 @@ boot.mod.contx<-function(mma1,vari,continuous.resolution=10,
   
   a<-list(denm=denm,ie=ie,te=te,model=list(MART=nonlinear,Survival=surv, type=type, 
                                            model=full.model,best.iter=best.iter1),pred.new=pred.new,w.new=w.new,
-          data=data,distmgivenx=distmgivenx,mod=T)
+          data=data,distmgivenx=distmgivenx,mod=TRUE)
   class(a)<-"med"
   return(a)
 }
 
 anymissing<-function(vec)
 {if(sum(is.na(vec))>0)
-  return(F)
-  else return(T)
+  return(FALSE)
+  else return(TRUE)
 }
 
 mod.level<-function(vari=NULL,x=NULL,cova=NULL,continuous.resolution=10,w)
-{pre=F
-post=F
+{pre=FALSE
+post=FALSE
 moder.level=NULL
 moder=NULL
 temp.q=NULL
@@ -6852,10 +6858,10 @@ if(is.null(w))
   w=rep(1,nrow(x))
 
 if(sum(grep(vari,colnames(x)))>0)
-{post=T #as a post moderator
+{post=TRUE #as a post moderator
 moder=x[,vari]}
 else if(sum(grep(vari,names(cova)))>0)
-{pre=T  #as a pre moderator
+{pre=TRUE  #as a pre moderator
 moder=cova[,vari]}
 
 temp.all1=NULL
@@ -6868,7 +6874,7 @@ if(is.factor(moder)){
     temp.all1=cbind(temp.all1,moder==le)}
 else{
   if(length(continuous.resolution==1))
-    temp.q=quantile(moder,probs=(seq(0,1,by=1/continuous.resolution))[-1],na.rm=T)
+    temp.q=quantile(moder,probs=(seq(0,1,by=1/continuous.resolution))[-1],na.rm=TRUE)
   else
     temp.q=continuous.resolution
   for(i in 1:length(temp.q))
@@ -6876,10 +6882,10 @@ else{
     temp.all=(moder<=temp.q[i])
   else
     temp.all=(moder<=temp.q[i] & moder>temp.q[i-1])
-  temp.all[is.na(temp.all)]=F
+  temp.all[is.na(temp.all)]=FALSE
   temp.all1=cbind(temp.all1,temp.all)
   # browser()
-  moder.level=c(moder.level,weighted.mean(moder[temp.all],w[temp.all],na.rm=T))
+  moder.level=c(moder.level,weighted.mean(moder[temp.all],w[temp.all],na.rm=TRUE))
   }
 }
 list(n.moder.level=length(moder.level),moder.level=moder.level,cont.moder.q=temp.q,moder=moder,levels=temp.all1)
@@ -6989,15 +6995,15 @@ temp=mod.contx(vari,continuous.resolution,x,y,dirx,binm,contm,catm,jointm,cova, 
 #temp=temp.med
 for (l in 1:nmod)
   if(is.null(w.new))
-  {ie1[l,]<-apply(temp$ie[[l]],2,mean,na.rm=T)  #first row is the estimated value
-  te[1,((l-1)*ny+1):(l*ny)]=apply(temp$te[[l]],2,mean,na.rm=T)
-  de[1,((l-1)*ny+1):(l*ny)]=apply(as.matrix(temp$denm[[l]][,((l-1)*ny+1):(l*ny)]),2,mean,na.rm=T)
+  {ie1[l,]<-apply(temp$ie[[l]],2,mean,na.rm=TRUE)  #first row is the estimated value
+  te[1,((l-1)*ny+1):(l*ny)]=apply(temp$te[[l]],2,mean,na.rm=TRUE)
+  de[1,((l-1)*ny+1):(l*ny)]=apply(as.matrix(temp$denm[[l]][,((l-1)*ny+1):(l*ny)]),2,mean,na.rm=TRUE)
   }
 else
 {level=mod.level1$levels[,l]
-te[1,((l-1)*ny+1):(l*ny)]<-apply(temp$te[[l]],2,weighted.mean,na.rm=T,w=w.new[level])
-de[1,((l-1)*ny+1):(l*ny)]<-apply(as.matrix(temp$denm[[l]][,1:ny]),2,weighted.mean,na.rm=T,w=w.new[level]) 
-ie1[l,]<-apply(temp$ie[[l]],2,weighted.mean,na.rm=T,w=w.new[level])  #first row is the estimated value
+te[1,((l-1)*ny+1):(l*ny)]<-apply(temp$te[[l]],2,weighted.mean,na.rm=TRUE,w=w.new[level])
+de[1,((l-1)*ny+1):(l*ny)]<-apply(as.matrix(temp$denm[[l]][,1:ny]),2,weighted.mean,na.rm=TRUE,w=w.new[level]) 
+ie1[l,]<-apply(temp$ie[[l]],2,weighted.mean,na.rm=TRUE,w=w.new[level])  #first row is the estimated value
 }
 
 te1<-rep(list(NULL),nmod)                      #to store the mediation effects on predictor
@@ -7037,15 +7043,15 @@ if(!is.null(mma1$all_boot)){
   
   for (l in 1:nmod)
   {if(is.null(w.new))
-  {te[1+i,((l-1)*ny+1):(l*ny)]<-apply(temp$te[[l]],2,mean,na.rm=T)
-  de[1+i,((l-1)*ny+1):(l*ny)]<-apply(as.matrix(temp$denm[[l]][,((l-1)*ny+1):(l*ny)]),2,mean,na.rm=T)
-  ie[[l]][i,]<-apply(temp$ie[[l]],2,mean,na.rm=T)  #first row is the estimated value
+  {te[1+i,((l-1)*ny+1):(l*ny)]<-apply(temp$te[[l]],2,mean,na.rm=TRUE)
+  de[1+i,((l-1)*ny+1):(l*ny)]<-apply(as.matrix(temp$denm[[l]][,((l-1)*ny+1):(l*ny)]),2,mean,na.rm=TRUE)
+  ie[[l]][i,]<-apply(temp$ie[[l]],2,mean,na.rm=TRUE)  #first row is the estimated value
   }
     else
     {level=mod.level1$levels[,l]
-    te[1+i,((l-1)*ny+1):(l*ny)]<-apply(temp$te[[l]],2,weighted.mean,na.rm=T,w=w.new[level])
-    de[1+i,((l-1)*ny+1):(l*ny)]<-apply(as.matrix(temp$denm[[l]][,1:ny]),2,weighted.mean,na.rm=T,w=w.new[level])
-    ie[[l]][i,]<-apply(temp$ie[[l]],2,weighted.mean,na.rm=T,w=w.new[level])  #first row is the estimated value
+    te[1+i,((l-1)*ny+1):(l*ny)]<-apply(temp$te[[l]],2,weighted.mean,na.rm=TRUE,w=w.new[level])
+    de[1+i,((l-1)*ny+1):(l*ny)]<-apply(as.matrix(temp$denm[[l]][,1:ny]),2,weighted.mean,na.rm=TRUE,w=w.new[level])
+    ie[[l]][i,]<-apply(temp$ie[[l]],2,weighted.mean,na.rm=TRUE,w=w.new[level])  #first row is the estimated value
     }
     
     te1[[l]]<-cbind(te1[[l]],temp$te[[l]])
@@ -7061,9 +7067,9 @@ if(!is.null(mma1$all_boot)){
 }
 
 a<-list(estimation=list(ie=ie1,te=te[1,],de=de[1,]),bootsresults=list(ie=ie,te=te[-1,],de=de[-1,]),model=mma1$model,
-        data=list(x=x,y=y,dirx=dirx,binm=binm,contm=contm,catm=catm, jointm=jointm, cova=cova, binpred=F),
+        data=list(x=x,y=y,dirx=dirx,binm=binm,contm=contm,catm=catm, jointm=jointm, cova=cova, binpred=FALSE),
         boot.detail=list(pred.new=pred.new,cova.new=cova.new,te1=te1,de1=de1,ie1=ie2),w.new=w.new, pred.new=pred.new,
-        moder.level=mod.level1,mod=T)
+        moder.level=mod.level1,mod=TRUE)
 class(a)<-"mma"
 return(a)
 }
@@ -7085,7 +7091,7 @@ a.contx=NULL
 if(xj%in%contpred)
 {if(is.null(w))
   w=rep(1,nrow(mma1$a.contx$data$x))
-mma1$a.binx$data$binpred=F
+mma1$a.binx$data$binpred=FALSE
 a.contx<-boot.mod.contx(mma1$a.contx,vari,continuous.resolution=continuous.resolution,
                         w=w,n=n,x.new=x.new,w.new=w.new,pred.new=pred.new,
                         cova.new=cova.new,xj=xj,df1=df1,xmod=xmod,margin=margin)
@@ -7093,17 +7099,17 @@ a.contx<-boot.mod.contx(mma1$a.contx,vari,continuous.resolution=continuous.resol
 else if(xj%in%binpred)
 {if(is.null(w))
   w=rep(1,nrow(mma1$a.binx$data$x))
-mma1$a.binx$data$binpred=T
+mma1$a.binx$data$binpred=TRUE
 a.binx<-boot.mod.binx(mma1$a.binx,vari,continuous.resolution=continuous.resolution,n=n,w=w,xj=xj,xmod=xmod)
 }
 else
-{z11=rep(F,length(catpred))
+{z11=rep(FALSE,length(catpred))
 for (i in 1:length(catpred))
   z11[i]=xj%in%catpred[[i]]
 i=(1:length(catpred))[z11]
 if(is.null(w))
   w=rep(1,nrow(mma1$a.binx$data$x))
-mma1$a.binx$data$binpred=T
+mma1$a.binx$data$binpred=TRUE
 a.binx<-boot.mod.binx(mma1$a.binx,vari,continuous.resolution=continuous.resolution,n=n,w=w,xj=catpred[[i]],xmod=xmod)
 }
 
@@ -7113,8 +7119,8 @@ return(a)
 }
 
 
-plot2.mma<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1)
-{plot2.temp<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1){
+plot2.mma<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=FALSE,moderator,xj=1)
+{plot2.temp<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=FALSE,moderator,xj=1){
   marg.den<-function(x,y,w=NULL) #added w
   {if(!is.null(w))
     w<-w[!is.na(x) & !is.na(y)]
@@ -7126,10 +7132,10 @@ plot2.mma<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1)
   z2<-rep(0,length(z1))
   if(is.null(w))   #
     for (i in 1:length(z1))
-      z2[i]<-mean(y[x==z1[i]],na.rm=T)  
+      z2[i]<-mean(y[x==z1[i]],na.rm=TRUE)  
   else          #
     for (i in 1:length(z1))      #
-      z2[i]<-weighted.mean(y[x==z1[i]],w[x==z1[i]],na.rm=T)  #added ,w[x==z1[i]]
+      z2[i]<-weighted.mean(y[x==z1[i]],w[x==z1[i]],na.rm=TRUE)  #added ,w[x==z1[i]]
   z3<-order(z1)
   cbind(z1[z3],z2[z3])
   }
@@ -7217,18 +7223,18 @@ plot2.mma<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1)
     if(!is.null(w))                     #
       w<-w[!is.na(a1) & !is.na(b1)]    #
     j<-sort(unique(b))
-    ahist<-hist(a[b==j[1]],plot=F)
+    ahist<-hist(a[b==j[1]],plot=FALSE)
     if(!is.null(w))                     #
-      ahist<-weighted.hist(a[b==j[1]], w[b==j[1]], plot=F)    #
+      ahist<-weighted.hist(a[b==j[1]], w[b==j[1]], plot=FALSE)    #
     dist = ahist$breaks[2]-ahist$breaks[1]
-    lb =min(ahist$breaks,na.rm = T)
-    ub=max(ahist$breaks,na.rm = T)
-    yl=max(ahist$density,na.rm = T)
+    lb =min(ahist$breaks,na.rm = TRUE)
+    ub=max(ahist$breaks,na.rm = TRUE)
+    yl=max(ahist$density,na.rm = TRUE)
     for(i in j[-1])
-    {bhist<-hist(a[b==i],plot=F)
-    lb =min(lb,bhist$breaks,na.rm = T)
-    ub =max(ub,bhist$breaks,na.rm = T)
-    yl=max(yl,bhist$density,na.rm = T)
+    {bhist<-hist(a[b==i],plot=FALSE)
+    lb =min(lb,bhist$breaks,na.rm = TRUE)
+    ub =max(ub,bhist$breaks,na.rm = TRUE)
+    yl=max(yl,bhist$density,na.rm = TRUE)
     dist = min(dist,bhist$breaks[2]-bhist$breaks[1])
     }
     breaks=seq(lb,ub,dist)
@@ -7237,11 +7243,11 @@ plot2.mma<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1)
     if(is.null(w))                     #
       for (i in j)
         hist(a[b==i],ylab="Density",xlab="",breaks=breaks, 
-             xlim=xlim, ylim=c(0,yl), freq=F,main=paste(xname,i,sep="="))
+             xlim=xlim, ylim=c(0,yl), freq=FALSE,main=paste(xname,i,sep="="))
     else           #
       for (i in j) #
         weighted.hist(a[b==i],w[b==i],ylab="Density",xlab="",breaks=breaks, #
-                      xlim=xlim, ylim=c(0,yl), freq=F,main=paste(xname,i,sep="=")) #
+                      xlim=xlim, ylim=c(0,yl), freq=FALSE,main=paste(xname,i,sep="=")) #
   }
   
   weighted.prop.table<-function(x,w)  #the whole function is added for weighted proportions
@@ -7256,19 +7262,19 @@ plot2.mma<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1)
   table
   }
   
-  boot.ci<-function(x,mat,alpha,quantile=F) #the mat is the booted results with row be different x, and columns diff boot
+  boot.ci<-function(x,mat,alpha,quantile=FALSE) #the mat is the booted results with row be different x, and columns diff boot
     #cri_val is the critical value
-  {x.uniq<-sort(unique(x,na.rm=T))
+  {x.uniq<-sort(unique(x,na.rm=TRUE))
   mn<-NULL
   upbd<-NULL
   lwbd<-NULL
   alpha<-(1-alpha)/2
   for (i in x.uniq)
-  {sd_dev<-sd(as.vector(mat[x==i,]),na.rm=T)
-  mn1<-mean(as.vector(mat[x==i,]),na.rm=T)
+  {sd_dev<-sd(as.vector(mat[x==i,]),na.rm=TRUE)
+  mn1<-mean(as.vector(mat[x==i,]),na.rm=TRUE)
   if(quantile)
-  {upbd<-c(upbd,quantile(as.vector(mat[x==i,]),1-alpha,na.rm=T))
-  lwbd<-c(lwbd,quantile(as.vector(mat[x==i,]),alpha,na.rm=T))
+  {upbd<-c(upbd,quantile(as.vector(mat[x==i,]),1-alpha,na.rm=TRUE))
+  lwbd<-c(lwbd,quantile(as.vector(mat[x==i,]),alpha,na.rm=TRUE))
   }
   else
   {cri_val<-qnorm(1-alpha)
@@ -7280,27 +7286,28 @@ plot2.mma<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1)
   mn<-mn[tt]
   lwbd<-lwbd[tt]
   upbd<-upbd[tt]
-  return(data.frame(x=x.uniq,F=mn,L=lwbd,U=upbd))
+  return(data.frame(x=x.uniq,FA=mn,L=lwbd,U=upbd))
   }
   
   plot_ci<-function(df1,xlab="x",ylab="IE",sub=NULL)
-  { plot(df1$x, df1$F, ylim = range(c(df1$L,df1$U),na.rm=T), type = "l",xlab=xlab,ylab=ylab,sub=sub)
+  { plot(df1$x, df1$FA, ylim = range(c(df1$L,df1$U),na.rm=TRUE), type = "l",xlab=xlab,ylab=ylab,sub=sub)
     polygon(c(df1$x,rev(df1$x)),c(df1$L,rev(df1$U)),col = "grey75", border = FALSE)
-    lines(df1$x, df1$F, lwd = 2)
+    lines(df1$x, df1$FA, lwd = 2)
     lines(df1$x, df1$U, col="red",lty=2)
     lines(df1$x, df1$L, col="red",lty=2)}
   
   nx<-ncol(x$data$dirx)
   ny<-ncol(x$data$y)
   nmod=length(x$moder.level$moder.level)
-  op <- par(no.readonly = TRUE) # the whole list of settable par's.
+  oldpar <- par(no.readonly = TRUE) # the whole list of settable par's.
+  on.exit(par(oldpar)) 
   data=x$data
   mname<-ifelse(is.character(vari),vari,names(data$x)[vari])
   vari=mname
   if(is.null(xlim) & !is.factor(x$data$x[,grep(vari,names(x$data$x))]))
-    xlim=range(x$data$x[,grep(vari,colnames(x$data$x))],na.rm=T)
+    xlim=range(x$data$x[,grep(vari,colnames(x$data$x))],na.rm=TRUE)
   
-  if (x$model[1]==T) 
+  if (x$model[1]==TRUE) 
     for (m in 1:ny) {
       full.model=x$model$model[[m]]
       best.iter=x$model$best.iter[m]
@@ -7349,20 +7356,20 @@ plot2.mma<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1)
           {temp1<-c(temp1,prop.table(table(data$x[apply(data$dirx!=0,1,sum)==0 & temp.all,vari])))
           for (j in 1:nx)
             temp1<-c(temp1,prop.table(table(data$x[data$dirx[,j]==1 & temp.all,vari])))
-          barplot(prop.table(table(data$x[apply(data$dirx!=0,1,sum)==0 & temp.all,vari])),ylim=c(0,max(temp1,na.rm=T)),
+          barplot(prop.table(table(data$x[apply(data$dirx!=0,1,sum)==0 & temp.all,vari])),ylim=c(0,max(temp1,na.rm=TRUE)),
                   ylab="Prop",sub=paste(moderator, "=", x$moder.level$moder.level[q1], ", Predictor at the Reference Level: pred=",0,sep=""))     
           #browser()
           for (j in 1:nx)
-            barplot(prop.table(table(data$x[data$dirx[,j]==1 & temp.all,vari])),ylim=c(0,max(temp1,na.rm=T)),
+            barplot(prop.table(table(data$x[data$dirx[,j]==1 & temp.all,vari])),ylim=c(0,max(temp1,na.rm=TRUE)),
                     ylab="Prop",sub=paste(moderator, "=", x$moder.level$moder.level[q1], colnames(data$dirx)[j], ", pred=",j,sep=""))}
           else #
           {temp1<-c(temp1,weighted.prop.table(data$x[apply(data$dirx!=0,1,sum)==0 & temp.all,vari],data$w))#
           for (j in 1:nx) #
             temp1<-c(temp1,weighted.prop.table(data$x[data$dirx[,j]==1 & temp.all,vari],data$w))#
-          barplot(weighted.prop.table(data$x[apply(data$dirx!=0,1,sum)==0 & temp.all,vari]),ylim=c(0,max(temp1,na.rm=T)),#
+          barplot(weighted.prop.table(data$x[apply(data$dirx!=0,1,sum)==0 & temp.all,vari]),ylim=c(0,max(temp1,na.rm=TRUE)),#
                   ylab="Prop",sub=paste(moderator, "=", x$moder.level$moder.level[q1], ", Predictor at the Reference Level, pred=", j,sep=""))
           for (j in 1:nx)#
-            barplot(weighted.prop.table(data$x[data$dirx[,j]==1 & temp.all,vari]),ylim=c(0,max(temp1,na.rm=T)),#
+            barplot(weighted.prop.table(data$x[data$dirx[,j]==1 & temp.all,vari]),ylim=c(0,max(temp1,na.rm=TRUE)),#
                     ylab="Prop",sub=paste(moderator, "=", x$moder.level$moder.level[q1], colnames(data$dirx)[j], ", pred=", j,sep=""))} #
         }}
       }
@@ -7383,7 +7390,7 @@ plot2.mma<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1)
             print(suppressWarnings(plot.gbm(full.model, i.var=c(vari,moderator),best.iter,xlim=xlim,type="response")))
           #        if(nx>1)
           #          for (i in 1:(nx-1))
-          #            plot(1, type="n", axes=F, xlab="", ylab="")
+          #            plot(1, type="n", axes=FALSE, xlab="", ylab="")
           par(mfrow=c(ceiling(nmod/2),2),mar=c(5,5,1,1),oma=c(3,2,5,4))
           for(l in 1:nmod){
             #browser()
@@ -7394,7 +7401,7 @@ plot2.mma<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1)
             
             a<-marg.den(data$dirx[temp.all,xj],data$x[temp.all,vari],data$w[temp.all]) #added data$w
             scatter.smooth(a[,1],a[,2],family="gaussian",xlab=colnames(data$dirx)[xj],ylim=xlim,ylab=paste("Mean",mname,sep="."),sub=paste(moderator, "at", x$moder.level$moder.level[l]))
-            axis(1,at=data$x[temp.all,vari],labels=F)}
+            axis(1,at=data$x[temp.all,vari],labels=FALSE)}
         }
         else
         {par(mfrow=c(1,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
@@ -7407,7 +7414,7 @@ plot2.mma<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1)
           par(mfrow=c(ceiling(nmod/2),2),mar=c(5,5,1,1),oma=c(3,2,5,4))
           #        if(nx>1)
           #          for (i in 1:(nx-1))
-          #            plot(1, type="n", axes=F, xlab="", ylab="")
+          #            plot(1, type="n", axes=FALSE, xlab="", ylab="")
           for(l in 1:nmod){
             if(is.factor(x$moder.level$moder))
               temp.all=(x$moder.level$moder==x$moder.level$moder.level[l] & !is.na(x$moder.level$moder))
@@ -7457,11 +7464,11 @@ plot2.mma<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1)
         {b2=coef[grep(x$moder.level$moder.level[l],names(coef))]+coef[vari]
         b3=ifelse(is.factor(x$moder.level$moder.level),1,x$moder.level$moder.level[l])
         b2.1=coef[grep(x$moder.level$moder.level[l],names(coef))]*b3+coef[vari]*mean(b[,1])
-        abline(a=mean(b[,2],na.rm=T)-b2.1,b=b2,col=l)}
+        abline(a=mean(b[,2],na.rm=TRUE)-b2.1,b=b2,col=l)}
         else
-          abline(a=mean(b[,2],na.rm=T)-coef[vari]*mean(b[,1]),b=coef[vari],col=l)
+          abline(a=mean(b[,2],na.rm=TRUE)-coef[vari]*mean(b[,1]),b=coef[vari],col=l)
         
-        axis(1,at=data1,labels=F)}
+        axis(1,at=data1,labels=FALSE)}
       par(mfrow=c(max(2,min(5,ceiling(nmod/2))),nx+1),mar=c(5,5,1,1),oma=c(3,2,5,4))  
       for(q1 in 1:nmod){
         if(is.factor(x$moder.level$moder))
@@ -7477,14 +7484,14 @@ plot2.mma<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1)
       {if(!x$model$Survival[m])
         b1=full.model$fitted.values
       else
-        b1=predict(full.model,se.fit=T,type=x$model$type)$fit
+        b1=predict(full.model,se.fit=TRUE,type=x$model$type)$fit
       print(xyplot(b1~data1|x$moder.level$moder,ylab=paste("f(",mname,")",sep=""),xlab=mname))
       }
       else
       {if(!x$model$Survival[m])
         print(levelplot(full.model$fitted.values~data1*x$moder.level$moder,ylab=moderator,xlab=mname))
         else
-          print(levelplot(predict(full.model,se.fit=T,type=x$model$type)$fit~data1*x$moder.level$mode,ylab=moderator,xlab=mname))}
+          print(levelplot(predict(full.model,se.fit=TRUE,type=x$model$type)$fit~data1*x$moder.level$mode,ylab=moderator,xlab=mname))}
       
       temp1<-NULL
       if(is.null(data$w)){ #
@@ -7500,10 +7507,10 @@ plot2.mma<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1)
           else
             temp.all=(x$moder.level$moder<=x$moder.level$cont.moder.q[q1] & x$moder.level$moder>x$moder.level$cont.moder.q[q1-1] & !is.na(x$moder.level$moder))
           
-          barplot(prop.table(table(data$x[apply(data$dirx!=0 & temp.all,1,sum)==0,vari])),ylim=c(0,max(temp1,na.rm=T)),
+          barplot(prop.table(table(data$x[apply(data$dirx!=0 & temp.all,1,sum)==0,vari])),ylim=c(0,max(temp1,na.rm=TRUE)),
                   ylab="Prop",sub=paste(moderator, "=", x$moder.level$moder.level[q1],"Predictor at the reference level"))
           for (j in 1:ncol(data$dirx))
-            barplot(prop.table(table(data$x[data$dirx[,j]==1 & temp.all,vari])),ylim=c(0,max(temp1,na.rm=T)),
+            barplot(prop.table(table(data$x[data$dirx[,j]==1 & temp.all,vari])),ylim=c(0,max(temp1,na.rm=TRUE)),
                     ylab="Prop",sub=paste(moderator, "=", x$moder.level$moder.level[q1],"Predictor at",colnames(data$dirx)[j]))}
       }#
       else#
@@ -7537,7 +7544,7 @@ plot2.mma<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1)
       {if(!x$model$Survival[m])
         b1<-full.model$family$linkfun(full.model$fitted.values) #added data$w
       else
-        b1<-predict(full.model,se.fit=T,type=x$model$type)$fit #added data$w
+        b1<-predict(full.model,se.fit=TRUE,type=x$model$type)$fit #added data$w
       
       #par(mfrow=c(1,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
       
@@ -7562,14 +7569,14 @@ plot2.mma<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1)
             b2.1=coef[grep(x$moder.level$moder.level[q1],names(coef))]*b3+coef[vari]*mean(b[,1])
           else
             b2.1=coef[intersect(grep(vari,names(coef)),grep(moderator,names(coef)))]*b3+coef[vari]*mean(b[,1])
-          abline(a=mean(b[,2],na.rm=T)-b2.1,b=b2,col=q1)} #
+          abline(a=mean(b[,2],na.rm=TRUE)-b2.1,b=b2,col=q1)} #
         else
-          abline(a=mean(b[,2],na.rm=T)-coef*mean(b[,1]),b=coef,col=q1)
+          abline(a=mean(b[,2],na.rm=TRUE)-coef*mean(b[,1]),b=coef,col=q1)
         # browser() 
-        axis(1,at=data1,labels=F)
+        axis(1,at=data1,labels=FALSE)
         #if(nx>1)
         #  for (i in 1:(nx-1))
-        #    plot(1, type="n", axes=F, xlab="", ylab="")
+        #    plot(1, type="n", axes=FALSE, xlab="", ylab="")
         #for(l in 1:nx){
         a<-marg.den(x$pred.new[temp.all,xj],data$x[temp.all,vari],data$w[temp.all])   #added data$w
         scatter.smooth(a[,1],a[,2],family="gaussian", xlab=colnames(data$dirx)[xj],ylim=xlim,ylab=paste("Mean",mname,sep="."),
@@ -7581,15 +7588,15 @@ plot2.mma<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1)
         {if (!x$model$Survival[m])
           print(xyplot(full.model$fitted.values~data1|x$moder.level$moder,ylab=paste("f(",mname,")",sep=""),xlab=mname))
           else
-            print(xyplot(predict(full.model,se.fit=T,type=x$model$type)$fit~data1|x$moder.level$mode,ylab=paste("f(",mname,")",sep=""),xlab=mname))}
+            print(xyplot(predict(full.model,se.fit=TRUE,type=x$model$type)$fit~data1|x$moder.level$mode,ylab=paste("f(",mname,")",sep=""),xlab=mname))}
         else
         {if (!x$model$Survival[m])
           print(levelplot(full.model$fitted.values~data1*x$moder.level$moder,ylab=moderator,xlab=mname))
           else
-            print(levelplot(predict(full.model,se.fit=T,type=x$model$type)$fit~data1*x$moder.level$mode,ylab=moderator,xlab=mname))}
+            print(levelplot(predict(full.model,se.fit=TRUE,type=x$model$type)$fit~data1*x$moder.level$mode,ylab=moderator,xlab=mname))}
         # if(nx>1)
         #    for (i in 1:(nx-1))
-        #     plot(1, type="n", axes=F, xlab="", ylab="")
+        #     plot(1, type="n", axes=FALSE, xlab="", ylab="")
         for(l in 1:nmod){
           if(is.factor(x$moder.level$moder))
             temp.all=(x$moder.level$moder==x$moder.level$moder.level[l] & !is.na(x$moder.level$moder))
@@ -7600,7 +7607,7 @@ plot2.mma<-function(x,...,vari,xlim=NULL,alpha=0.95,quantile=F,moderator,xj=1)
           plot(data$x[temp.all,vari],x$moder.level$pred.uniq[[l]],ylab=colnames(data$dirx)[xj],xlab="",sub=paste(moderate, "at",x$moder.level$moder.level[l]))}}
     }
     }
-  par(op)
+  #par(op)
 }
 contpred=x$pred$contpred
 catpred=x$pred$catpred
@@ -7612,7 +7619,7 @@ if(xj%in%contpred)
 else if(xj%in%binpred)
   plot2.temp(x=x$a.binx,vari=vari,xlim=xlim,alpha=alpha,quantile=quantile,moderator=moderator,xj=xj)
 else
-{z11=rep(F,length(catpred))
+{z11=rep(FALSE,length(catpred))
 for (i in 1:length(catpred))
   z11[i]=xj%in%catpred[[i]]
 i=(1:length(catpred))[z11]

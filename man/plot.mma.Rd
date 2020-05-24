@@ -9,7 +9,7 @@ Plot the marginal effect of the selected variable on the outcome, and the margin
 }
 \usage{
 \method{plot}{mma}(x,...,vari,xlim=NULL,alpha=0.95,
-quantile=F)
+quantile=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -35,6 +35,7 @@ other arguments passed to the plot function.
 \details{
 plot.mma plots the marginal effect of the selected variable on the outcome, and the marginal effect of the predictor on the selected variable. If the predictor is binary, draw a histogram or boxplot of the marginal density of the variable at each different value of the predictor.
 }
+\value{No return value, called for drawing graphs}
 \references{
 Yu, Q., Fan, Y., and Wu, X. (2014) <doi:10.4172/2155-6180.1000189>. "General Multiple Mediation Analysis With an Application to Explore Racial Disparity in Breast Cancer Survival," Journal of Biometrics & Biostatistics,5(2): 189. 
 
