@@ -61,15 +61,15 @@ y=weight_behavior[,15]
 data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),
                    binref=c(1,1),catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
 temp2<-med(data=data.bin,n=2,nonlinear=TRUE)
-test.moderation(temp2,c("sports","sweat"),j=1,kx=NULL)
+a=test.moderation(temp2,c("sports","sweat"),j=1,kx=NULL)
 
 %For linear mma, first create the interaction terms
 x=cbind(x,form.interaction(x,pred,inter.cov=c("sports","sweat"),predref=NULL))
 
-data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),
+data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11),binmed=c(6,10),
                    binref=c(1,1),catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
 temp1<-med(data=data.bin,n=2)
-test.moderation(temp1,c("sports","sweat"),j=1,kx=NULL)
+a=test.moderation(temp1,c("sports","sweat"),j=1,kx=NULL)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

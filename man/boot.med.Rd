@@ -14,7 +14,7 @@ boot.med(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,
          nonlinear=FALSE,df1=1,nu=0.001,D=3,distn=NULL,family1=data$family1,
          n2=50,w=rep(1,nrow(x)),refy=NULL,x.new=x,pred.new=dirx,
          cova.new=cova,binpred=data$binpred,type=NULL,
-         w.new=NULL,all.model=FALSE,xmod=NULL,custom.function=NULL)
+         w.new=NULL,all.model=FALSE,xmod=NULL,custom.function=NULL,para=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -96,6 +96,8 @@ save all the fitted model from bootstrap samples if TRUE. This needs to be true 
 If there is a moderator, xmod gives the moderator's name in cova and/or x.
 }
   \item{custom.function}{a string of customer defined final model for predicting the outcome(s). The response variable should be noted as "responseY", the dataset should be noted as "dataset123". The weights for observations should be noted as "weights123". The covariates should be in x or pred. Use "~." for all varaibles in x and pred is allowed. The customer defined model should be able to make prediction by using "predict(object, newdata=...)", where the object is the results of the fitted model. If a specific package needs to be called to fit the model, the user should call the package first. For example, if the gamlss package is used to fit a piecewise polynomial with "age" to be the mediator and "race" be the predictor, we can set custom.function="gamlss(responseV~b(age,df=3)+race,data=dataset123,tace=FALSE)". The length of custom.function should be the same as the dimension of y. If custom.function[j] is NA, the usual method will be used to fit y[j]. 
+}
+  \item{para}{It is for binary predictors. If it is true, we would like the x-m relationship be fitted parametrically. 
 }
 }
 \details{

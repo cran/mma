@@ -11,7 +11,7 @@ To make inferences on the mediation effects when the predictor is continuous or 
 boot.mod(mma1,vari,continuous.resolution=10,
          w=NULL,n=20,
          x.new=NULL,w.new=NULL,pred.new=NULL,cova.new=NULL,xj=1,margin=1,
-         xmod=vari,df1=1)
+         xmod=vari,df1=1,para=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -22,7 +22,7 @@ the mma project generated from the function mma or boot.med.
 The name of the moderator. The moderator should be included in the original data as a covariate for the response(in x) and/or for mediators (in cova). 
 }
   \item{continuous.resolution}{
-The number of equally space points (for continuous moderator) or levels (for categorical moderator) at which to evaluate mediation effects separately.
+The number of equally space points (for continuous moderator) or levels (for categorical moderator) at which to evaluate mediation effects separately. If the moderator is categorical, continuous.resolution=10 implies using all individual levels.
 }
   \item{w}{
 the weight for observations.
@@ -56,6 +56,8 @@ If there is a moderator, xmod gives the moderator's name in cova and/or x.
 }
   \item{df1}{
 if nonlinear is TURE, natural cubic spline will be used to fit the relationship between the predictor and each mediator.  The df is the degree of freedom in the ns() function, the default is 1.
+}
+  \item{para}{It is for binary predictors. If it is true, we would like the x-m relationship be fitted parametrically. 
 }
 }
 \details{
@@ -95,7 +97,7 @@ head(x)
 data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),
                    binref=c(1,1),catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
 temp1<-boot.med(data=data.bin,n=2,n2=4,all.model=TRUE)
-temp1.mode=boot.mod(temp1,vari="race",continuous.resolution=100)
+temp1.mode=boot.mod(temp1,vari="race",continuous.resolution=10)
 plot2.mma(temp1.mode,vari="exercises",moderator="race")
 plot2.mma(temp1.mode,vari="sports",moderator="race")
 
@@ -106,7 +108,7 @@ y=weight_behavior[,15]
 data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,1),
                     catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
 temp2<-boot.med(data=data.bin,n=2,n2=4,nu=0.05,nonlinear=TRUE,all.model=TRUE)
-temp2.mode=boot.mod(temp2,vari="race",continuous.resolution=100)
+temp2.mode=boot.mod(temp2,vari="race",continuous.resolution=10)
 plot2.mma(temp2.mode,vari="exercises",moderator="race")
 plot2.mma(temp2.mode,vari="sports",moderator="race")
 
