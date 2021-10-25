@@ -1,4 +1,4 @@
-## ----setup, include = FALSE----------------------------------------------
+## ----setup, include = FALSE---------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -6,11 +6,11 @@ knitr::opts_chunk$set(
   warning=FALSE
 )
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 library(mma)
 #source('C:/Users/qyu/Desktop/Research/mma/version current/R/mma.r')
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
 data("weight_behavior")
 #binary predictor x
 #binary y
@@ -21,12 +21,12 @@ data("weight_behavior")
                         pred=pred,predref="M", alpha=0.4,alpha2=0.4)
  summary(data.b.b.1)
 
-## ---- echo=T, results='hide'---------------------------------------------
+## ---- echo=T, results='hide'--------------------------------------------------
  data.b.b.2<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10), jointm=list(n=1,j1=7:9),
    binref=c(1,1),catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4) 
  summary(data.b.b.2)
 
-## ---- echo=T, results='hide'---------------------------------------------
+## ---- echo=T, results='hide'--------------------------------------------------
  cgd1<-cgd0
  status<-ifelse(is.na(cgd1$etime1),0,1)
  y=Surv(cgd1$futime,status) 
@@ -36,7 +36,7 @@ data("weight_behavior")
                     alpha=0.4,alpha2=0.4)
  summary(data.b.surv)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
  #multivariate predictor
  x=weight_behavior[,c(2:3,5:14)]
  pred=weight_behavior[,4]
@@ -45,7 +45,7 @@ data("weight_behavior")
                       pred=pred,predref="OTHER", alpha=0.4,alpha2=0.4)
  summary(data.mb.b)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
  #multivariate responses
  x=weight_behavior[,c(2:3,5:14)]
  pred=weight_behavior[,4]
@@ -54,52 +54,52 @@ data("weight_behavior")
                       pred=pred,predref="OTHER", alpha=0.4,alpha2=0.4)
  summary(data.mb.mb)
 
-## ---- echo=T, results='hide',eval=F--------------------------------------
+## ---- echo=T, results='hide',eval=F-------------------------------------------
 #   med.b.b.2<-med(data=data.b.b.2,n=2,nonlinear=TRUE)
 
-## ---- include=F----------------------------------------------------------
+## ---- include=F---------------------------------------------------------------
  med.b.b.2<-med(data=data.b.b.2,n=2,nonlinear=TRUE)
 
-## ------------------------------------------------------------------------
+## -----------------------------------------------------------------------------
  med.b.b.1<-med(data=data.b.b.2,n=2)
  med.b.b.1
 
-## ---- fig.show='hold', fig.height=6, fig.width=4-------------------------
+## ---- fig.show='hold', fig.height=6, fig.width=4------------------------------
 plot(med.b.b.1, data.b.b.2,vari="exercises",xlim=c(0,50))
 plot(med.b.b.2, data.b.b.2,vari="sports")
 
-## ---- echo=T, eval=F,results='hide'--------------------------------------
+## ---- echo=T, eval=F,results='hide'-------------------------------------------
 #   med.b.surv.1<-med(data=data.b.surv,n=2,type="lp")
 #    #close to mart results when use type="lp"
 #   med.b.surv.2<-med(data=data.b.surv,n=2,nonlinear=TRUE)
 #   #results in the linear part unit
 
-## ---- include=F----------------------------------------------------------
+## ---- include=F---------------------------------------------------------------
  med.b.surv.1<-med(data=data.b.surv,n=2,type="lp") 
   #close to mart results when use type="lp"
  med.b.surv.2<-med(data=data.b.surv,n=2,nonlinear=TRUE)  
  #results in the linear part unit
 
-## ---- fig.show='hold', fig.height=5, fig.width=7-------------------------
+## ---- fig.show='hold', fig.height=5, fig.width=7------------------------------
  bootmed.b.b.1<-boot.med(data=data.b.b.2,n=2,n2=50)
  summary(bootmed.b.b.1)
 
 ## ---- fig.show='hold', fig.height=5, fig.width=7, echo=T, eval=F, results='hide'----
 #   bootmed.b.b.2<-boot.med(data=data.b.b.2,n=2,n2=40,nu=0.05,nonlinear=TRUE)
 
-## ---- fig.show='hold', fig.height=5, fig.width=7, include=F--------------
+## ---- fig.show='hold', fig.height=5, fig.width=7, include=F-------------------
  bootmed.b.b.2<-boot.med(data=data.b.b.2,n=2,n2=4,nu=0.05,nonlinear=TRUE)
 
-## ---- fig.show='hold', fig.height=5, fig.width=7-------------------------
+## ---- fig.show='hold', fig.height=5, fig.width=7------------------------------
  summary(bootmed.b.b.2)
 
-## ---- fig.show='hold', fig.height=7, fig.width=5-------------------------
+## ---- fig.show='hold', fig.height=7, fig.width=5------------------------------
  plot(bootmed.b.b.1,vari="exercises",xlim=c(0,50))
 
-## ---- fig.show='hold', fig.height=7, fig.width=5-------------------------
+## ---- fig.show='hold', fig.height=7, fig.width=5------------------------------
  plot(bootmed.b.b.1,vari="sports")
 
-## ---- fig.show='hold', fig.height=5, fig.width=7-------------------------
+## ---- fig.show='hold', fig.height=5, fig.width=7------------------------------
  x=weight_behavior[,c(2,4:14)]
  pred=weight_behavior[,3]
  y=weight_behavior[,15]
@@ -110,14 +110,14 @@ plot(med.b.b.2, data.b.b.2,vari="sports")
 #   mma.b.b.mart<-mma(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,1), catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4,nonlinear=TRUE,n=2,n2=5)
 #   summary(mma.b.b.mart)
 
-## ---- include=F----------------------------------------------------------
+## ---- include=F---------------------------------------------------------------
  mma.b.b.mart<-mma(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),binref=c(1,1),
                     catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4,nonlinear=TRUE,n=2,n2=5)
 
-## ---- fig.show='hold', fig.height=5, fig.width=7-------------------------
+## ---- fig.show='hold', fig.height=5, fig.width=7------------------------------
  summary(mma.b.b.mart)
 
-## ---- fig.height=7, fig.width=5------------------------------------------
+## ---- fig.height=7, fig.width=5-----------------------------------------------
 plot(mma.b.b.mart,vari="exercises")
 plot(mma.b.b.glm,vari="sweat")
 

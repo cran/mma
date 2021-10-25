@@ -1385,7 +1385,7 @@ list(x=x,catm=catm,level=level) #cate variables are all combined to the end of x
     {j<-length(binm)+1
     for (i in 2:(catm$n+1))
     {a<-sim.m2[,j:(j+length(catm[[i]])-1)]
-    sim.m2[,j:(j+length(catm[[i]])-1)]<-t(apply(a,1,gen.mult))
+    sim.m2[,j:(j+length(catm[[i]])-1)]<-t(apply(as.matrix(a),1,gen.mult))
     j<-j+length(catm[[i]])}
     }
     
@@ -3268,7 +3268,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
     {j<-length(binm)+1
     for (i in 2:(catm$n+1))
     {a<-sim.m2[,j:(j+length(catm[[i]])-1)]
-    sim.m2[,j:(j+length(catm[[i]])-1)]<-t(apply(a,1,gen.mult))
+    sim.m2[,j:(j+length(catm[[i]])-1)]<-t(apply(as.matrix(a),1,gen.mult))
     j<-j+length(catm[[i]])}
     }
     
@@ -5131,7 +5131,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
     {j<-length(binm)+1
     for (i in 2:(catm$n+1))
     {a<-sim.m2[,j:(j+length(catm[[i]])-1)]
-    sim.m2[,j:(j+length(catm[[i]])-1)]<-t(apply(a,1,gen.mult))
+    sim.m2[,j:(j+length(catm[[i]])-1)]<-t(apply(as.matrix(a),1,gen.mult))
     j<-j+length(catm[[i]])}
     }
     
@@ -5298,7 +5298,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
         }
       
       denm2<-NULL
-      
+      denm3<-NULL
       #browser()   
       
       sample.temp<-sample(1:n.new,2*n.new,replace = TRUE,prob=w.new)   #random sample from the original data
@@ -5326,12 +5326,12 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
         if(surv[m] & !is.null(best.iter1[m]))
         {if(is.null(type))
           type="link"
-        denm3<-(predict(full.model[[m]],temp.new1,best.iter1[m],type=type)-predict(full.model[[m]],temp.new0,best.iter1[m],type=type))/margin
+        denm3<-cbind(denm3,(predict(full.model[[m]],temp.new1,best.iter1[m],type=type)-predict(full.model[[m]],temp.new0,best.iter1[m],type=type))/margin)
         }
       else if(surv[m])
-        denm3<-(predict(full.model[[m]],temp.new1,type=type)-predict(full.model[[m]],temp.new0,type=type))/margin
+        denm3<-cbind(denm3,(predict(full.model[[m]],temp.new1,type=type)-predict(full.model[[m]],temp.new0,type=type))/margin)
       else
-        denm3<-(predict(full.model[[m]],temp.new1,best.iter1[m])-predict(full.model[[m]],temp.new0,best.iter1[m]))/margin
+        denm3<-cbind(denm3,(predict(full.model[[m]],temp.new1,best.iter1[m])-predict(full.model[[m]],temp.new0,best.iter1[m]))/margin)
       
       #4.0 get the direct effect
       temp.new1<-x.new[sample.temp[1:n.new],]
@@ -5455,7 +5455,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
     for(temp in 1:temp1)
       temp2<-cbind(temp2,te0)
     ie[[l]]<-temp2-denm[[l]]
-    ie[[l]][,1:ncol(y)]=matrix(rep(te0,ncol(y)),ncol=ncol(y))-denm1[[l]]      #the total indirect effect
+    ie[[l]][,1:ncol(y)]=te0-denm1[[l]]      #the total indirect effect
     te=cbind(te,ie[[l]][,1:ncol(y)]+denm[[l]][,1:ncol(y)])                    #the total effect
     if(!is.null(listm$multi)) 
       colnames(denm[[l]])<-paste(paste("y",1:ncol(y),sep=""),rep(c("de",colnames(x)[listm$single],paste("j",1:listm$multi[[1]],sep="")),each=ncol(y)),sep=".")
@@ -5664,6 +5664,7 @@ a.contx=NULL
 
 if(!is.null(cova))
   para=T
+
 
 if(!is.null(data$bin.results)) 
   {a.binx<-boot.med.binx(data=data$bin.results,n=n,n2=n2,nonlinear=nonlinear,nu=nu,D=D,distn=distn,family1=family1,
