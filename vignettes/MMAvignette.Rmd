@@ -25,7 +25,7 @@ knitr::opts_chunk$set(
 ```
 
 ## Package installation
-R package mma is used for general third-variable effect analysis [@Yu2017a]. The third-variable effect (TVE) refers to the effect conveyed by intervening variables to an observed relationship between an exposure and a response variable (outcome). In this package, the exposure is also called the predictor, the intervening variables are called mediators or confounders (MC). The TVE include total effect, direct effect, and indirect effects from different third variables. The effects are defined in Yu et al. [-@Yu2014]. The algorithms on how to make inferences on TVEs and how to explain the effects are described in Yu et al. [-@Yu2014].  
+R package mma is used for general third-variable effect analysis [@Yu2022]. The third-variable effect (TVE) refers to the effect conveyed by intervening variables to an observed relationship between an exposure and a response variable (outcome). In this package, the exposure is also called the predictor, the intervening variables are called mediators or confounders (MC). The TVE include total effect, direct effect, and indirect effects from different third variables. The effects are defined in Yu et al. [-@Yu2014]. The algorithms on how to make inferences on TVEs and how to explain the effects are described in Yu et al. [-@Yu2014].  
 
 To use the R package mma, we first install the package in R (`install.packages("mma")`) and load it. 
 

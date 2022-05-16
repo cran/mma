@@ -58,7 +58,7 @@ y2<-data.frame(y)                     #consider multivarite or multicategorical 
 ny<-ncol(y2)
 y_type<-rep(4,ny)                     #1 is continuous, 2 is binary, 3 is multi-categorical, 4 is survival
 for (i in 1:ny)
-{if(class(y2[,i])!="Surv")
+{if(!is(y2[,i],"Surv"))
   if(nlevels(droplevels(as.factor(y2[,i])))==2)   
   {y_type[i]<-2
    if(is.na(family1[[i]]))
@@ -1768,7 +1768,7 @@ list(x=x,catm=catm,level=level) #cate variables are all combined to the end of x
    if(is.null(distn))
      distn<-rep(NA,ncol(y))
    for(j in 1:ncol(y)) {
-     if(class(y[,j])=="Surv"){
+     if(is(y[,j], "Surv")){
        surv[j]=TRUE
        if(is.na(distn[j]))
          distn[j]="coxph"
@@ -3777,7 +3777,7 @@ if(is.null(data)){
   if(is.null(distn))
     distn<-rep(NA,ncol(y))
   for(j in 1:ncol(y)) {
-    if(class(y[,j])=="Surv"){
+    if(is(y[,j],"Surv")){
       surv[j]=TRUE
       if(is.na(distn[j]))
         distn[j]="coxph"

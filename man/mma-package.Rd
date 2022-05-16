@@ -40,6 +40,8 @@ Yu, Q., Wu, X., Li, B., and Scribner, R. (2018). <doi:10.1002/sim.7977>. "Multip
 Yu, Q., Medeiros, KL, Wu, X., and Jensen, R. (2018). <doi:10.1007/s11336-018-9612-2>. "Explore Ethnic Disparities in Anxiety and Depression Among Cancer Survivors Using Nonlinear Mediation Analysis," Psychometrika, 83(4), 991-1006. 
 
 Yu, Q. and Li, B., (2020). <doi:10.1080/02664763.2020.1738359>. "A Multivariate Multiple Third-Variable Effect Analysis with an Application to Explore Racial and Ethnic Disparities in Obesity," Journal of Applied Statistics.  
+
+Yu, Q. and Li, B., 2022. Statistical Methods for Mediation, Confounding and Moderation Analysis Using R and SAS. Chapman and Hall/CRC. ISBN 9780367365479.
 }
 \keyword{ Package }
 \examples{
