@@ -6,8 +6,8 @@ data.org<-function(x,y,pred,mediator=NULL,contmed=NULL,binmed=NULL,binref=NULL,c
 {cattobin<-function(x,cat1,cat2=rep(1,length(cat1))) #binaryize the categorical pred in x, cat1 are the column numbers of multicategorical variables cat2 are the reference groups
 {ad1<-function(vec)
 {vec1<-vec[-1]
- vec1[vec[1]]<-1
- vec1
+vec1[vec[1]]<-1
+vec1
 }
 xnames=names(x)
 dim1<-dim(x)
@@ -26,11 +26,12 @@ for (k in b)
 l<-l+1}
 d[a==cat2[j]]<-l
 f<-matrix(0,dim1[1],l-1) 
-colnames(f)<-paste(ntemp[j],b,sep="") #changed for error info
+colnames(f)<-paste(xnames[i],b,sep=".") #changed for error info
 hi<-d[d!=l & !is.na(d)]
 f[d!=l & !is.na(d),]<-t(apply(cbind(hi,f[d!=l & !is.na(d),]),1,ad1))
 f[is.na(d),]<-NA
 x[,i]=f[,1]
+xnames[i]=colnames(f)[1]
 if(l>2)
 {x<-cbind(x,f[,-1])
 xnames=c(xnames,colnames(f)[-1])
@@ -45,7 +46,6 @@ x=data.frame(x)
 colnames(x)=xnames
 list(x=x,catm=catm,level=level) #cate variables are all combined to the end of x, catm gives the column numbers in x for each cate predictor
 }
-
 
 colnum<-function(vec,cutx) 
 {z<-vec
@@ -646,11 +646,12 @@ for (k in b)
 l<-l+1}
 d[a==cat2[j]]<-l
 f<-matrix(0,dim1[1],l-1) 
-colnames(f)<-paste(ntemp[j],b,sep="") #changed for error info
+colnames(f)<-paste(xnames[i],b,sep=".") #changed for error info
 hi<-d[d!=l & !is.na(d)]
 f[d!=l & !is.na(d),]<-t(apply(cbind(hi,f[d!=l & !is.na(d),]),1,ad1))
 f[is.na(d),]<-NA
 x[,i]=f[,1]
+xnames[i]=colnames(f)[1]
 if(l>2)
 {x<-cbind(x,f[,-1])
 xnames=c(xnames,colnames(f)[-1])
@@ -687,7 +688,7 @@ list(x=x,catm=catm,level=level) #cate variables are all combined to the end of x
   }
   formu
   }
-  #browser()  
+  #  
   
   if(!is.null(catm) & !is.list(catm)) #for binary predictors, need to binarized categorical variables first
   {catm1=catm
@@ -714,7 +715,7 @@ list(x=x,catm=catm,level=level) #cate variables are all combined to the end of x
   z<-dirx
   z.name=paste("predictor",1:ncol(z),sep=".")
   colnames(z)=z.name
-  # browser()
+  # 
   if(!is.null(cova))
   {if (length(grep("for.m",names(cova)))==0)#create the predictor matrix z
     z<-cbind(z,cova)
@@ -1396,7 +1397,7 @@ list(x=x,catm=catm,level=level) #cate variables are all combined to the end of x
     
     if (is.null(c(binm,contm,catm)))
     stop("Error: no potential mediator is specified")
-    # browser()
+    # 
     xnames<-colnames(x)
     pred_names<-colnames(dirx)
     ynames<-colnames(y)
@@ -1585,7 +1586,7 @@ list(x=x,catm=catm,level=level) #cate variables are all combined to the end of x
       
       denm2<-NULL
       
-      #browser()   
+      #   
       
       sample.temp<-sample(1:n.new,2*n.new,replace = TRUE,prob=w.new)   #random sample from the original data
       
@@ -1658,7 +1659,7 @@ list(x=x,catm=catm,level=level) #cate variables are all combined to the end of x
       te1<-cbind(te1,te0)
       
       #4.2 mediation effect from the single mediator
-      # browser()
+      # 
       if (!is.null(listm$single))
         for (i in 1:length(listm$single))
         {new1.nm<-new1
@@ -2051,7 +2052,7 @@ boot.med<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,contm=d
                    jointm=data$jointm, cova=data$cova, margin=1,n=20,nonlinear=FALSE,df1=1,nu=0.001,
                    D=3,distn=NULL,family1=data$family1,n2=50,w=rep(1,nrow(x)),refy=NULL,x.new=x,
                    pred.new=dirx,cova.new=cova,binpred=data$binpred,type=NULL,w.new=NULL,
-                   all.model=FALSE,xmod=NULL,custom.function=NULL,para=FALSE)
+                   all.model=FALSE,xmod=NULL,custom.function=NULL,para=FALSE,echo=TRUE)
 {anymissing<-function(vec) #return TRUE if there is any missing in the vec
 {if(sum(is.na(vec))>0)
   return(FALSE)
@@ -2081,11 +2082,12 @@ for (k in b)
 l<-l+1}
 d[a==cat2[j]]<-l
 f<-matrix(0,dim1[1],l-1) 
-colnames(f)<-paste(ntemp[j],b,sep="") #changed for error info
+colnames(f)<-paste(xnames[i],b,sep=".") #changed for error info
 hi<-d[d!=l & !is.na(d)]
 f[d!=l & !is.na(d),]<-t(apply(cbind(hi,f[d!=l & !is.na(d),]),1,ad1))
 f[is.na(d),]<-NA
 x[,i]=f[,1]
+xnames[i]=colnames(f)[1]
 if(l>2)
 {x<-cbind(x,f[,-1])
 xnames=c(xnames,colnames(f)[-1])
@@ -2101,10 +2103,12 @@ colnames(x)=xnames
 list(x=x,catm=catm,level=level) #cate variables are all combined to the end of x, catm gives the column numbers in x for each cate predictor
 }
 
+
 boot.med.binx<-function(data,x=data$x, y=data$y,dirx=data$dirx,contm=data$contm,catm=data$catm,
                          jointm=data$jointm, cova=data$cova,n=20,n2=50,nonlinear=FALSE,nu=0.001,binpred=data$binpred,catpred=data$catpred,
                          D=3,distn="bernoulli",family1=binomial("logit"),w=rep(1,nrow(x)),biny=(data$y_type==2),
-                         refy=rep(NA,ncol(y)),surv=(data$y_type==4),type,all.model=FALSE,xmod=NULL,custom.function=NULL,para=FALSE)
+                         refy=rep(NA,ncol(y)),surv=(data$y_type==4),type,all.model=FALSE,xmod=NULL,
+                         custom.function=NULL,para=FALSE,echo=echo)
   #n2 is the time of bootstrap
 {
   dist.m.given.x<-function(x,dirx,binm=NULL,contm=NULL,catm=NULL,nonlinear,df1,w,cova) #give the model and residual of m given x
@@ -2127,7 +2131,7 @@ boot.med.binx<-function(data,x=data$x, y=data$y,dirx=data$dirx,contm=data$contm,
     }
     formu
     }
-    #browser()  
+    #  
     
     if(!is.null(catm) & !is.list(catm)) #for binary predictors, need to binarized categorical variables first
     {catm1=catm
@@ -2154,7 +2158,7 @@ boot.med.binx<-function(data,x=data$x, y=data$y,dirx=data$dirx,contm=data$contm,
     z<-dirx
     z.name=paste("predictor",1:ncol(z),sep=".")
     colnames(z)=z.name
-    # browser()
+    # 
     if(!is.null(cova))
     {if (length(grep("for.m",names(cova)))==0)#create the predictor matrix z
       z<-cbind(z,cova)
@@ -3064,7 +3068,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
                          family1=gaussian(link="identity"),n2=50,w=rep(1,nrow(x)),
                          biny=(data$y_type==2),refy=rep(NA,ncol(y)),x.new=x,pred.new=dirx,
                          cova.new=cova,surv,type,w.new=NULL,all.model=all.model,xmod=NULL,
-                         custom.function = custom.function)
+                         custom.function = custom.function, echo=echo)
 {
   med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx, dirx1=data$contpred, binm=data$binm,contm=data$contm,
                       catm=data$catm, jointm=data$jointm, cova=data$cova, margin=1, n=20,
@@ -3073,7 +3077,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
                       type=NULL,w=NULL, w.new=NULL, xmod=NULL,custom.function=NULL)
   {if (is.null(c(binm,contm,catm)))
     stop("Error: no potential mediator is specified")
-    # browser()
+    # 
     xnames<-colnames(x)
     pred_names<-colnames(dirx)
     ynames<-colnames(y)
@@ -3123,7 +3127,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
       }
       formu
       }
-      #browser()  
+      #  
       models<-NULL
       x=data.frame(x)
       res<-NULL
@@ -3140,7 +3144,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
       z<-dirx
       z.name=paste("predictor",1:ncol(z),sep=".")
       colnames(z)=z.name
-      # browser()
+      # 
       if(!is.null(cova))
       {if (length(grep("for.m",names(cova)))==0)#create the predictor matrix z
         z<-cbind(z,cova)
@@ -3163,7 +3167,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
         res<-cbind(res,x[,i]-predict(models[[j]],type = "response",newdata=data.frame(z1)))}
         j<-j+1}
       }
-      # browser()
+      # 
       for (i in contm)
       {if(!i%in%indi)
         models[[j]]<-glm(as.formula(form0),data=data.frame(z),family=gaussian(link="identity"),weights=w)
@@ -3436,7 +3440,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
       
       denm2<-NULL
       
-      #browser()   
+      #   
       
       sample.temp<-sample(1:n.new,2*n.new,replace = TRUE,prob=w.new)   #random sample from the original data
       
@@ -3510,7 +3514,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
       te1<-cbind(te1,te0)
       
       #4.2 mediation effect from the single mediator
-      # browser()
+      # 
       if (!is.null(listm$single))
         for (i in 1:length(listm$single))
         {new1.nm<-new1
@@ -3613,7 +3617,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
   
 if (is.null(c(binm,contm,catm)))
   stop("Error: no potential mediator is specified")
-#  browser() 
+#   
   
 xnames<-colnames(x)
 pred_names<-colnames(dirx)
@@ -3755,7 +3759,8 @@ te1<-cbind(te1,temp$te)
 de1<-cbind(de1,temp.1)
 for (l in 1:nx)
   ie2[[l]]<-rbind(ie2[[l]],temp$ie[[l]])
-print(i)
+if (echo)
+  print(i)
 }
 colnames(te)<-paste(paste("y",1:ncol(y),sep=""),rep(pred_names[dirx1],each=ncol(y)),sep=".")
 colnames(de)<-paste(paste("y",1:ncol(y),sep=""),rep(pred_names[dirx1],each=ncol(y)),sep=".")
@@ -3869,7 +3874,7 @@ if(!(is.null(binpred) & is.null(catpred))){
                         jointm=jointm,cova=cova,n=n,n2=n2,nonlinear=nonlinear,nu=nu, binpred=binpred,catpred=catpred,
                         D=D,distn=distn,family1=family1,
                         w=w,biny=biny,refy=rep(0,ncol(y)),surv,type,all.model,xmod,
-                        custom.function = custom.function, para=para)}
+                        custom.function = custom.function, para=para,echo=echo)}
 
 if(!is.null(contpred)){
   if(!is.null(data$cont.results)){
@@ -3897,7 +3902,7 @@ if(!is.null(contpred)){
                     nonlinear = nonlinear, df1 = df1, nu = nu, D = D, distn = distn, 
                     family1 = family1, n2 = n2,w=w,biny=biny,refy=rep(0,ncol(y)),
                     x.new=x.new,pred.new=pred.new,cova.new=cova.new, surv,type,w.new,
-                    all.model,xmod,custom.function = custom.function)
+                    all.model,xmod,custom.function = custom.function,echo=echo)
 }
 
 a<-list(a.binx=a.binx, a.contx=a.contx)
@@ -3913,7 +3918,7 @@ mma<-function(x,y,pred,mediator=NULL, contmed=NULL,binmed=NULL,binref=NULL,
               predref=rep(NA,ncol(data.frame(pred))),alpha=0.1,alpha2=0.1, margin=1, n=20,
               nonlinear=FALSE,df1=1,nu=0.001,D=3,distn=NULL,family1=as.list(rep(NA,ncol(data.frame(y)))),
               n2=50,w=rep(1,nrow(x)), testtype=1, x.new=NULL, pred.new=NULL,cova.new=NULL,type=NULL,
-              w.new=NULL,all.model=FALSE,xmod=NULL,custom.function = NULL,para=FALSE)
+              w.new=NULL,all.model=FALSE,xmod=NULL,custom.function = NULL,para=FALSE,echo=TRUE)
 {anymissing<-function(vec) #return TRUE if there is any missing in the vec
 {if(sum(is.na(vec))>0)
   return(FALSE)
@@ -3943,11 +3948,12 @@ for (k in b)
 l<-l+1}
 d[a==cat2[j]]<-l
 f<-matrix(0,dim1[1],l-1) 
-colnames(f)<-paste(ntemp[j],b,sep="") #changed for error info
+colnames(f)<-paste(xnames[i],b,sep=".") #changed for error info
 hi<-d[d!=l & !is.na(d)]
 f[d!=l & !is.na(d),]<-t(apply(cbind(hi,f[d!=l & !is.na(d),]),1,ad1))
 f[is.na(d),]<-NA
 x[,i]=f[,1]
+xnames[i]=colnames(f)[1]
 if(l>2)
 {x<-cbind(x,f[,-1])
 xnames=c(xnames,colnames(f)[-1])
@@ -3967,7 +3973,7 @@ boot.med.binx<-function(data,x=data$x, y=data$y,dirx=data$dirx,contm=data$contm,
                          jointm=data$jointm, cova=data$cova,n=20,n2=50,nonlinear=FALSE,nu=0.001,binpred=data$binpred,catpred=data$catpred,
                          D=3,distn="bernoulli",family1=binomial("logit"),w=rep(1,nrow(x)),biny=(data$y_type==2),
                          refy=rep(NA,ncol(y)),surv=(data$y_type==4),type,all.model=FALSE,
-                         xmod=NULL,custom.function=NULL,para=FALSE)
+                         xmod=NULL,custom.function=NULL,para=FALSE,echo=T)
   #n2 is the time of bootstrap
 {   dist.m.given.x<-function(x,dirx,binm=NULL,contm=NULL,catm=NULL,nonlinear,df1,w,cova) #give the model and residual of m given x
 {
@@ -3989,7 +3995,7 @@ boot.med.binx<-function(data,x=data$x, y=data$y,dirx=data$dirx,contm=data$contm,
   }
   formu
   }
-  #browser()  
+  #  
   
   if(!is.null(catm) & !is.list(catm)) #for binary predictors, need to binarized categorical variables first
   {catm1=catm
@@ -4016,7 +4022,7 @@ boot.med.binx<-function(data,x=data$x, y=data$y,dirx=data$dirx,contm=data$contm,
   z<-dirx
   z.name=paste("predictor",1:ncol(z),sep=".")
   colnames(z)=z.name
-  # browser()
+  # 
   if(!is.null(cova))
   {if (length(grep("for.m",names(cova)))==0)#create the predictor matrix z
     z<-cbind(z,cova)
@@ -4927,7 +4933,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
                          family1=gaussian(link="identity"),n2=50,w=rep(1,nrow(x)),
                          biny=(data$y_type==2),refy=rep(NA,ncol(y)),x.new=x,pred.new=dirx,
                          cova.new=cova,surv,type,w.new=NULL,all.model=all.model,xmod=NULL,
-                         custom.function = custom.function)
+                         custom.function = custom.function,echo=TRUE)
 {
   med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx, dirx1=data$contpred, binm=data$binm,contm=data$contm,
                       catm=data$catm, jointm=data$jointm, cova=data$cova, margin=1, n=20,
@@ -4936,7 +4942,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
                       type=NULL,w=NULL, w.new=NULL, xmod=NULL,custom.function=NULL)
   {if (is.null(c(binm,contm,catm)))
     stop("Error: no potential mediator is specified")
-    # browser()
+    # 
     xnames<-colnames(x)
     pred_names<-colnames(dirx)
     ynames<-colnames(y)
@@ -4986,7 +4992,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
       }
       formu
       }
-      #browser()  
+      #  
       models<-NULL
       x=data.frame(x)
       res<-NULL
@@ -5003,7 +5009,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
       z<-dirx
       z.name=paste("predictor",1:ncol(z),sep=".")
       colnames(z)=z.name
-      # browser()
+      # 
       if(!is.null(cova))
       {if (length(grep("for.m",names(cova)))==0)#create the predictor matrix z
         z<-cbind(z,cova)
@@ -5026,7 +5032,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
         res<-cbind(res,x[,i]-predict(models[[j]],type = "response",newdata=data.frame(z1)))}
         j<-j+1}
       }
-      # browser()
+      # 
       for (i in contm)
       {if(!i%in%indi)
         models[[j]]<-glm(as.formula(form0),data=data.frame(z),family=gaussian(link="identity"),weights=w)
@@ -5299,7 +5305,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
       
       denm2<-NULL
       denm3<-NULL
-      #browser()   
+      #   
       
       sample.temp<-sample(1:n.new,2*n.new,replace = TRUE,prob=w.new)   #random sample from the original data
       
@@ -5373,7 +5379,7 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
       te1<-cbind(te1,te0)
       
       #4.2 mediation effect from the single mediator
-      # browser()
+      # 
       if (!is.null(listm$single))
         for (i in 1:length(listm$single))
         {new1.nm<-new1
@@ -5616,7 +5622,8 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
   de1<-cbind(de1,temp.1)
   for (l in 1:nx)
     ie2[[l]]<-rbind(ie2[[l]],temp$ie[[l]])
-  print(i)
+  if(echo)
+    print(i)
   }
   colnames(te)<-paste(paste("y",1:ncol(y),sep=""),rep(pred_names[dirx1],each=ncol(y)),sep=".")
   colnames(de)<-paste(paste("y",1:ncol(y),sep=""),rep(pred_names[dirx1],each=ncol(y)),sep=".")
@@ -5669,18 +5676,18 @@ if(!is.null(cova))
 if(!is.null(data$bin.results)) 
   {a.binx<-boot.med.binx(data=data$bin.results,n=n,n2=n2,nonlinear=nonlinear,nu=nu,D=D,distn=distn,family1=family1,
                          w=w,biny=biny,refy=rep(0,ncol(y)),surv=surv,type=type,
-                         all.model=all.model,xmod=xmod,custom.function=custom.function,para=para)
+                         all.model=all.model,xmod=xmod,custom.function=custom.function,para=para,echo=echo)
   }
 
 if(!is.null(data$cont.results))
   {if(is.null(pred.new))
     a.contx<-boot.med.contx(data=data$cont.results,margin=margin, n=n,nonlinear=nonlinear,df1=df1, nu=nu,D=D,distn=distn,
                            family1=family1,n2=n2,w=w,biny=biny,refy=rep(0,ncol(y)),surv=surv,type=type,
-                           all.model=all.model,xmod=xmod,custom.function=custom.function)
+                           all.model=all.model,xmod=xmod,custom.function=custom.function,echo=echo)
    else
     a.contx<-boot.med.contx(data=data$cont.results,margin=margin, n=n,nonlinear=nonlinear,df1=df1, nu=nu,D=D,distn=distn,family1=family1,
                            n2=n2,w=w,biny=biny,refy=0, x.new=x.new, pred.new=pred.new,cova.new=cova.new,surv=surv,type=type,
-                           w.new=w.new,all.model=all.model,xmod=xmod,custom.function=custom.function)
+                           w.new=w.new,all.model=all.model,xmod=xmod,custom.function=custom.function,echo=echo)
   }
 a<-list(a.binx=a.binx, a.contx=a.contx)
 class(a)<-"mma"
@@ -5711,7 +5718,7 @@ print.mma<-function(x,...,digit=3)
 }
 
 
-summary.mma<-function(object,...,alpha=0.05,plot=TRUE,RE=FALSE,quant=FALSE,ball.use=FALSE,bymed=FALSE)
+summary.mma<-function(object,...,alpha=0.05,plot=TRUE,RE=FALSE,quant=FALSE,ball.use=FALSE,bymed=FALSE,win1=0.2)
 {bin.result=NULL
  cont.result=NULL
   
@@ -5731,6 +5738,21 @@ summary.mma<-function(object,...,alpha=0.05,plot=TRUE,RE=FALSE,quant=FALSE,ball.
   }
   return(cbind(upbd,lwbd)) 
  }
+ 
+bcbi<-function(boot,a0){
+      prop<-mean(ifelse(boot[-1]<boot[1], 1, 0)) 
+      z<-qnorm(prop)
+      z.bc<-2*z+qnorm(a0)
+      p.bc<-pnorm(z.bc)
+      bc <-quantile(boot[-1],p=p.bc,na.rm=T)
+      return(bc)    
+}
+
+win<-function(boot,a0,win1=0.2){
+  boots<-ifelse(boot<quantile(boot,win1/2),quantile(boot,a0/2),boot)
+  boots<-ifelse(boots>quantile(boot,1-win1/2),quantile(boot,1-a0/2),boots)
+  return(bcbi(c(mean(boots),boot),a0))
+}
  
  pv1<-function(vec)
  {p1=ifelse(vec<0,0,1)
@@ -5801,7 +5823,11 @@ colnames(ball)<-paste(rep(paste("x",1:nx,sep=""),each=ny),rep(paste("y",1:ny,sep
                  upbd=apply(temp1$ie[[l]],2,mean,na.rm=TRUE)+b2*apply(temp1$ie[[l]],2,sd,na.rm=TRUE),
                  lwbd=apply(temp1$ie[[l]],2,mean,na.rm=TRUE)+b1*apply(temp1$ie[[l]],2,sd,na.rm=TRUE),
                  upbd_q=apply(temp1$ie[[l]],2,quantile,a2,na.rm=TRUE), lwbd_q=apply(temp1$ie[[l]],2,quantile,a1,na.rm=TRUE),
+                 upbd_bcbi=apply(rbind(as.matrix(temp2$ie)[l,],temp1$ie[[l]]),2,bcbi,a2),
+                 lwbd_bcbi=apply(rbind(as.matrix(temp2$ie)[l,],temp1$ie[[l]]),2,bcbi,a1),
                  upbd_b=temp.bound[,1], lwbd_b=temp.bound[,2],
+                 upbd_win=apply(temp1$ie[[l]],2,win,a2,win1),
+                 lwbd_win=apply(temp1$ie[[l]],2,win,a1,win1),
                  p_norm=apply(temp1$ie[[l]],2,pv2),
                  p_quan=apply(temp1$ie[[l]],2,pv1))
   }
@@ -5815,7 +5841,11 @@ colnames(ball)<-paste(rep(paste("x",1:nx,sep=""),each=ny),rep(paste("y",1:ny,sep
                                    lwbd=apply(as.matrix(temp1$te),2,mean,na.rm=TRUE)+b1*apply(as.matrix(temp1$te),2,sd,na.rm=TRUE),
                                    upbd_q=apply(as.matrix(temp1$te),2,quantile,a2,na.rm=TRUE),
                                    lwbd_q=apply(as.matrix(temp1$te),2,quantile,a1,na.rm=TRUE),
+                                   upbd_bcbi=apply(rbind(temp2$te,as.matrix(temp1$te)),2,bcbi,a2),
+                                   lwbd_bcbi=apply(rbind(temp2$te,as.matrix(temp1$te)),2,bcbi,a1),
                                    upbd_b=temp.bound1[,1],lwbd_b=temp.bound1[,2],
+                                   upbd_win=apply(as.matrix(temp1$te),2,win,a2,win1),
+                                   lwbd_win=apply(as.matrix(temp1$te),2,win,a1,win1),
                                    p_norm=apply(as.matrix(temp1$te),2,pv2),
                                    p_quan=apply(as.matrix(temp1$te),2,pv1)),
                     direct.effect=rbind(est=temp2$de,mean=apply(as.matrix(temp1$de),2,mean,na.rm=TRUE),sd=apply(as.matrix(temp1$de),2,sd,na.rm=TRUE),
@@ -5823,7 +5853,11 @@ colnames(ball)<-paste(rep(paste("x",1:nx,sep=""),each=ny),rep(paste("y",1:ny,sep
                                    lwbd=apply(as.matrix(temp1$de),2,mean,na.rm=TRUE)+b1*apply(as.matrix(temp1$de),2,sd,na.rm=TRUE),
                                    upbd_q=apply(as.matrix(temp1$de),2,quantile,a2,na.rm=TRUE),
                                    lwbd_q=apply(as.matrix(temp1$de),2,quantile,a1,na.rm=TRUE),
+                                   upbd_bcbi=apply(rbind(temp2$de,as.matrix(temp1$de)),2,bcbi,a2),
+                                   lwbd_bcbi=apply(rbind(temp2$de,as.matrix(temp1$de)),2,bcbi,a1),
                                    upbd_b=temp.bound2[,1],lwbd_b=temp.bound2[,2],
+                                   upbd_win=apply(as.matrix(temp1$de),2,win,a2,win1),
+                                   lwbd_win=apply(as.matrix(temp1$de),2,win,a1,win1),
                                    p_norm=apply(as.matrix(temp1$de),2,pv2),
                                    p_quan=apply(as.matrix(temp1$de),2,pv1)))
  
@@ -5835,7 +5869,12 @@ colnames(ball)<-paste(rep(paste("x",1:nx,sep=""),each=ny),rep(paste("y",1:ny,sep
                    lwbd=apply(temp3$ie[[l]],2,mean,na.rm=TRUE)+b1*apply(temp3$ie[[l]],2,sd,na.rm=TRUE),
                    upbd_q=apply(temp3$ie[[l]],2,quantile,a2,na.rm=TRUE), 
                    lwbd_q=apply(temp3$ie[[l]],2,quantile,a1,na.rm=TRUE),
-                   upbd_b=temp.bound[,1], lwbd_b=temp.bound[,2])}
+                   upbd_bcbi=apply(rbind(as.matrix(temp4$ie)[l,],temp3$ie[[l]]),2,bcbi,a2),
+                   lwbd_bcbi=apply(rbind(as.matrix(temp4$ie)[l,],temp3$ie[[l]]),2,bcbi,a1),
+                   upbd_b=temp.bound[,1], lwbd_b=temp.bound[,2],
+                   upbd_win=apply(temp3$ie[[l]],2,win,a2,win1),
+                   lwbd_win=apply(temp3$ie[[l]],2,win,a1,win1)
+    )}
  names(ie)<-names(temp3$ie)
  temp.bound2<-bound.ball(as.matrix(temp3$de),as.matrix(ball))
  temp2.result<-list(indirect.effect=ie,
@@ -5844,7 +5883,11 @@ colnames(ball)<-paste(rep(paste("x",1:nx,sep=""),each=ny),rep(paste("y",1:ny,sep
                                         lwbd=apply(as.matrix(temp3$de),2,mean,na.rm=TRUE)+b1*apply(as.matrix(temp3$de),2,sd,na.rm=TRUE),
                                         upbd_q=apply(as.matrix(temp3$de),2,quantile,a2,na.rm=TRUE),
                                         lwbd_q=apply(as.matrix(temp3$de),2,quantile,a1,na.rm=TRUE),
-                                        upbd_b=temp.bound2[,1],lwbd_b=temp.bound2[,2]))
+                                        upbd_bcbi=apply(rbind(temp4$de,as.matrix(temp3$de)),2,bcbi,a2),
+                                        lwbd_bcbi=apply(rbind(temp4$de,as.matrix(temp3$de)),2,bcbi,a1),
+                                        upbd_b=temp.bound2[,1],lwbd_b=temp.bound2[,2],
+                                        upbd_win=apply(as.matrix(temp3$de),2,win,a2,win1),
+                                        lwbd_win=apply(as.matrix(temp3$de),2,win,a1,win1)))
  result<-list(results=temp1.result,re=temp2.result,alpha=alpha,plot=plot,obj=x,RE=RE,quant=quant,nx=nx,nie=nie,ny=ny,ball.use=ball.use,bymed=bymed)
  result
  }
@@ -5888,7 +5931,8 @@ print.summary.mma<-function(x,...,digit=3)
      print(apply(x$results$direct.effect,2,round,digit))
      for (l in 1:nmed)
      {cat ("For Mediator",med_names[l],"\n")
-       temp.res[[l]]<-matrix(unlist(lapply(x$results$indirect.effect,gen.matrix,l)),11)
+       
+       temp.res[[l]]<-matrix(unlist(lapply(x$results$indirect.effect,gen.matrix,l)),15)
        colnames(temp.res[[l]])=names(x$results$indirect.effect)
        rownames(temp.res[[l]])=rownames(x$results$indirect.effect[[1]])
        print(apply(temp.res[[l]],2,round,digit))
@@ -5902,8 +5946,8 @@ print.summary.mma<-function(x,...,digit=3)
    {re<-x$re$direct.effect[2,]
    if(x$ball.use)
    {re<-x$re$direct.effect[1,]  # ball is more likely to centered around the est but not mean
-   upper<-x$re$direct.effect[8,]
-   lower<-x$re$direct.effect[9,]}
+   upper<-x$re$direct.effect[10,]
+   lower<-x$re$direct.effect[11,]}
    else if(x$quant)
    {upper<-x$re$direct.effect[6,]
    lower<-x$re$direct.effect[7,]}
@@ -5921,8 +5965,8 @@ print.summary.mma<-function(x,...,digit=3)
      {re<-x$results$total.effect[2,]
      if(x$ball.use)
      {re<-x$results$total.effect[1,]  # ball is more likely to centered around the est but not mean
-     upper<-x$results$total.effect[8,]
-     lower<-x$results$total.effect[9,]}
+     upper<-x$results$total.effect[10,]
+     lower<-x$results$total.effect[11,]}
      else if(x$quant)
      {upper<-x$results$total.effect[6,]
      lower<-x$results$total.effect[7,]}
@@ -5939,8 +5983,8 @@ print.summary.mma<-function(x,...,digit=3)
      re<-x$results$direct.effect[2,]
      if(x$ball.use)
      {re<-x$results$direct.effect[1,]  # ball is more likely to centered around the est but not mean
-     upper<-x$results$direct.effect[8,]
-     lower<-x$results$direct.effect[9,]}
+     upper<-x$results$direct.effect[10,]
+     lower<-x$results$direct.effect[11,]}
      else if(x$quant)
      {upper<-x$results$direct.effect[6,]
      lower<-x$results$direct.effect[7,]}
@@ -5959,8 +6003,8 @@ print.summary.mma<-function(x,...,digit=3)
      {re<-temp.res[[l]][2,]
      if(x$ball.use)
      {re<-temp.res[[l]][1,]  # ball is more likely to centered around the est but not mean
-     upper<-temp.res[[l]][8,]
-     lower<-temp.res[[l]][9,]}
+     upper<-temp.res[[l]][10,]
+     lower<-temp.res[[l]][11,]}
      else if(x$quant)
      {upper<-temp.res[[l]][6,]
      lower<-temp.res[[l]][7,]}
@@ -6005,8 +6049,8 @@ if(x$RE)
    re<-c(x$re$indirect.effect[[l]][2,temp.z],x$re$dir[2,x$ny*(l-1)+m])
    if(x$ball.use)
    {re<-c(x$re$indirect.effect[[l]][1,temp.z],x$re$dir[1,x$ny*(l-1)+m])  # ball is more likely to centered around the est but not mean
-    upper<-c(x$re$indirect.effect[[l]][8,temp.z],x$re$dir[8,x$ny*(l-1)+m])
-    lower<-c(x$re$indirect.effect[[l]][9,temp.z],x$re$dir[9,x$ny*(l-1)+m])}
+    upper<-c(x$re$indirect.effect[[l]][10,temp.z],x$re$dir[8,x$ny*(l-1)+m])
+    lower<-c(x$re$indirect.effect[[l]][11,temp.z],x$re$dir[9,x$ny*(l-1)+m])}
    else if(x$quant)
    {upper<-c(x$re$indirect.effect[[l]][6,temp.z],x$re$dir[6,x$ny*(l-1)+m])
     lower<-c(x$re$indirect.effect[[l]][7,temp.z],x$re$dir[7,x$ny*(l-1)+m])}
@@ -6031,8 +6075,8 @@ else
      temp.tot<-x$results$tot[2,x$ny*(l-1)+m]
     if(x$ball.use)
     {results<-c(x$results$indirect.effect[[l]][1,temp.z],x$results$dir[1,x$ny*(l-1)+m]) #ball based on est
-     upper<-c(x$results$indirect.effect[[l]][8,temp.z],x$results$dir[8,x$ny*(l-1)+m])
-     lower<-c(x$results$indirect.effect[[l]][9,temp.z],x$results$dir[9,x$ny*(l-1)+m])
+     upper<-c(x$results$indirect.effect[[l]][10,temp.z],x$results$dir[8,x$ny*(l-1)+m])
+     lower<-c(x$results$indirect.effect[[l]][11,temp.z],x$results$dir[9,x$ny*(l-1)+m])
      upper.tot<-x$results$tot[8,x$ny*(l-1)+m]
      lower.tot<-x$results$tot[9,x$ny*(l-1)+m]}
     else if(x$quant)
@@ -6263,11 +6307,11 @@ if (x$model[1]==TRUE)
         suppressWarnings(print(plot.gbm(full.model, i.var=vari,xlim=xlim)))
       else
         suppressWarnings(print(plot.gbm(full.model, i.var=vari,best.iter,xlim=xlim,type="response")))
-     
+
      par(mfrow=c(2,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
       if(!is.null(data$binpred))
         for (z.b in data$binpred)
-           overlapHist(a=data$x[,vari],b=as.matrix(data$dirx[,z.b]),xlim=xlim,xname=pred_name[,z.b],w=data$w) # added w
+           overlapHist(a=data$x[,vari],b=as.matrix(data$dirx[,z.b]),xlim=xlim,xname=pred_name[z.b],w=data$w) # added w
            
       if(!is.null(data$catpred))
         for (z.c in 1:length(data$catpred))
@@ -6338,6 +6382,7 @@ else
 {par(mfrow=c(3,nx),mar=c(5,5,1,1),oma=c(3,2,5,4))
   for (l in data$contpred)
    {temp.ie.detail<-as.matrix(x$boot.detail$ie1[[l]][,grep(mname,colnames(x$boot.detail$ie1[[l]]))])  #
+#   browser()
     ie1<-boot.ci(x$boot.detail$pred.new[,l],matrix(temp.ie.detail[,m],nrow=nrow(x$boot.detail$pred.new)),alpha,quantile)
     plot_ci(ie1,xlab=colnames(data$dirx)[l],ylab=paste("IE on",colnames(data$y)[m]))}
   if(!is.factor(data$x[,vari]))
@@ -7103,19 +7148,21 @@ form.interaction<-function(x,pred,inter.cov,predref=NULL,kx=NULL) #create the in
   #pred is the same set or a subset of pred in data.org, or the mediator vector
   #inter.cov is the name in x that need to form the interaction term
   #kx is the kth predictor if k=NULL means all predictor
-{cattobin<-function(x,cat1,cat2=rep(1,length(cat1))) #binaryize the categorical pred
-{ ad1<-function(vec)
+{cattobin<-function(x,cat1,cat2=rep(1,length(cat1))) #binaryize the categorical pred in x, cat1 are the column numbers of multicategorical variables cat2 are the reference groups
+{ad1<-function(vec)
 {vec1<-vec[-1]
 vec1[vec[1]]<-1
 vec1
 }
+xnames=names(x)
 dim1<-dim(x)
 catm<-list(n=length(cat1))
-g<-dim1[2]-length(cat1)
+level=NULL
+g<-dim1[2]
 ntemp<-colnames(x)[cat1]
 j<-1
 for (i in cat1)
-{a<-factor(x[,i])
+{a<-factor(droplevels(x[,i]))
 d<-rep(0,dim1[1])
 b<-sort(unique(a[a!=cat2[j]]))
 l<-1
@@ -7124,21 +7171,27 @@ for (k in b)
 l<-l+1}
 d[a==cat2[j]]<-l
 f<-matrix(0,dim1[1],l-1) 
-colnames(f)<-paste(ntemp[j],b,sep="") #changed for error info
+colnames(f)<-paste(xnames[i],b,sep=".") #changed for error info
 hi<-d[d!=l & !is.na(d)]
 f[d!=l & !is.na(d),]<-t(apply(cbind(hi,f[d!=l & !is.na(d),]),1,ad1))
 f[is.na(d),]<-NA
-x<-cbind(x,f)
-catm<-append(catm,list((g+1):(g+l-1)))
-g<-g+length(b)
+x[,i]=f[,1]
+xnames[i]=colnames(f)[1]
+if(l>2)
+{x<-cbind(x,f[,-1])
+xnames=c(xnames,colnames(f)[-1])
+catm<-append(catm,list(c(i,(g+1):(g+l-2))))}
+else
+  catm<-append(catm,list(i))
+level<-append(level,list(c(cat2[j],levels(droplevels(b)))))
+g<-g+length(b)-1
 j<-j+1
 }
-xname=colnames(x)
-x<-x[,-cat1]
 x=data.frame(x)
-colnames(x)=xname[-cat1]
-list(x=x,catm=catm)
+colnames(x)=xnames
+list(x=x,catm=catm,level=level) #cate variables are all combined to the end of x, catm gives the column numbers in x for each cate predictor
 }
+
 
 binarize<-function(varvec,ref=NULL) #binarize the categorical varvec, ref is the reference group, the first level if null
 {b=levels(varvec)
@@ -7329,7 +7382,7 @@ else
 #make inferences on moderation (mediated or not) effects from the mma function.
 boot.mod<-function(mma1,vari,continuous.resolution=10, w=NULL,n=20,
                    x.new=NULL,w.new=NULL,pred.new=NULL,cova.new=NULL,
-                   xj=1,margin=1,xmod=vari,df1=1, para=FALSE)
+                   xj=1,margin=1,xmod=vari,df1=1, para=FALSE,echo=TRUE)
   #boots=TRUE for bootstrap method
   #continuous.resolution: for continuous moderator, this is the number of points to be taken from 
   ##min to max by 1/continuous.resolution. For categorical moderator, this is the categories to moderate, 
@@ -7364,11 +7417,12 @@ for (k in b)
 l<-l+1}
 d[a==cat2[j]]<-l
 f<-matrix(0,dim1[1],l-1) 
-colnames(f)<-paste(ntemp[j],b,sep="") #changed for error info
+colnames(f)<-paste(xnames[i],b,sep=".") #changed for error info
 hi<-d[d!=l & !is.na(d)]
 f[d!=l & !is.na(d),]<-t(apply(cbind(hi,f[d!=l & !is.na(d),]),1,ad1))
 f[is.na(d),]<-NA
 x[,i]=f[,1]
+xnames[i]=colnames(f)[1]
 if(l>2)
 {x<-cbind(x,f[,-1])
 xnames=c(xnames,colnames(f)[-1])
@@ -7383,8 +7437,9 @@ x=data.frame(x)
 colnames(x)=xnames
 list(x=x,catm=catm,level=level) #cate variables are all combined to the end of x, catm gives the column numbers in x for each cate predictor
 }
+
 boot.mod.binx<-function(mma1,vari,plot=TRUE,continuous.resolution=100,n2=NULL,
-                         n=20,w=rep(1,nrow(mma1$data$x)),xj=1,xmod=vari,para=FALSE)
+                         n=20,w=rep(1,nrow(mma1$data$x)),xj=1,xmod=vari,para=FALSE,echo=echo)
   #n2 is the time of bootstrap if set as null. It has to be less or equal to the number of bootstrap
 {  dist.m.given.x<-function(x,dirx,binm=NULL,contm=NULL,catm=NULL,nonlinear,df1,w,cova) #give the model and residual of m given x
 {
@@ -8186,7 +8241,8 @@ if(n2>0){
   {temp.1[,l]<-temp$denm[[l]][,1:ny]
   ie[[l]][i,]<-apply(temp$ie[[l]],2,mean,na.rm=TRUE)}  #first row is the estimated value
   de[1+i,]<-apply(temp.1,2,mean,na.rm=TRUE)
-  print(i)
+  if(echo)
+   print(i)
   }}
 
 moder.level=moder.level1$moder.level
@@ -8208,7 +8264,7 @@ return(a)
 boot.mod.contx<-function(mma1,vari,continuous.resolution=10,
                          w=rep(1,nrow(mma1$data$x)),n=20,
                          x.new=NULL,w.new=NULL,
-                         pred.new=NULL,cova.new=NULL,xj=1,df1=1,xmod=vari,margin=1)
+                         pred.new=NULL,cova.new=NULL,xj=1,df1=1,xmod=vari,margin=1,echo=echo)
 {mod.contx<-function(vari,continuous.resolution,x,y,dirx,binm,contm,catm,jointm,cova, n,x.new=x,
                      pred.new=dirx, cova.new=cova, w=rep(1,nrow(x)), w.new=w,full.model,best.iter1,
                      surv,type,moder.level1,nonlinear=nonlinear,df1=1,n2=NULL,xj=1,xmod=vari,margin=1)
@@ -8915,8 +8971,8 @@ if(!is.null(mma1$all_boot)){
     de1[[l]]<-cbind(de1[[l]],as.matrix(temp$denm[[l]][,1:ny]))
     ie2[[l]]<-rbind(ie2[[l]],temp$ie[[l]])
   }
-  
-  print(i)
+  if(echo)
+   print(i)
   }
   
   colnames(te)<-paste(paste("y",1:ncol(y),sep=""),rep(mod.level1$moder.level,each=ncol(y)),sep=".")
@@ -8951,13 +9007,13 @@ if(xj%in%contpred)
 mma1$a.binx$data$binpred=FALSE
 a.contx<-boot.mod.contx(mma1$a.contx,vari,continuous.resolution=continuous.resolution,
                         w=w,n=n,x.new=x.new,w.new=w.new,pred.new=pred.new,
-                        cova.new=cova.new,xj=xj,df1=df1,xmod=xmod,margin=margin)
+                        cova.new=cova.new,xj=xj,df1=df1,xmod=xmod,margin=margin,echo=echo)
 }
 else if(xj%in%binpred)
 {if(is.null(w))
   w=rep(1,nrow(mma1$a.binx$data$x))
 mma1$a.binx$data$binpred=TRUE
-a.binx<-boot.mod.binx(mma1$a.binx,vari,continuous.resolution=continuous.resolution,n=n,w=w,xj=xj,xmod=xmod, para=para)
+a.binx<-boot.mod.binx(mma1$a.binx,vari,continuous.resolution=continuous.resolution,n=n,w=w,xj=xj,xmod=xmod, para=para,echo=echo)
 }
 else
 {z11=rep(FALSE,length(catpred))
@@ -8967,7 +9023,7 @@ i=(1:length(catpred))[z11]
 if(is.null(w))
   w=rep(1,nrow(mma1$a.binx$data$x))
 mma1$a.binx$data$binpred=TRUE
-a.binx<-boot.mod.binx(mma1$a.binx,vari,continuous.resolution=continuous.resolution,n=n,w=w,xj=catpred[[i]],xmod=xmod)
+a.binx<-boot.mod.binx(mma1$a.binx,vari,continuous.resolution=continuous.resolution,n=n,w=w,xj=catpred[[i]],xmod=xmod,echo=echo)
 }
 
 a<-list(a.binx=a.binx,a.contx=a.contx,pred=list(binpred=binpred,catpred=catpred,contpred=contpred))

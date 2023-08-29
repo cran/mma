@@ -10,7 +10,7 @@ Compute the estimations, standard deviations and confidence intervals of the med
 }
 \usage{
 \method{summary}{mma}(object,..., alpha=0.05, plot=TRUE, RE=FALSE,
-quant=FALSE,ball.use=FALSE,bymed=FALSE) 
+quant=FALSE,ball.use=FALSE,bymed=FALSE,win1=0.2) 
 \method{print}{summary.mma}(x,...,digit=3) 
 }
 %- maybe also 'usage' for other objects documented here.
@@ -39,6 +39,9 @@ the number of decimal digits to keep.
 }
   \item{bymed}{
 if true, show results by each mediator.
+}
+  \item{win1}{
+The rate of winsarize.
 }
 }
 \details{

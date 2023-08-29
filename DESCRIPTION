@@ -1,8 +1,8 @@
 Package: mma
 Type: Package
 Title: Multiple Mediation Analysis
-Version: 10.6-1
-Date: 2022-05-15
+Version: 10.7-1
+Date: 2023-08-28
 Author: Qingzhao Yu and Bin Li
 Maintainer: Qingzhao Yu <qyu@lsuhsc.edu>
 Depends: R (>= 2.14.1), gbm, splines, survival, car, gplots
@@ -17,6 +17,6 @@ URL: https://www.r-project.org,
         https://publichealth.lsuhsc.edu/Faculty_pages/qyu/index.html
 RoxygenNote: 7.1.1
 NeedsCompilation: no
-Packaged: 2022-05-15 00:03:32 UTC; qyu
+Packaged: 2023-08-29 14:19:49 UTC; qyu
 Repository: CRAN
-Date/Publication: 2022-05-16 06:50:05 UTC
+Date/Publication: 2023-08-29 18:10:07 UTC

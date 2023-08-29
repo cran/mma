@@ -8,13 +8,6 @@ Mediation Analysis Package
 This package is used to identify mediators and for general mediation analysis. Mediation effect refers to the effect conveyed by intervening variables to an observed relationship between an exposure and a response variable (outcome).  In this package, the exposure is called the predictor, the intervening variables are called mediators.  The mediation effects include the total effect, direct effect, and indirect effect, which are defined and the statistical inferences described in Yu et al.(2014).
 }
 \details{
-\tabular{ll}{
-Package: \tab mma\cr
-Type: \tab Package\cr
-Version: \tab 10\cr
-Date: \tab 2020-03-18\cr
-License: \tab GPL (>= 2)\cr
-}
 \code{"\link[=data.org]{data.org}"} is used to identify potential mediators. \code{"\link[=med]{med}"} , and \code{"\link[=boot.med]{boot.med}"} are used for statistical inferences on the mediation effects when the predictor is binary or continuous. \code{"\link[=mma]{mma}"} is a combined function that automatically identify potential mediators, based on which to make statistical inference on the mediation effects.
 }
 \author{

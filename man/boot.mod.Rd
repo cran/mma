@@ -11,7 +11,7 @@ To make inferences on the mediation effects when the predictor is continuous or 
 boot.mod(mma1,vari,continuous.resolution=10,
          w=NULL,n=20,
          x.new=NULL,w.new=NULL,pred.new=NULL,cova.new=NULL,xj=1,margin=1,
-         xmod=vari,df1=1,para=FALSE)
+         xmod=vari,df1=1,para=FALSE,echo=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -58,6 +58,8 @@ If there is a moderator, xmod gives the moderator's name in cova and/or x.
 if nonlinear is TURE, natural cubic spline will be used to fit the relationship between the predictor and each mediator.  The df is the degree of freedom in the ns() function, the default is 1.
 }
   \item{para}{It is for binary predictors. If it is true, we would like the x-m relationship be fitted parametrically. 
+}
+  \item{echo}{If echo is FALSE, there is no counting printed for the number of bootstrap iterations. 
 }
 }
 \details{
