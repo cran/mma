@@ -8,33 +8,15 @@ Statistical Inference on Mediation Analysis with Continuous or Binary Predictor
 To make inferences on the mediation effects when the predictor is continuous or binary.
 }
 \usage{
-boot.med(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,
-         contm=data$contm,catm=data$catm,jointm=data$jointm, 
-         cova=data$cova, margin=1,n=20,
-         nonlinear=FALSE,df1=1,nu=0.001,D=3,distn=NULL,family1=data$family1,
-         n2=50,w=rep(1,nrow(x)),refy=NULL,x.new=x,pred.new=dirx,
-         cova.new=cova,binpred=data$binpred,type=NULL,
-         w.new=NULL,all.model=FALSE,xmod=NULL,custom.function=NULL,para=FALSE,echo=TRUE)
+boot.med(data,margin=1,n=20,nonlinear=FALSE,df1=1,nu=0.001,
+                   D=3,distn=NULL,n2=50,x.new=NULL,w=NULL,
+                   pred.new=NULL,cova.new=NULL,type=NULL,w.new=NULL,
+                   all.model=FALSE,xmod=NULL,custom.function=NULL,para=FALSE,echo=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
    \item{data}{
 the list of result from data.org that organize the covariates, mediators, predictor and outcome. If data is FALSE, then need to set x, y, dirx, contm, catm, and jointm.
-}
-   \item{x}{
-a data frame contains all mediators and covariates.  Need to set up only when data is FALSE.  All varaibles in x that are not identified as potential mediators (by mediator, contmed, binmed, catmed, or jointm) are forced in mediation analysis as covariates.
-}
-  \item{y}{
-the vector of outcome variable.  Need to set up only when data is FALSE.
-}
-  \item{dirx }{the vector/matrix of predictor(s). Need to set up only when data is FALSE.}
-  \item{binm}{
-the variable names or the column number of x that locates the binary mediators. Need to set up only when data is FALSE.
-}
-  \item{contm }{the variable names or the column numbers of x that locate the potential continuous mediators. Need to set up only when data is FALSE.}
-  \item{catm }{categorical mediators should be binarized and be presented as a list, where the first item is the number of categorical variables and the following items are the names or the column numbers of each binarized categorical variable in x. data.org organizes the categorical mediators in this format after they pass the mediator tests. Need to set up only when data is FALSE.}
-  \item{jointm }{a list where the first item is the number of groups of joint mediators to be considered, and each of the following items identifies the names or the column numbers of the mediators in x for each group of joint mediators. Need to set up only when data is FALSE.}
-  \item{cova}{The data frame of covariates to be used to predict the mediator(s). The covariates in cova cannot be potential mediators. If the covariates are for some specific potential mediators, cova$for.m is the vector of names of potential mediators that use the covariates. Works for continuous predictors (pred) only, also the specified covariates should have no missing if only some mediators uses the covariates. Works mainly for continuous predictors (pred), also the specified covariates should have no missing if only some mediators uses the covariates.
 }
   \item{margin}{
 the change in predictor when calculating the mediation effects, see Yu et al. (2014).
@@ -60,17 +42,11 @@ set the parameter "interaction.depth" in gbm function if MART is to be used, by 
   \item{distn}{
 the assumed distribution of the outcome if MART is used for final full model. The default value of distn is "gaussian" for coninuous y, and "bernoulli" for binary y.
 }
-  \item{family1}{
-define the conditional distribution of y given x, and the linkage function that links the mean of y with the system component if generalized linear model is used as the final full model.  The default value of family1 is gaussian(link="identity") for continuous y, and binomial(link = "logit") for binary y.
-}
   \item{n2}{
 the number of times of bootstrap resampling.  The default value is n2=50.
 }
   \item{w}{
 the weight for observations.
-}
-  \item{refy}{
-if y is binary, the reference group of y.
 }
   \item{x.new}{
 of the same format as x, with a new set of covariates and mediators on which to calculate the mediation effects.
@@ -80,9 +56,6 @@ a new set of predictor(s).
 }
   \item{cova.new}{
 a new set of covaraite(s).
-}
-  \item{binpred}{
-if TRUE, the predictor is binary.
 }
   \item{type}{
 the type of prediction when y is class Surv. Is "risk" if not specified.

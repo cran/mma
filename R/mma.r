@@ -608,16 +608,16 @@ cat("----\n *:mediator,-:joint mediator\n P-Value 1:Type-3 tests in the full mod
  P-Value 2:Tests of relationship with the Predictor\n")
 }
 
-med<-function(data, x=data$bin.results$x, y=data$bin.results$y, dirx=data$bin.results$dirx, 
-              binm=data$bin.results$binm,contm = data$bin.results$contm, 
-              catm = data$bin.results$catm, jointm = data$bin.results$jointm, 
-              cova=data$bin.results$cova, allm = c(contm, catm), 
+med<-function(data=NULL,x,y,pred,mediator=NULL,contmed=NULL,binmed=NULL,binref=NULL,catmed=NULL,
+              catref=NULL,jointm=NULL,refy=rep(NA,ncol(data.frame(y))), 
+              family1=as.list(rep(NA,ncol(data.frame(y)))),
+              predref=rep(NA,ncol(data.frame(pred))),alpha=0.1,alpha2=0.1,
+              testtype=1, w=NULL,cova=NULL, 
               margin=1, n=20, nonlinear=FALSE, df1=1, nu=0.001,D=3,distn=NULL,
-              family1=data$bin.results$family1,refy=rep(0,ncol(y)),
-              binpred=data$bin.results$binpred,x.new=x,pred.new=dirx, 
-              cova.new=cova,type=NULL, w=NULL, w.new=NULL,xmod=NULL,
+              x.new=x,pred.new=NULL, 
+              cova.new=NULL,type=NULL, w.new=NULL,xmod=NULL,
               custom.function=NULL,para=FALSE)
-{ anymissing<-function(vec) #return TRUE if there is any missing in the vec
+{anymissing<-function(vec) #return TRUE if there is any missing in the vec
 {if(sum(is.na(vec))>0)
   return(FALSE)
   else return(TRUE)
@@ -1437,7 +1437,7 @@ list(x=x,catm=catm,level=level) #cate variables are all combined to the end of x
     temp2[[1]]<-NULL
     multi=append(temp1,temp2)} 
     listm=list(single=c(contm,binm),multi=multi)
-    
+
     if (is.null(multi))                      #allm list all mediators
     {tempm<-multi
     tempm[[1]]<-NULL}
@@ -1763,46 +1763,10 @@ list(x=x,catm=catm,level=level) #cate variables are all combined to the end of x
   }
  
 
- if(is.null(data)){
-   surv=rep(FALSE,ncol(y))
-   biny=rep(FALSE,ncol(y))
-   if(is.null(distn))
-     distn<-rep(NA,ncol(y))
-   for(j in 1:ncol(y)) {
-     if(is(y[,j], "Surv")){
-       surv[j]=TRUE
-       if(is.na(distn[j]))
-         distn[j]="coxph"
-       if(is.null(type) & nonlinear)
-         type="response"
-       else if (is.null(type))
-         type="risk"
-     }
-     else if(is.character(y[,j]) | is.factor(y[,j]) | nlevels(as.factor(y[,j]))==2)
-     {biny[j]=TRUE
-     if(is.na(family1[[j]]))
-       family1[[j]] = binomial("logit")
-     if(is.na(distn[j]))
-       distn[j]="bernoulli" 
-     if(!is.na(refy[j]))
-       y[,j]<-ifelse(y[,j]==refy[j],0,1)
-     else
-       y[,j]<-ifelse(as.factor(y[,j])==levels(as.factor(y[,j]))[1],0,1)
-     }
-     else { 
-       if(is.na(family1[[j]]))
-         family1[[j]] = gaussian(link = "identity")
-       if(is.na(distn[j]))
-         distn[j]="gaussian" 
-     }
-   }
-#   data=data.org(x=x,y=y,pred=pred,mediator=mediator,contmed=contmed,binmed=binmed,binref=binref,catmed=catmed,
-#                 catref=catref,jointm=jointm,refy=refy, 
-#                 family1=family1,
-#                 predref=predref,alpha=alpha,alpha2=alpha2,testtype=testtype, w=w,cova=cova)
- }
- else
- {
+ if(is.null(data))
+   data=data.org(x,y,pred,mediator,contmed,binmed,binref,catmed,catref,jointm,refy, 
+                 family1,predref,alpha,alpha2, testtype, w,cova)
+
  if(is.null(data$bin.results))
    {y=data$cont.results$y
     y_type=data$cont.results$y_type
@@ -1826,8 +1790,7 @@ list(x=x,catm=catm,level=level) #cate variables are all combined to the end of x
  distn[is.na(distn) & y_type==2]="bernoulli"
  distn[is.na(distn) & y_type==4]="coxph"
  distn[is.na(distn) & y_type==1]="gaussian"
- }
-
+ 
  a.binx<-NULL
  a.contx<-NULL
  if(!(is.null(binpred) & is.null(catpred))){
@@ -1835,6 +1798,7 @@ list(x=x,catm=catm,level=level) #cate variables are all combined to the end of x
    data2=data$bin.results
    x=data2$x
    y=data2$y
+   refy=data2$refy
    dirx=data2$dirx
    binm=data2$binm
    contm = data2$contm
@@ -1983,6 +1947,7 @@ else
    data2=data$cont.results
    x=data2$x
    y=data2$y
+   refy=data2$refy
    dirx=data2$dirx
    binm=data2$binm
    contm = data2$contm
@@ -2048,10 +2013,9 @@ print.med<-function(x,...,digit=4)
 }
 
 
-boot.med<-function(data,x=data$x, y=data$y,dirx=data$dirx,binm=data$binm,contm=data$contm,catm=data$catm,
-                   jointm=data$jointm, cova=data$cova, margin=1,n=20,nonlinear=FALSE,df1=1,nu=0.001,
-                   D=3,distn=NULL,family1=data$family1,n2=50,w=rep(1,nrow(x)),refy=NULL,x.new=x,
-                   pred.new=dirx,cova.new=cova,binpred=data$binpred,type=NULL,w.new=NULL,
+boot.med<-function(data,margin=1,n=20,nonlinear=FALSE,df1=1,nu=0.001,
+                   D=3,distn=NULL,n2=50,x.new=NULL,w=NULL,
+                   pred.new=NULL,cova.new=NULL,type=NULL,w.new=NULL,
                    all.model=FALSE,xmod=NULL,custom.function=NULL,para=FALSE,echo=TRUE)
 {anymissing<-function(vec) #return TRUE if there is any missing in the vec
 {if(sum(is.na(vec))>0)
@@ -2729,6 +2693,9 @@ boot.med.binx<-function(data,x=data$x, y=data$y,dirx=data$dirx,contm=data$contm,
   return(a)
   }
   
+  uni.len<-function(vec)
+  {length(unique(vec))}
+  
   if (is.null(c(contm,catm)))
     stop("Error: no potential mediator is specified")
  
@@ -2901,11 +2868,13 @@ boot.med.binx<-function(data,x=data$x, y=data$y,dirx=data$dirx,contm=data$contm,
   all_boot=NULL
   
   for (t.i in 1:n2)
+  {y.temp=matrix(1,2,ncol(y))
+  while(min(apply(y.temp,2,uni.len))<2)
   {boots<-sample(1:nrow(x),replace=TRUE,prob=w)
+   y.temp<-data.frame(y[boots,])}
+   colnames(y.temp)=ynames
    x.temp<-data.frame(x[boots,])
    names(x.temp)=xnames
-   y.temp<-data.frame(y[boots,])
-   colnames(y.temp)=ynames
    pred.temp<-data.frame(dirx[boots,])
    colnames(pred.temp)=pred_names
    w1=NULL
@@ -3614,6 +3583,9 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
     class(a)<-"med"
     return(a)
   }
+
+  uni.len<-function(vec)
+  {length(unique(vec))}
   
 if (is.null(c(binm,contm,catm)))
   stop("Error: no potential mediator is specified")
@@ -3713,11 +3685,13 @@ all_iter=NULL
 all_boot=NULL
 
 for (i in 1:n2)
+{y1=matrix(1,2,ncol(y))
+while(min(apply(y1,2,uni.len))<2)
 {boots<-sample(1:nrow(x),replace=TRUE, prob=w)
+y1<-data.frame(y[boots,])}
+ colnames(y)=ynames
  x1<-data.frame(x[boots,])
  colnames(x1)=xnames
- y1<-data.frame(y[boots,])
- colnames(y)=ynames
  dirx1.temp<-data.frame(dirx[boots,])
  colnames(dirx1.temp)=pred_names
  if(!is.null(cova)){
@@ -3776,42 +3750,7 @@ class(a)<-"mma"
 return(a)
 }
 
-if(is.null(data)){
-  surv=rep(FALSE,ncol(y))
-  biny=rep(FALSE,ncol(y))
-  if(is.null(distn))
-    distn<-rep(NA,ncol(y))
-  for(j in 1:ncol(y)) {
-    if(is(y[,j],"Surv")){
-      surv[j]=TRUE
-      if(is.na(distn[j]))
-        distn[j]="coxph"
-      if(is.null(type) & nonlinear)
-        type="response"
-      else if (is.null(type))
-        type="risk"
-    }
-    else if(is.character(y[,j]) | is.factor(y[,j]) | nlevels(as.factor(y[,j]))==2)
-    {biny[j]=TRUE
-    if(is.na(family1[[j]]))
-      family1[[j]] = binomial("logit")
-    if(is.na(distn[j]))
-      distn[j]="bernoulli" 
-    if(!is.na(refy[j]))
-      y[,j]<-ifelse(y[,j]==refy[j],0,1)
-    else
-      y[,j]<-ifelse(as.factor(y[,j])==levels(as.factor(y[,j]))[1],0,1)
-    }
-    else { 
-      if(is.na(family1[[j]]))
-        family1[[j]] = gaussian(link = "identity")
-      if(is.na(distn[j]))
-        distn[j]="gaussian" 
-    }
-  }
-}
-else
-{ if(is.null(data$bin.results))
+if(is.null(data$bin.results))
 {y=data$cont.results$y
  y_type=data$cont.results$y_type
  binpred=NULL
@@ -3834,7 +3773,6 @@ else
   distn[is.na(distn) & y_type==2]="bernoulli"
   distn[is.na(distn) & y_type==4]="coxph"
   distn[is.na(distn) & y_type==1]="gaussian"
-  }
 
 a.binx=NULL
 a.contx=NULL
@@ -3844,6 +3782,8 @@ if(!(is.null(binpred) & is.null(catpred))){
     data2=data$bin.results
     x=data2$x
     y=data2$y
+    if(is.null(w))
+      w=rep(1,nrow(x))
     dirx=data2$dirx
     binm=data2$binm
     contm = data2$contm
@@ -3881,6 +3821,8 @@ if(!is.null(contpred)){
     data2=data$cont.results
     x=data2$x
     y=data2$y
+    if(is.null(w))
+      w=rep(1,nrow(x))
     dirx=data2$dirx
     binm=data2$binm
     contm = data2$contm
@@ -4593,6 +4535,9 @@ class(a)<-"med"
 return(a)
 }
 
+uni.len<-function(vec)
+{length(unique(vec))}
+
   if (is.null(c(contm,catm)))
     stop("Error: no potential mediator is specified")
   
@@ -4766,11 +4711,13 @@ return(a)
   all_boot=NULL
   
   for (t.i in 1:n2)
+  {y.temp=matrix(1,2,ncol(y))
+  while(min(apply(y.temp,2,uni.len))<2)
   {boots<-sample(1:nrow(x),replace=TRUE,prob=w)
+  y.temp<-data.frame(y[boots,])}
+  colnames(y.temp)=ynames
   x.temp<-data.frame(x[boots,])
   names(x.temp)=xnames
-  y.temp<-data.frame(y[boots,])
-  colnames(y.temp)=ynames
   pred.temp<-data.frame(dirx[boots,])
   colnames(pred.temp)=pred_names
   w1=NULL
@@ -5480,6 +5427,9 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
     return(a)
   }
   
+  uni.len<-function(vec)
+  {length(unique(vec))}
+  
   if (is.null(c(binm,contm,catm)))
     stop("Error: no potential mediator is specified")
 
@@ -5577,11 +5527,13 @@ boot.med.contx<-function(data,x=data$x,y=data$y,dirx=data$dirx,dirx1=data$contpr
   all_boot=NULL
   
   for (i in 1:n2)
+  {y1=matrix(1,2,ncol(y))
+  while(min(apply(y1,2,uni.len))<2)
   {boots<-sample(1:nrow(x),replace=TRUE, prob=w)
+  y1<-data.frame(y[boots,])}
+  colnames(y1)=ynames
   x1<-data.frame(x[boots,])
   colnames(x1)=xnames
-  y1<-data.frame(y[boots,])
-  colnames(y)=ynames
   dirx1.temp<-data.frame(dirx[boots,])
   colnames(dirx1.temp)=pred_names
   if(!is.null(cova)){
@@ -6738,7 +6690,7 @@ if (x$model[1]==TRUE)
     par(mfrow=c(2,1),mar=c(5,5,1,1),oma=c(3,2,5,4))
     if(is.null(data$binpred))
       for (z.b in data$binpred)
-        overlapHist(a=data$x[,grep(vari,names(data$x))],b=as.matrix(data$dirx[,z.b]),xlim=xlim,xname=pred_name[,z.b],w=data$w) # added w
+        overlapHist(a=data$x[,grep(vari,names(data$x))],b=as.matrix(data$dirx[,z.b]),xlim=xlim,xname=pred_name[z.b],w=data$w) # added w
     
     if(is.null(data$catpred))
       for (z.c in 1:length(data$catpred))

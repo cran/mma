@@ -7,38 +7,23 @@ Mediation Analysis with Binary or Continuous Predictor
 To estimate the mediation effects when the predictor is binary or continuous.
 }
 \usage{
-med(data, x=data$bin.results$x, y=data$bin.results$y, dirx=data$bin.results$dirx, 
-              binm=data$bin.results$binm,contm = data$bin.results$contm, 
-              catm = data$bin.results$catm, jointm = data$bin.results$jointm, 
-              cova=data$bin.results$cova, allm = c(contm, catm), 
+med(data=NULL,x,y,pred,mediator=NULL,contmed=NULL,binmed=NULL,binref=NULL,catmed=NULL,
+              catref=NULL,jointm=NULL,refy=rep(NA,ncol(data.frame(y))), 
+              family1=as.list(rep(NA,ncol(data.frame(y)))),
+              predref=rep(NA,ncol(data.frame(pred))),alpha=0.1,alpha2=0.1,
+              testtype=1, w=NULL,cova=NULL, 
               margin=1, n=20, nonlinear=FALSE, df1=1, nu=0.001,D=3,distn=NULL,
-              family1=data$bin.results$family1,refy=rep(0,ncol(y)),
-              binpred=data$bin.results$binpred,x.new=x,pred.new=dirx, 
-              cova.new=cova,type=NULL, w=NULL, w.new=NULL,xmod=NULL,
+              x.new=x,pred.new=NULL, 
+              cova.new=NULL,type=NULL, w.new=NULL,xmod=NULL,
               custom.function=NULL,para=FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
    \item{data}{
-the list of result from data.org that organize the covariates, mediators, predictor and outcome. If data is FALSE, then need to set x1, y1, dirx, contm, catm, and jointm.
+the list of result from data.org that organize the covariates, mediators, predictor and outcome. If data is NULL, then need to provide all arguments requested for data.org.
 }
-   \item{x}{
-a data frame contains all mediators and covariates.  Need to set up only when data is FALSE. All varaibles in x that are not identified as potential mediators (by mediator, contmed, binmed, catmed, or jointm) are forced in mediation analysis as covariates.
-}
-  \item{y}{
-the vector of outcome variable.  Need to set up only when data is FALSE.
-}
-  \item{dirx }{the vector or matrix of predictor(s). The reference group is set to be 0. Need to set up only when data is FALSE.}
-  \item{binm}{
-the variable names or the column number of x that locates the binary mediators. Need to set up only when data is FALSE.
-}
-  \item{contm }{the variable names or the column numbers of x that locate the potential continuous mediators. Need to set up only when data is FALSE.}
-  \item{catm }{categorical mediators should be binarized and be presented as a list, where the first item is the number of categorical variables and the following items are the names or the column numbers of each binarized categorical variable in x. data.org organizes the categorical mediators in this format after they pass the mediator tests. Need to set up only when data is FALSE.}
-  \item{jointm }{a list where the first item is the number of groups of joint mediators to be considered, and each of the following items identifies the names or the column numbers of the mediators in x for each group of joint mediators. Need to set up only when data is FALSE.}
-  \item{cova}{The data frame of covariates to be used to predict the mediator(s). The covariates in cova cannot be potential mediators. If the covariates are for some specific potential mediators, cova$for.m is the vector of names of potential mediators that use the covariates. Works for continuous predictors (pred) only, also the specified covariates should have no missing if only some mediators uses the covariates.  Need to set up only when data is FALSE.
-}
-  \item{allm}{
-the column numbers of all mediators.  Need to set up only when data is FALSE. The default value of allm is c(contm,catm).
+   \item{x,y, pred, mediator, contmed, binmed, binref, catmed, catref,jointm,family1, predref,alpha, alpha2,testtype,w,cova}{
+arguments to set up the data.  Need to set up only when data is NULL. 
 }
   \item{margin}{
 the change in predictor when calculating the mediation effects, see Yu et al. (2014).
@@ -64,14 +49,8 @@ set the parameter "interaction.depth" in gbm function if MART is to be used, by 
   \item{distn}{
 the assumed distribution(s) of the outcome(s) if MART is used for final full model. The default value of distn is "gaussian" for continuous y,  "bernoulli" for binary y and coxph for "Surv" class outcome.
 }
-  \item{family1}{a list with the ith item 
-define the conditional distribution of y[,i] given x, and the linkage function that links the mean of y with the system component if generalized linear model is used as the final full model.  The default value of family1 is gaussian(link="identity") for contiuous y[,i], and binomial(link = "logit") for binary y[,i].
-}
   \item{refy}{
 if y is binary, the reference group of y.
-}
-  \item{binpred}{
-if TRUE, the predict variable is binary.  
 }
   \item{x.new}{
 A new set of covariates, of the same format as x (after data.org),  on which to calculate the mediation effects. For continuous predictor only. If is NULL, the mediation effects will be calculated based on the original data set.
@@ -84,9 +63,6 @@ A new set of covariate(s) to estimate mediators, of the same format as cova.
 }
   \item{type}{
 the type of prediction when y is class Surv. By default, type is "risk".
-}
-  \item{w}{
-the weight for each case in x.
 }
   \item{w.new}{
 the weight for each case in x.new.
@@ -140,6 +116,8 @@ data("weight_behavior")
  data.bin<-data.org(x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),
   binref=c(1,1),catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4)
 temp1<-med(data=data.bin,n=2)
+#med(data=NULL,x,y,pred=pred,contmed=c(7:9,11:12),binmed=c(6,10),
+#     binref=c(1,1),catmed=5,catref=1,predref="M",alpha=0.4,alpha2=0.4,n=2)
 #or use self-defined final function
 temp1<-med(data=data.bin,n=2,custom.function = 
            'glm(responseY~.,data=dataset123,family="quasibinomial",
